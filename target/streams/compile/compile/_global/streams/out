@@ -1,5 +1,0 @@
-[0m[[0m[31merror[0m] [0m[0m[31m-- [E050] Reference Error: /Users/wmy965/git/dotty_reflection/src/main/scala/co.blocke.dotty_reflection/RunMe.scala:14:42 [0m[0m
-[0m[[0m[31merror[0m] [0m[0m[31m14 |[0m    f.name + [31m" has default value of "[0m + f.defaultValueAccessor()[0m
-[0m[[0m[31merror[0m] [0m[0m   |                                        [31m^^^^^^^^^^^^^^^^^^^^^^[0m[0m
-[0m[[0m[31merror[0m] [0m[0m   |  [33mvalue[0m [35mdefaultValueAccessor[0m in [33mclass[0m [35mFieldInfo[0m does not take parameters[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
