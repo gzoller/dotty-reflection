@@ -9,11 +9,14 @@ enum PrimitiveType {
 
 case class FieldInfo(
   name: String,
-  fieldType: ClassInfo | PrimitiveType | TypeSymbol,
+  fieldType: ReflectedThing | PrimitiveType | TypeSymbol,
+  valueAccessor: Method,
   defaultValueAccessor: Option[()=>Object]
 ) {
+  def valueOf(target: Object) = valueAccessor.invoke(target)
+
   def constructorClass: Class[_] = fieldType match
-    case ci:ClassInfo => Class.forName(ci.name)
+    case ci:ReflectedThing => Class.forName(ci.name)
     case PrimitiveType.Scala_Boolean => implicitly[reflect.ClassTag[Boolean]].runtimeClass
     case PrimitiveType.Scala_Byte => implicitly[reflect.ClassTag[Byte]].runtimeClass
     case PrimitiveType.Scala_Char => implicitly[reflect.ClassTag[Char]].runtimeClass

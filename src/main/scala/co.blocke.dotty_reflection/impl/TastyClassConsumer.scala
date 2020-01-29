@@ -7,12 +7,12 @@ import scala.tasty.file._
 import scala.tasty.Reflection
 import scala.tasty.file.TastyConsumer
 
-class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.HashMap[String, ClassInfo]) extends TastyConsumer
+class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.HashMap[String, ReflectedThing]) extends TastyConsumer
   final def apply(reflect: Reflection)(tree: reflect.Tree): Unit =
     import reflect.{given, _}
     inspectClass(clazz.getName, reflect)(tree).get
 
-  def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ClassInfo] =
+  def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ReflectedThing] =
     import reflect.{given,_}
 
     // We expect a certain structure:  PackageClause, which contains ClassDef's for target class + companion object
@@ -24,39 +24,45 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
     }
     foundClasses.iterator.to(List).headOption
 
-  private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ClassInfo] =
+  private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ReflectedThing] =
     import reflect.{given,_}
     tree match {
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
-        val className = extractPath(reflect)(t.symbol).mkString(".")+"."+t.name
+        val className = t.symbol.show
         cache.get(className).orElse{
           val constructor = t.constructor
-          val paramz = constructor.paramss
-          val fields = paramz.head.zipWithIndex.map{ (valDef, i) =>
-            val fieldTypeInfo: ClassInfo | PrimitiveType | TypeSymbol = inspectType(reflect)(valDef.tpt.tpe.asInstanceOf[TypeRef])
-
-            // See if there's default values specified -- look for gonzo method on companion class.  If exists, default value is available.
-            val defaultAccessor = fieldTypeInfo match
-              case _: TypeSymbol => None
-              case _ =>
-                scala.util.Try{
-                  val companionClazz = Class.forName(className+"$") // This will fail for non-case classes, including Java classes
-                  val defaultMethod = companionClazz.getMethod("$lessinit$greater$default$"+(i+1)) // This will fail if there's no default value for this field
-                  val const = companionClazz.getDeclaredConstructor()
-                  const.setAccessible(true)
-                  ()=>defaultMethod.invoke(const.newInstance())
-                }.toOption
-
-            FieldInfo(valDef.name, fieldTypeInfo, defaultAccessor)
-            }
-          val inspected = InspectedClass(className, fields)
+          val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
+          val inspected = if(t.symbol.flags.is(Flags.Trait))
+            StaticTraitInfo(className, typeParams)
+          else
+            val paramz = constructor.paramss
+            val fields = paramz.head.zipWithIndex.map( (valDef, i) => inspectField(reflect)(valDef, i, className) )
+            StaticClassInfo(className, fields, typeParams)
           cache.put(className, inspected)
           Some(inspected)
         }
       case _ => None
     }
 
-  private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ClassInfo | PrimitiveType | TypeSymbol = 
+  private def inspectField(reflect: Reflection)(valDef: reflect.ValDef, index: Int, className: String): FieldInfo =
+    import reflect.{given,_}
+    val fieldTypeInfo: ReflectedThing | PrimitiveType | TypeSymbol = inspectType(reflect)(valDef.tpt.tpe.asInstanceOf[TypeRef])
+
+    // See if there's default values specified -- look for gonzo method on companion class.  If exists, default value is available.
+    val defaultAccessor = fieldTypeInfo match
+      case _: TypeSymbol => None
+      case _ =>
+        scala.util.Try{
+          val companionClazz = Class.forName(className+"$") // This will fail for non-case classes, including Java classes
+          val defaultMethod = companionClazz.getMethod("$lessinit$greater$default$"+(index+1)) // This will fail if there's no default value for this field
+          val const = companionClazz.getDeclaredConstructor()
+          const.setAccessible(true)
+          ()=>defaultMethod.invoke(const.newInstance())
+        }.toOption
+    val valueAccessor = Class.forName(className).getDeclaredMethod(valDef.name)
+    FieldInfo(valDef.name, fieldTypeInfo, valueAccessor, defaultAccessor)
+
+  private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ReflectedThing | PrimitiveType | TypeSymbol = 
     import reflect.{given,_}
     val classSymbol = typeRef.classSymbol.get
     classSymbol.name match {
@@ -76,10 +82,3 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
           else
             typeRef.name.asInstanceOf[TypeSymbol]
     }
-
-  def extractPath(reflect: Reflection)(symbol: reflect.Symbol) : List[String] = {
-    import reflect.{given, _}
-
-    val pathArray = symbol.show.split("\\.") // NOTE: this should print w/o colors, inspect afterwards
-    pathArray.iterator.slice(0, pathArray.length - 1).toList
-  }

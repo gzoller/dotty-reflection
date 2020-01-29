@@ -1,22 +1,24 @@
 package co.blocke.dotty_reflection
 
-trait ClassInfo {
+trait ReflectedThing {
   val name: String
-  val fields: List[FieldInfo]
-  def constructWith(args: List[Object]): Any // must be cast to appropriate type
+  val typeParameters: List[TypeSymbol]
 }
 
-case class InspectedClass protected (
-  name: String,
-  fields: List[FieldInfo],
-  ) extends ClassInfo {
+case class StaticClassInfo protected (
+  val name: String,
+  val fields: List[FieldInfo],
+  val typeParameters: List[TypeSymbol]
+  ) extends ReflectedThing {
     private val clazz = Class.forName(name)
     private val constructor = {
       val fieldObjs = fields.map(_.constructorClass).toList
       clazz.getConstructor(fields.map(_.constructorClass):_*)
     }
 
-    def constructWith(args: List[Object]): Any = constructor.newInstance(args:_*)
+    def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
   }
 
-// case class RuntimeClass() extends ClassInfo
+case class StaticTraitInfo protected(name: String, typeParameters: List[TypeSymbol]) extends ReflectedThing
+
+// case class RuntimeClass() extends StaticClassInfo
