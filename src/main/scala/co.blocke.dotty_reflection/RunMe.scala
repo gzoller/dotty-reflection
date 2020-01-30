@@ -3,7 +3,19 @@ package co.blocke.dotty_reflection
 import com.mypkg._
 import com.mypkg.sub.Person
 
+trait X
+trait Y
+trait Z
+class A(a: Int) extends X
+class B(a: Int) extends A(a) with Y
+class C(a: Int) extends B(a) with Z
+
 @main def runme(): Unit =
+
+  /*
+
+  // ======= Tasty Inspection-Based Reflection
+
   val found = Reflector.reflectOn[Dog[Person]] match {
     case ci: StaticClassInfo => ci
     case _ => null
@@ -24,3 +36,27 @@ import com.mypkg.sub.Person
 
   val t = Reflector.reflectOn[Animal]
   println(t)
+  */
+
+  // ======== Macro-based Reflection
+
+  // println(impl.TastyReflection.read[Dog[Person]]("Foop"))
+
+
+  val f = Reflector.reflectOn[Maybe]
+  val x = 5
+  println(f.asInstanceOf[StaticClassInfo].constructWith[Maybe](List(Person("Greg",53))))
+
+    
+  // def getSuperclasses(c: Class[_], stack:List[String]): List[String] = 
+  //   val sc = c.getSuperclass()
+  //   if( sc == classOf[Object])
+  //     stack
+  //   else 
+  //     getSuperclasses(sc, stack :+ sc.getName)
+  
+
+  // val c = classOf[C]
+  // println("Class "+c.getName)
+  // println(getSuperclasses(c, List(c.getName)))
+    

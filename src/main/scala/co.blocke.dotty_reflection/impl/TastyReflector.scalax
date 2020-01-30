@@ -1,15 +1,77 @@
 package co.blocke.dotty_reflection
 package impl
 
+import scala.quoted._
+
 //  This class does basically the same thing as TastyClassConsumer, except can be called from a macro at compile-time.
 
 object ReclectionLiftables
 
-  given FieldInfoIsLiftable : Liftable[LiftableFieldInfo] = new Liftable[LiftableFieldInfo] {
-    def toExpr(ccr: CaseClassRType): (given QuoteContext) => Expr[CaseClassRType] =
-      '{ CaseClassRType(
-        ${Expr(ccr.label)}, 
-        Entry.getClassConstructor(${Expr(ccr.label)}),
-        ${Expr(ccr.collection)}) 
+  given FieldInfoIsLiftable : Liftable[FieldInfoBase] = new Liftable[FieldInfoBase] {
+    def toExpr(lfi: FieldInfoBase): (given QuoteContext) => Expr[FieldInfoBase] =
+      '{ FieldInfo(
+        ${Expr(lfi.index)}, 
+        ${Expr(lfi.name)},
+        ${Expr(lfi.fieldType match {
+          case t: TypeSymbol => t
+        })},
+        ${Expr(lfi.annotations)},
+        null,
+        None)
         }
   }
+  given TypeSymbolIsLiftable[TypeSymbol] : Liftable[TypeSymbol] = new Liftable[TypeSymbol] {
+    def toExpr(x: TypeSymbol) = (given qctx) => 
+      '{ new String(${x}) }
+      // '{ ${Expr(x.asInstanceOf[String])}.asInstanceOf[TypeSymbol] }
+  }
+  /*
+protected implicit def StringContextIsLiftable: Liftable[StringContext] = new Liftable[StringContext] {
+    def toExpr(strCtx: StringContext) = '{StringContext(${strCtx.parts.toSeq}: _*)}
+  }  */
+
+
+import ReclectionLiftables.FieldInfoIsLiftable
+object TastyReflection
+  inline def read[T](x: => String): FieldInfoBase = ${readImpl[T]('x)} 
+
+  def readImpl[T](param: Expr[String])(given qctx: QuoteContext): Expr[FieldInfoBase] = {
+    import qctx.tasty.{_, given}
+
+    val here = LiftableFieldInfo(5, "Foom", "T".asInstanceOf[TypeSymbol], Map("anno"->Map("a"->"1"))).asInstanceOf[FieldInfoBase]
+    println("In compile: "+here)
+    Expr( here )
+  }
+
+  /*
+  case class FieldInfo(
+  index: Int,
+  name: String,
+  fieldType: ReflectedThing | PrimitiveType | TypeSymbol,
+  annotations: Map[String,Map[String,String]],
+  valueAccessor: Method,
+  defaultValueAccessor: Option[()=>Object]
+) {
+  def valueOf(target: Object) = valueAccessor.invoke(target)
+
+  def constructorClass: Class[_] = fieldType match
+    case ci:ReflectedThing => Class.forName(ci.name)
+    case PrimitiveType.Scala_Boolean => implicitly[reflect.ClassTag[Boolean]].runtimeClass
+    case PrimitiveType.Scala_Byte => implicitly[reflect.ClassTag[Byte]].runtimeClass
+    case PrimitiveType.Scala_Char => implicitly[reflect.ClassTag[Char]].runtimeClass
+    case PrimitiveType.Scala_Double => implicitly[reflect.ClassTag[Double]].runtimeClass
+    case PrimitiveType.Scala_Float => implicitly[reflect.ClassTag[Float]].runtimeClass
+    case PrimitiveType.Scala_Int => implicitly[reflect.ClassTag[Int]].runtimeClass
+    case PrimitiveType.Scala_Long => implicitly[reflect.ClassTag[Long]].runtimeClass
+    case PrimitiveType.Scala_Short => implicitly[reflect.ClassTag[Short]].runtimeClass
+    case PrimitiveType.Scala_String => classOf[String]
+    case _:TypeSymbol => Class.forName("java.lang.Object")
+}
+
+case class LiftableFieldInfo(
+  index: Int,
+  name: String,
+  fieldType: ReflectedThing | PrimitiveType | TypeSymbol,
+  annotations: Map[String,Map[String,String]]
+)
+*/

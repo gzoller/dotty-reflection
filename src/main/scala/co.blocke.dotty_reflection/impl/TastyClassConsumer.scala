@@ -40,11 +40,10 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
           else
             // === Scala Class (case or non-case) ===
             val paramz = constructor.paramss
-            // val fields = paramz.head.zipWithIndex.map( (valDef, i) => inspectField(reflect)(valDef, i, className) )
             val members = t.body.collect {
               case vd: ValDef => vd
             }
-            val fields = paramz.head.zipWithIndex.map{ (valDef, i) => 
+            val fields = paramz.head.zipWithIndex.map{ (valDef, i) =>
               val fieldName = valDef.name
               // Field annotations (stored internal 'val' definitions in class)
               val annoSymbol = members.find(_.name == fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
@@ -58,6 +57,7 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
 
               inspectField(reflect)(valDef, i, fieldAnnos, className) 
             }
+            println("Fields: "+fields)
 
             // Class annotations
             val annoSymbol = t.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
@@ -79,7 +79,17 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
 
   private def inspectField(reflect: Reflection)(valDef: reflect.ValDef, index: Int, annos: Map[String,Map[String,String]], className: String): FieldInfo =
     import reflect.{given,_}
-    val fieldTypeInfo: ReflectedThing | PrimitiveType | TypeSymbol = inspectType(reflect)(valDef.tpt.tpe.asInstanceOf[TypeRef])
+
+    val fieldTypeInfo: ReflectedThing | PrimitiveType | TypeSymbol = 
+      // TODO: Unscramble nested OrTypes, e.g. val foo: String | Int | Boolean would be OrType(OrType(a,b),c)
+      // OrType(OrType(TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),Predef),String),TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),Int)),TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),Boolean))
+      valDef.tpt.tpe match {
+        case t: TypeRef => inspectType(reflect)(valDef.tpt.tpe.asInstanceOf[TypeRef])
+        case OrType(left,right) => 
+          val s = StaticUnionInfo("_union_type_", List.empty[TypeSymbol], List(inspectType(reflect)(left.asInstanceOf[TypeRef]), inspectType(reflect)(right.asInstanceOf[TypeRef])))
+          println("S: "+s)
+          s
+      }
 
     // See if there's default values specified -- look for gonzo method on companion class.  If exists, default value is available.
     val defaultAccessor = fieldTypeInfo match
@@ -97,6 +107,12 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
     FieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
 
 
+
+            // Union Types ==>
+            // Fields: List(List(ValDef(id,AppliedTypeTree(Ident(|),List(Ident(String), Ident(Int))),EmptyTree)))
+
+            // Normal Types ==>
+            // Fields: List(List(ValDef(id,Ident(String),EmptyTree)))
   private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ReflectedThing | PrimitiveType | TypeSymbol = 
     import reflect.{given,_}
     val classSymbol = typeRef.classSymbol.get

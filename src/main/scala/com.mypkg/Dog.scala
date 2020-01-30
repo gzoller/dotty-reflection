@@ -13,3 +13,6 @@ case class Dog[T](eatsKibbles: T, @FieldAnno(idx=5) owner: Person, name: String 
   import scala.collection.mutable.Map
   val x = "WOW"
 }
+
+
+case class Maybe( id: co.blocke.dotty_reflection.X | Int)
