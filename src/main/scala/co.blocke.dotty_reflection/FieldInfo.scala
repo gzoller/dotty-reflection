@@ -8,8 +8,10 @@ enum PrimitiveType {
 }
 
 case class FieldInfo(
+  index: Int,
   name: String,
   fieldType: ReflectedThing | PrimitiveType | TypeSymbol,
+  annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
   defaultValueAccessor: Option[()=>Object]
 ) {
@@ -29,7 +31,12 @@ case class FieldInfo(
     case _:TypeSymbol => Class.forName("java.lang.Object")
 }
 
-// List(public com.mypkg.sub.Person(java.lang.String,int))
+case class LiftableFieldInfo(
+  index: Int,
+  name: String,
+  fieldType: ReflectedThing | PrimitiveType | TypeSymbol,
+  annotations: Map[String,Map[String,String]]
+)
 
 // Note:  If we ever do a macro-based version of this, FieldInfo will need to be refactored into a trait.   defaultValueAccessor must be liftable,
 // meaning we need to capture the name of the companion class and the method.  In the Liftable[FieldInfo] thingy we'll need to cook defaultValueAccessor

@@ -8,7 +8,7 @@ lazy val root = project
 
     scalaVersion := dottyVersion,
 
-    scalacOptions ++= Seq("-language:implicitConversions"),
+    scalacOptions ++= Seq("-language:implicitConversions"), //,"-Xprint:typer"),
 
     libraryDependencies += "ch.epfl.lamp" %% "dotty-compiler" % dottyVersion,
     libraryDependencies += "ch.epfl.lamp" %% "tasty-core" % dottyVersion,

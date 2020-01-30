@@ -1,0 +1,15 @@
+package co.blocke.dotty_reflection
+package impl
+
+//  This class does basically the same thing as TastyClassConsumer, except can be called from a macro at compile-time.
+
+object ReclectionLiftables
+
+  given FieldInfoIsLiftable : Liftable[LiftableFieldInfo] = new Liftable[LiftableFieldInfo] {
+    def toExpr(ccr: CaseClassRType): (given QuoteContext) => Expr[CaseClassRType] =
+      '{ CaseClassRType(
+        ${Expr(ccr.label)}, 
+        Entry.getClassConstructor(${Expr(ccr.label)}),
+        ${Expr(ccr.collection)}) 
+        }
+  }

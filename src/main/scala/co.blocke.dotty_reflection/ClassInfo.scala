@@ -8,7 +8,8 @@ trait ReflectedThing {
 case class StaticClassInfo protected (
   val name: String,
   val fields: List[FieldInfo],
-  val typeParameters: List[TypeSymbol]
+  val typeParameters: List[TypeSymbol],
+  val annotations: Map[String, Map[String,String]]
   ) extends ReflectedThing {
     private val clazz = Class.forName(name)
     private val constructor = {

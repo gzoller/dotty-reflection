@@ -6,5 +6,5 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FieldAnno {
-    int index() default 0;
+    int idx() default 0;
 }

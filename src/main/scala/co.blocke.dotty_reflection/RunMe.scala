@@ -8,6 +8,7 @@ import com.mypkg.sub.Person
     case ci: StaticClassInfo => ci
     case _ => null
   }
+  println(found)
   val defval = found.fields(2).defaultValueAccessor.get()
   val doggo = found.constructWith[Dog[_]](List(true, Person("Greg",53), defval))
   println(doggo)

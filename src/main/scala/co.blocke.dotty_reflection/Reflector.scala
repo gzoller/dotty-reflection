@@ -14,6 +14,8 @@ object Reflector
 
   def reflectOn[T](clazz: Class[T]): ReflectedThing =
     val className = clazz.getName
-    val tc = new TastyClassConsumer[T](clazz, cache)
-    ConsumeTasty("", List(className), tc)
-    cache(className)
+    cache.getOrElse(className,{
+      val tc = new TastyClassConsumer[T](clazz, cache)
+      ConsumeTasty("", List(className), tc)
+      cache(className)
+    })
