@@ -1,6 +1,6 @@
 package co.blocke.dotty_reflection
 
-import scala.tasty.file._
+import scala.tasty.inspector._
 import impl._
 import scala.reflect.ClassTag
 
@@ -15,7 +15,7 @@ object Reflector
   def reflectOn[T](clazz: Class[T]): ReflectedThing =
     val className = clazz.getName
     cache.getOrElse(className,{
-      val tc = new TastyClassConsumer[T](clazz, cache)
-      ConsumeTasty("", List(className), tc)
+      val tc = new TastyClassInspector[T](clazz, cache)
+      tc.inspect("", List(className))
       cache(className)
     })

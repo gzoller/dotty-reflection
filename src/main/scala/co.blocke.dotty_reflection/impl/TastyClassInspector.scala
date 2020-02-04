@@ -3,15 +3,15 @@ package impl
 
 import scala.quoted._
 import scala.reflect._
-import scala.tasty.file._
 import scala.tasty.Reflection
-import scala.tasty.file.TastyConsumer
+import scala.tasty.inspector.TastyInspector
 
-class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.HashMap[String, ReflectedThing]) extends TastyConsumer
-  final def apply(reflect: Reflection)(tree: reflect.Tree): Unit =
-    import reflect.{given, _}
-    inspectClass(clazz.getName, reflect)(tree).get
+class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.HashMap[String, ReflectedThing]) extends TastyInspector
 
+  protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = {
+    import reflect._
+    inspectClass(clazz.getName, reflect)(root).get
+  }
     
   def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ReflectedThing] =
     import reflect.{given,_}
@@ -57,7 +57,6 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
 
               inspectField(reflect)(valDef, i, fieldAnnos, className) 
             }
-            println("Fields: "+fields)
 
             // Class annotations
             val annoSymbol = t.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
@@ -69,7 +68,12 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
               }).toMap)
             }.toMap
  
-            StaticClassInfo(className, fields, typeParams, annos)
+            val isValueClass = t.parents.collectFirst {
+              case Apply(Select(New(x),_),_) => x // Ident(AnyVal)
+              // case Apply(Select(New(Ident(x)),_),_) => x
+            }.map(_.symbol.name == "AnyVal").getOrElse(false)
+
+            StaticClassInfo(className, fields, typeParams, annos, isValueClass)
           cache.put(className, inspected)
           Some(inspected)
         }
@@ -80,17 +84,12 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
   private def inspectField(reflect: Reflection)(valDef: reflect.ValDef, index: Int, annos: Map[String,Map[String,String]], className: String): FieldInfo =
     import reflect.{given,_}
 
-    val fieldTypeInfo: ReflectedThing | PrimitiveType | TypeSymbol = 
-      // TODO: Unscramble nested OrTypes, e.g. val foo: String | Int | Boolean would be OrType(OrType(a,b),c)
-      // OrType(OrType(TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),Predef),String),TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),Int)),TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),Boolean))
+    val fieldTypeInfo: ALL_TYPE = 
       valDef.tpt.tpe match {
-        case t: TypeRef => inspectType(reflect)(valDef.tpt.tpe.asInstanceOf[TypeRef])
-        case OrType(left,right) => 
-          val s = StaticUnionInfo("_union_type_", List.empty[TypeSymbol], List(inspectType(reflect)(left.asInstanceOf[TypeRef]), inspectType(reflect)(right.asInstanceOf[TypeRef])))
-          println("S: "+s)
-          s
+        case t: TypeRef => inspectType(reflect)(t)
+        case ot: OrType => inspectUnionType(reflect)(ot)
       }
-
+  
     // See if there's default values specified -- look for gonzo method on companion class.  If exists, default value is available.
     val defaultAccessor = fieldTypeInfo match
       case _: TypeSymbol => None
@@ -106,30 +105,45 @@ class TastyClassConsumer[T](clazz: Class[_], cache: scala.collection.mutable.Has
 
     FieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
 
-
-
-            // Union Types ==>
-            // Fields: List(List(ValDef(id,AppliedTypeTree(Ident(|),List(Ident(String), Ident(Int))),EmptyTree)))
-
-            // Normal Types ==>
-            // Fields: List(List(ValDef(id,Ident(String),EmptyTree)))
-  private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ReflectedThing | PrimitiveType | TypeSymbol = 
+  private def inspectUnionType( reflect: Reflection )(union: reflect.OrType): StaticUnionInfo =
     import reflect.{given,_}
-    val classSymbol = typeRef.classSymbol.get
-    classSymbol.name match {
-      case "Boolean" => PrimitiveType.Scala_Boolean
-      case "Byte"    => PrimitiveType.Scala_Byte
-      case "Char"    => PrimitiveType.Scala_Char
-      case "Double"  => PrimitiveType.Scala_Double
-      case "Float"   => PrimitiveType.Scala_Float
-      case "Int"     => PrimitiveType.Scala_Int
-      case "Long"    => PrimitiveType.Scala_Long
-      case "Short"   => PrimitiveType.Scala_Short
-      case "String"  => PrimitiveType.Scala_String
-      case _ =>
-        val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
+    val OrType(left,right) = union
+    val resolvedLeft: ALL_TYPE = left match {
+      case ot: OrType => inspectUnionType(reflect)(ot)
+      case _ => inspectType(reflect)(left.asInstanceOf[TypeRef])
+    }
+    val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[TypeRef])
+    resolvedLeft match { 
+      case u: StaticUnionInfo => StaticUnionInfo("__union_type__", List.empty[TypeSymbol], u.unionTypes :+ resolvedRight )
+      case x => StaticUnionInfo("__union_type__", List.empty[TypeSymbol], List(x, resolvedRight))
+    }
+
+  private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
+    import reflect.{given,_}
+
+    if typeRef.isOpaqueAlias then
+      typeRef.translucentSuperType match {
+        // TODO: Need an OpaqueAliasInfo that captures the alias AND the wrapped type
+        case tr: TypeRef => StaticAliasInfo(typeRef.show, inspectType(reflect)(tr))
+        case ot: OrType => StaticAliasInfo(typeRef.show, inspectUnionType(reflect)(ot))
+        case _ => throw new Exception("Boom!")
+      }
+    else
+      val classSymbol = typeRef.classSymbol.get
+      classSymbol.name match {
+        case "Boolean" => PrimitiveType.Scala_Boolean
+        case "Byte"    => PrimitiveType.Scala_Byte
+        case "Char"    => PrimitiveType.Scala_Char
+        case "Double"  => PrimitiveType.Scala_Double
+        case "Float"   => PrimitiveType.Scala_Float
+        case "Int"     => PrimitiveType.Scala_Int
+        case "Long"    => PrimitiveType.Scala_Long
+        case "Short"   => PrimitiveType.Scala_Short
+        case "String"  => PrimitiveType.Scala_String
+        case _ =>
+          val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
           if(!isTypeParam)
             descendInto(reflect)(classSymbol.tree).get
           else
             typeRef.name.asInstanceOf[TypeSymbol]
-    }
+      }

@@ -1,0 +1,30 @@
+- Value Class Support
+* Opaque Type Aliases
+* Dependent type support
+* Java Class Support
+* Runtime object blending
+* Discern initial/requested value of [T], e.g. write[Person](obj)... T = Person
+
+
+Build Dotty:
+
+sbt dotty-bootstrapped/publishLocal
+
+Testing Dotty:
+
+All JDK >= 8 should work
+Our CI only tests 8 and 11
+I don't know what's going on in your build, try doing a clean from sbt
+test will not run bootstrapped-only tests like tasty-inspector, you need dotty-bootstrapped/test
+You can run a single test like this: dotty-bootstrapped/testCompilation tasty-inspector
+
+
+Results:
+JDK13: ~17 build failures with 1000s of warning messages
+JDK11: 3 build failures
+JDK8:  2 failures
+
+
+[info] Test dotty.tools.dotc.BootstrappedOnlyCompilationTests.runWithCompiler started
+foo=================================>   ] completed (89/98, 0 failed, 207s)
+[=======================================] completed (98/98, 0 failed, 227s)

@@ -10,6 +10,8 @@ class A(a: Int) extends X
 class B(a: Int) extends A(a) with Y
 class C(a: Int) extends B(a) with Z
 
+case class VCString(vc: String) extends AnyVal
+
 @main def runme(): Unit =
 
   /*
@@ -40,13 +42,20 @@ class C(a: Int) extends B(a) with Z
 
   // ======== Macro-based Reflection
 
-  // println(impl.TastyReflection.read[Dog[Person]]("Foop"))
-
+  // println(Reflector.reflectOn[Dog[Person]].asInstanceOf[StaticClassInfo].mixins)
 
   val f = Reflector.reflectOn[Maybe]
-  val x = 5
-  println(f.asInstanceOf[StaticClassInfo].constructWith[Maybe](List(Person("Greg",53))))
+  // println(f)
+  println(f.asInstanceOf[StaticClassInfo].constructWith[Maybe](List(true)))
 
+  // val x = 5
+  // println(f)
+  // println(f.asInstanceOf[StaticClassInfo].constructWith[Maybe](List(Person("Greg",53))))
+
+  // val vc = Reflector.reflectOn[VCString].asInstanceOf[StaticClassInfo]
+  // val vcObj = VCString("Foom!")
+  // println(vc.fields(0).valueOf(vcObj.asInstanceOf[Object]))
+  // println(vc.constructWith[VCString](List("Greg")))
     
   // def getSuperclasses(c: Class[_], stack:List[String]): List[String] = 
   //   val sc = c.getSuperclass()

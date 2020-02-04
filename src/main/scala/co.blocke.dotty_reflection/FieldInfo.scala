@@ -3,30 +3,30 @@ package co.blocke.dotty_reflection
 import java.lang.reflect.Method
 
 opaque type TypeSymbol = String // Placeholder type, e.g. T as in Foo[T](x: T)
-enum PrimitiveType {
-  case Scala_Boolean, Scala_Byte, Scala_Char, Scala_Double, Scala_Float, Scala_Int, Scala_Long, Scala_Short, Scala_String
-}
 
 trait FieldInfoBase {
   val index: Int
   val name: String
-  val fieldType: ReflectedThing | PrimitiveType | TypeSymbol
+  val fieldType: ALL_TYPE
   val annotations: Map[String,Map[String,String]]
 }
 
 case class FieldInfo(
   index: Int,
   name: String,
-  fieldType: ReflectedThing | PrimitiveType | TypeSymbol,
+  fieldType: ALL_TYPE,
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
   defaultValueAccessor: Option[()=>Object]
 ) extends FieldInfoBase {
   def valueOf(target: Object) = valueAccessor.invoke(target)
 
-  def constructorClass: Class[_] = fieldType match
+  def constructorClass: Class[_] = constructorClassFor(fieldType)
+
+  private def constructorClassFor(t: ALL_TYPE): Class[_] = t match
     case ci:StaticUnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
-    case ci:ReflectedThing => Class.forName(ci.name)
+    case ot:StaticAliasInfo => constructorClassFor(ot.unwrappedType)
+    case ci:ReflectedThing => Class.forName(ci.name)  // class or trait
     case PrimitiveType.Scala_Boolean => implicitly[reflect.ClassTag[Boolean]].runtimeClass
     case PrimitiveType.Scala_Byte => implicitly[reflect.ClassTag[Byte]].runtimeClass
     case PrimitiveType.Scala_Char => implicitly[reflect.ClassTag[Char]].runtimeClass
