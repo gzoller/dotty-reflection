@@ -10,12 +10,12 @@ object Reflector
 
   def reflectOn[T](given ct: ClassTag[T]): ReflectedThing = 
     val clazz = ct.runtimeClass
-    reflectOn(clazz)
+    reflectOnClass(clazz)
 
-  def reflectOn[T](clazz: Class[T]): ReflectedThing =
+  def reflectOnClass[T](clazz: Class[T]): ReflectedThing =
     val className = clazz.getName
     cache.getOrElse(className,{
       val tc = new TastyClassInspector[T](clazz, cache)
       tc.inspect("", List(className))
-      cache(className)
+      cache.get(className).getOrElse(null)
     })

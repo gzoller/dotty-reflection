@@ -44,9 +44,26 @@ case class VCString(vc: String) extends AnyVal
 
   // println(Reflector.reflectOn[Dog[Person]].asInstanceOf[StaticClassInfo].mixins)
 
-  val f = Reflector.reflectOn[Maybe]
+
+  // val cJava = classOf[co.blocke.reflect.FooJava]
+  // println(cJava.getModule())
+  // println("---------")
+  // val cScala = classOf[com.mypkg.FooScala]
+  // println(cScala.getModule())
+
+
+  // rb tree => dotty.tools.dotc.core.Symbols$ClassSymbol 
+  //            dotty.tools.dotc.core.Symbols$ClassSymbol
+  // val c = Class.forName("scala.collection.immutable.RedBlackTree")
+  val jj = new co.blocke.reflect.JavaSimpleBase[Boolean]()
+  //val c = Class.forName("co.blocke.reflect.JavaSimpleBase")
+  val f = Reflector.reflectOnClass(jj.getClass)
+  println(f)
+
+  // val f = Reflector.reflectOn[Definitely]
   // println(f)
-  println(f.asInstanceOf[StaticClassInfo].constructWith[Maybe](List(true)))
+
+  // println(f.asInstanceOf[StaticClassInfo].constructWith[Maybe](List(true)))
 
   // val x = 5
   // println(f)

@@ -4,26 +4,27 @@ import java.lang.reflect.Method
 
 opaque type TypeSymbol = String // Placeholder type, e.g. T as in Foo[T](x: T)
 
-trait FieldInfoBase {
+trait FieldInfo
   val index: Int
   val name: String
   val fieldType: ALL_TYPE
   val annotations: Map[String,Map[String,String]]
-}
+  val valueAccessor: Method
+  val defaultValueAccessor: Option[()=>Object]
 
-case class FieldInfo(
+case class ScalaFieldInfo(
   index: Int,
   name: String,
   fieldType: ALL_TYPE,
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
   defaultValueAccessor: Option[()=>Object]
-) extends FieldInfoBase {
+) extends FieldInfo {
   def valueOf(target: Object) = valueAccessor.invoke(target)
 
   def constructorClass: Class[_] = constructorClassFor(fieldType)
 
-  private def constructorClassFor(t: ALL_TYPE): Class[_] = t match
+  private def constructorClassFor(t: ALL_TYPE): Class[_] = t match 
     case ci:StaticUnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
     case ot:StaticAliasInfo => constructorClassFor(ot.unwrappedType)
     case ci:ReflectedThing => Class.forName(ci.name)  // class or trait
@@ -39,13 +40,12 @@ case class FieldInfo(
     case _:TypeSymbol => Class.forName("java.lang.Object")
 }
 
-case class LiftableFieldInfo(
+case class JavaFieldInfo(
   index: Int,
   name: String,
-  fieldType: ReflectedThing | PrimitiveType | TypeSymbol,
-  annotations: Map[String,Map[String,String]]
-) extends FieldInfoBase
-
-// Note:  If we ever do a macro-based version of this, FieldInfo will need to be refactored into a trait.   defaultValueAccessor must be liftable,
-// meaning we need to capture the name of the companion class and the method.  In the Liftable[FieldInfo] thingy we'll need to cook defaultValueAccessor
-// like we do now in TastyClassConsumer
+  fieldType: ALL_TYPE,
+  annotations: Map[String,Map[String,String]],
+  valueAccessor: Method,
+  valueSetter: Method,
+  defaultValueAccessor: Option[()=>Object]
+) extends FieldInfo

@@ -8,11 +8,13 @@ import scala.tasty.inspector.TastyInspector
 
 class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.HashMap[String, ReflectedThing]) extends TastyInspector
 
-  protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = {
-    import reflect._
-    inspectClass(clazz.getName, reflect)(root).get
-  }
+  protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
+    import reflect.{given,_}
+    reflect.rootContext.javaCompilationUnitClassname()
+      .map( _ => cache.put( clazz.getName, JavaClassInspector.inspectClass(clazz, cache)))
+      .orElse(inspectClass(clazz.getName, reflect)(root))
     
+
   def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ReflectedThing] =
     import reflect.{given,_}
 
@@ -88,6 +90,7 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
       valDef.tpt.tpe match {
         case t: TypeRef => inspectType(reflect)(t)
         case ot: OrType => inspectUnionType(reflect)(ot)
+        case matchType => inspectType(reflect)(matchType.simplified.asInstanceOf[TypeRef])
       }
   
     // See if there's default values specified -- look for gonzo method on companion class.  If exists, default value is available.
@@ -103,7 +106,7 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
         }.toOption
     val valueAccessor = Class.forName(className).getDeclaredMethod(valDef.name)
 
-    FieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
+    ScalaFieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
 
   private def inspectUnionType( reflect: Reflection )(union: reflect.OrType): StaticUnionInfo =
     import reflect.{given,_}
