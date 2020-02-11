@@ -1,4 +1,5 @@
 package co.blocke.dotty_reflection
+package model
 
 
 trait ClassInfo extends ReflectedThing with ClassOrTrait with IsAable

@@ -6,7 +6,7 @@ Tasty inspection takes us quite a ways down the path to replacing the old Scala 
 
 ### Caveats
 * This library is highly-experimental and subject to major change/breakage
-* The content read during reflection is geared for use in ScalaJack serialization, so your needs may be different
+* The content captured during reflection is geared for use in ScalaJack serialization, so your needs may be different
 
 ### Usage
 (TBD)

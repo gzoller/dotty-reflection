@@ -1,6 +1,7 @@
 package co.blocke.dotty_reflection
 package impl
 
+import model._
 import scala.quoted._
 import scala.reflect._
 import scala.tasty.Reflection
@@ -10,9 +11,11 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{given,_}
-    reflect.rootContext.javaCompilationUnitClassname()
-      .map( _ => cache.put( clazz.getName, JavaClassInspector.inspectClass(clazz, cache)))
-      .orElse(inspectClass(clazz.getName, reflect)(root))
+    reflect.rootContext match {
+      case ctx if ctx.isJavaCompilationUnit() => cache.put( clazz.getName, JavaClassInspector.inspectClass(clazz, cache))
+      case ctx if ctx.isScala2CompilationUnit() => // do nothing... can't handle Scala2 non-Tasty classes at present
+      case _ => inspectClass(clazz.getName, reflect)(root)
+    }
     
 
   def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ReflectedThing] =

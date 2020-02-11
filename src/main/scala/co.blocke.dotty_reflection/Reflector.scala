@@ -3,6 +3,7 @@ package co.blocke.dotty_reflection
 import scala.tasty.inspector._
 import impl._
 import scala.reflect.ClassTag
+import model.ReflectedThing
 
 object Reflector
 

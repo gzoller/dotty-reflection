@@ -1,6 +1,7 @@
 package co.blocke.dotty_reflection
 package impl
 
+import model._
 import java.lang.annotation.Annotation
 import java.beans.{ Introspector, PropertyDescriptor }
 
@@ -30,7 +31,7 @@ object JavaClassInspector
           val getterAnnos = getter.getAnnotations.map(a => parseAnno(a)).toMap
           val setterAnnos = setter.getAnnotations.map(a => parseAnno(a)).toMap
           val fieldAnnos = getterAnnos ++ setterAnnos
-          val fieldName = setter.getName.charAt(3).toLower + setter.getName.drop(4)
+          val fieldName = s"${setter.getName.charAt(3).toLower}${setter.getName.drop(4)}"
           JavaFieldInfo(i,fieldName, PrimitiveType.Scala_String, fieldAnnos, getter, setter, None)
       }.toList
   

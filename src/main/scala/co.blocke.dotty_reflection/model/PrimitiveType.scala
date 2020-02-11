@@ -1,7 +1,5 @@
 package co.blocke.dotty_reflection
-
-trait IsAable 
-  def isA(c: Class[_]): Boolean
+package model
 
 
 enum PrimitiveType(baseClass: String) extends IsAable 

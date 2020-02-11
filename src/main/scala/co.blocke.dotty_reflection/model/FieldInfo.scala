@@ -1,8 +1,7 @@
 package co.blocke.dotty_reflection
+package model
 
 import java.lang.reflect.Method
-
-opaque type TypeSymbol = String // Placeholder type, e.g. T as in Foo[T](x: T)
 
 trait FieldInfo
   val index: Int
