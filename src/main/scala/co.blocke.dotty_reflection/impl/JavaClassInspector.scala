@@ -32,9 +32,28 @@ object JavaClassInspector
           val setterAnnos = setter.getAnnotations.map(a => parseAnno(a)).toMap
           val fieldAnnos = getterAnnos ++ setterAnnos
           val fieldName = s"${setter.getName.charAt(3).toLower}${setter.getName.drop(4)}"
-          JavaFieldInfo(i,fieldName, PrimitiveType.Scala_String, fieldAnnos, getter, setter, None)
+          JavaFieldInfo(i,fieldName, inspectType(clazz, fieldName, desc.getPropertyType), fieldAnnos, getter, setter, None)
       }.toList
   
+  private def inspectType(mainClass: Class[_], fieldName: String, fieldClass: Class[_]): ALL_TYPE = 
+    fieldClass.getName match {
+        case "boolean" | "java.lang.Boolean" => PrimitiveType.Scala_Boolean
+        case "byte" | "java.lang.Byte"       => PrimitiveType.Scala_Byte
+        case "char" | "java.lang.Character"  => PrimitiveType.Scala_Char
+        case "double" | "java.lang.Double"   => PrimitiveType.Scala_Double
+        case "float" | "java.lang.Float"     => PrimitiveType.Scala_Float
+        case "int" | "java.lang.Integer"     => PrimitiveType.Scala_Int
+        case "long" | "java.lang.Long"       => PrimitiveType.Scala_Long
+        case "short" | "java.lang.Short"     => PrimitiveType.Scala_Short
+        case "java.lang.String"  => PrimitiveType.Scala_String
+        case "java.lang.Object" =>
+          val daField = mainClass.getDeclaredField(fieldName)
+          daField.setAccessible(true)
+          if(mainClass.getTypeParameters.toList.contains(daField.getGenericType))
+            daField.getGenericType.toString.asInstanceOf[TypeSymbol]
+          else throw new Exception("Java Object type not yet supported")
+        case _ =>  Reflector.reflectOnClass(fieldClass)
+      }
 
 
       /*

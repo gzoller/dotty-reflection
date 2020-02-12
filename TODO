@@ -1,10 +1,12 @@
 - Value Class Support
 - Opaque Type Aliases
 - Dependent type support (match types)
-* Java Class Support
+- Java Class Support
 * Scala Collections Support (including Either/Option)
 * Java Collections Support
 * Runtime object blending
+* Any type support
+* Java Object type (like Any)
 * Discern initial/requested value of [T], e.g. write[Person](obj)... T = Person
 
 

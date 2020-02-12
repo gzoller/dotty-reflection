@@ -36,3 +36,10 @@ case class Employee2(eId: IdUser, age: Int)
 
 // Parameterized classes
 case class WithParam[T,U](one:T, two:U)
+
+// Opaque type is union
+opaque type GEN_ID = Int | String
+case class OpaqueUnion(id: GEN_ID)
+
+// With default value
+case class WithDefault(a: Int, b: String = "wow")

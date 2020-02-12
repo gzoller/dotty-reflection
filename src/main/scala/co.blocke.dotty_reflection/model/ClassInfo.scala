@@ -60,6 +60,11 @@ case class StaticJavaClassInfo protected (
   val annotations: Map[String, Map[String,String]],
   ) extends ClassInfo {
 
-    def constructWith[T](args: List[Object]): T = null.asInstanceOf[T]
+    private val fieldsByName = fields.map(f => (f.name, f.asInstanceOf[JavaFieldInfo])).toMap
+    def field(name: String): Option[JavaFieldInfo] = fieldsByName.get(name)
 
+    def constructWith[T](args: List[Object]): T = 
+      val c = Class.forName(name).getConstructors.head.newInstance()
+      fields.zipWithIndex.foreach((f,a) => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(c,args(a)))
+      c.asInstanceOf[T]
   }

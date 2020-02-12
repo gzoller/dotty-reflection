@@ -17,6 +17,6 @@ lazy val root = project
       Seq("ch.epfl.lamp" %% "dotty-compiler" % dottyVersion,
         "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion,
         "ch.epfl.lamp" %% "tasty-core" % dottyVersion,
-        // "org.scalameta" %% "munit" % "0.4.5+7-e0c3caca+20200210-1547-SNAPSHOT" % "test")
-        "com.novocode" % "junit-interface" % "0.11" % "test")
+        "org.scalameta" %% "munit" % "0.4.5+7-e0c3caca+20200210-1547-SNAPSHOT" % "test")
+        // "com.novocode" % "junit-interface" % "0.11" % "test")
   )
