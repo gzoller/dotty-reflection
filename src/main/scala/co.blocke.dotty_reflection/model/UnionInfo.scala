@@ -14,6 +14,6 @@ object UnionKind
   def unapply(f: FieldInfo): Boolean = 
     f.fieldType match {
       case _: StaticUnionInfo => true
-      case t: StaticAliasInfo if t.isUnion =>  true
+      case t: AliasInfo if t.isUnion =>  true
       case _ => false
     }

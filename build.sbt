@@ -13,10 +13,12 @@ lazy val root = project
 
     scalacOptions ++= Seq("-language:implicitConversions"), //,"-Xprint:typer"),
 
+    testFrameworks += new TestFramework("munit.Framework"),
+
     libraryDependencies ++= 
       Seq("ch.epfl.lamp" %% "dotty-compiler" % dottyVersion,
         "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion,
         "ch.epfl.lamp" %% "tasty-core" % dottyVersion,
-        "org.scalameta" %% "munit" % "0.4.5+7-e0c3caca+20200210-1547-SNAPSHOT" % "test")
+        "org.scalameta" %% "munit" % "0.4.5+7-e0c3caca+20200212-1005-SNAPSHOT" % "test") //0.4.5+7-e0c3caca+20200210-1547-SNAPSHOT" % "test")
         // "com.novocode" % "junit-interface" % "0.11" % "test")
   )

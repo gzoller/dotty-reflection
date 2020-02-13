@@ -2,7 +2,10 @@
 - Opaque Type Aliases
 - Dependent type support (match types)
 - Java Class Support
-* Scala Collections Support (including Either/Option)
+* Scala plain-class support
+* Option (java/scala)
+* Either
+* Scala Collections Support
 * Java Collections Support
 * Runtime object blending
 * Any type support

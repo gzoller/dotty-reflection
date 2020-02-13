@@ -1,15 +1,14 @@
 package co.blocke.dotty_reflection
 
-// import munit._
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import munit._
+// import org.junit.Assert.assertEquals
+// import org.junit.Test
 import model._
 import PrimitiveType._
 
-class JavaTasty { //extends munit.FunSuite {
+class JavaNonTasty extends munit.FunSuite {
 
-  @Test
-  def reflectBasicWithCapture() = {
+  test("reflect basic with capture") {
     val r = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[StaticJavaClassInfo]
     val result = r match {
       case StaticJavaClassInfo(
@@ -25,23 +24,21 @@ class JavaTasty { //extends munit.FunSuite {
       case _ => false
     }
     assert(result)
-    assert(r.hasMixin("co.blocke.dotty_reflection.SJCaptureJava"),true)
+    assert(r.hasMixin("co.blocke.dotty_reflection.SJCaptureJava"))
   }
 
-  @Test
-  def basicCreation() = {
+  test("create Java object") {
     val p = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[StaticJavaClassInfo]
     val person = p.constructWith[co.blocke.reflect.Person](List(35, "Frank", 5))
     assertEquals(person.getName,"Frank")
     assertEquals(person.getAge,35)
     assertEquals(person.getOther,5)
-    assertEquals(p.fields(1).valueAccessor.invoke(person),"Frank")
-    assertEquals(p.fields(0).valueAccessor.invoke(person),35)
-    assertEquals(p.fields(2).valueAccessor.invoke(person),5)
+    assertEquals(p.fields(1).valueAccessor.invoke(person).toString,"Frank")
+    assertEquals(p.fields(0).valueAccessor.invoke(person).asInstanceOf[Int],35)
+    assertEquals(p.fields(2).valueAccessor.invoke(person).asInstanceOf[Int],5)
   }
 
-  @Test
-  def javaFieldTypes() = {
+  test("Verify Java primitives") {
     val jx = Reflector.reflectOn[co.blocke.reflect.JavaTypes].asInstanceOf[StaticJavaClassInfo]
     val inst = jx.constructWith[co.blocke.reflect.JavaTypes](List(
       true,false, 5.toByte, 3.toByte, 'x', 'y', 1.2D, 2.3D, 4.5F, 5.6F, 1, 2, 3L, 4L, 5.toShort, 6.toShort, "foom"
@@ -134,10 +131,8 @@ class JavaTasty { //extends munit.FunSuite {
     assert( q.asInstanceOf[java.lang.String] == "blather" && q.getClass.getName == "java.lang.String" )
   }
 
-  @Test
-  def withParamAndAnnotations() = {
+  test("Detect parameterized Java class") {
     val wp = Class.forName("co.blocke.reflect.ParamAnno")
-    println(Reflector.reflectOnClass(wp))
     val result = Reflector.reflectOnClass(wp) match {
       case a @ StaticJavaClassInfo(
         "co.blocke.reflect.ParamAnno",

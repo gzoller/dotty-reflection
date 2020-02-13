@@ -10,6 +10,8 @@ class A(a: Int) extends X
 class B(a: Int) extends A(a) with Y
 class C(a: Int) extends B(a) with Z
 
+case class Maybe(a:Option[Int])
+
 case class VCString(vc: String) extends AnyVal
 
 @main def runme(): Unit =
@@ -51,14 +53,13 @@ case class VCString(vc: String) extends AnyVal
   // val cScala = classOf[com.mypkg.FooScala]
   // println(cScala.getModule())
 
-
-  // rb tree => dotty.tools.dotc.core.Symbols$ClassSymbol 
-  //            dotty.tools.dotc.core.Symbols$ClassSymbol
-  // val c = Class.forName("scala.collection.immutable.RedBlackTree")
-  val jj = new co.blocke.reflect.JavaSimpleBase[Boolean]()
-  //val c = Class.forName("co.blocke.reflect.JavaSimpleBase")
-  val f = Reflector.reflectOnClass(jj.getClass)
-  println(f)
+  val j = new co.blocke.reflect.JavaCap[java.lang.Boolean]()
+  try {
+    val f = Reflector.reflectOnClass(j.getClass)//[co.blocke.reflect.JavaCap]
+    println(f)
+  } catch {
+    case _ => println("=== BOOM! ===")
+  }
 
   // val f = Reflector.reflectOn[Definitely]
   // println(f)

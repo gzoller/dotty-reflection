@@ -8,14 +8,8 @@ import model._
 import PrimitiveType._
 
 class ScalaTasty extends munit.FunSuite {
-  test("reflect basic with union") {
-    assertEquals(1,2)
-    // assertEquals(Reflector.reflectOn[Person].toString,"StaticClassInfo(co.blocke.dotty_reflection.Person,List(ScalaFieldInfo(0,name,Scala_String,Map(),public java.lang.String co.blocke.dotty_reflection.Person.name(),None), ScalaFieldInfo(1,age,Scala_Int,Map(),public int co.blocke.dotty_reflection.Person.age(),None), ScalaFieldInfo(2,other,StaticUnionInfo(__union_type__,List(),List(Scala_Int, Scala_Boolean)),Map(),public java.lang.Object co.blocke.dotty_reflection.Person.other(),None)),List(),Map(),false)")
-  }
 
-  /*
-  @Test
-  def reflectBasicWithUnion() = {
+  test("reflect basic Tasty class with union") {
     val result = Reflector.reflectOn[Person] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Person",
@@ -33,22 +27,23 @@ class ScalaTasty extends munit.FunSuite {
     assert(result)
   }
 
-  @Test
-  def basicCreation() = {
+  test("create basic Tasty class") {
     val p = Reflector.reflectOn[Person]
     val person = p.asInstanceOf[StaticClassInfo].constructWith[Person](List("Frank", 35, 5))
     assertEquals(person, Person("Frank",35,5))
   }
 
-  @Test(expected = classOf[java.lang.IllegalArgumentException])
-  def wrongUnionType() = {
+  // @Test(expected = classOf[java.lang.IllegalArgumentException])
+  test("wrong parameters for union type") {
     val p = Reflector.reflectOn[Person]
-    val person = p.asInstanceOf[StaticClassInfo].constructWith[Person](List("Frank", 35, 12.34))
-    assertEquals(person, Person("Frank",35,5))
+    intercept[java.lang.IllegalArgumentException] {
+      val person = p.asInstanceOf[StaticClassInfo].constructWith[Person](List("Frank", 35, 12.34))
+    }
   }
 
-  @Test
-  def matchTypes() = {
+  // TODO: Test union protections for inheritance / interface-trait tree!
+
+  test("handle match types") {
     val result = Reflector.reflectOn[Definitely] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Definitely",
@@ -65,14 +60,12 @@ class ScalaTasty extends munit.FunSuite {
     assert(result)
   }
   
-  @Test
-  def mixins() = {
+  test("process mixins") {
     val m = Reflector.reflectOn[WithMix]
     assertEquals(m.asInstanceOf[StaticClassInfo].hasMixin("co.blocke.dotty_reflection.SJCapture"),true)
   }
 
-  @Test
-  def withAnnotations() = {
+  test("capture field and class annotations") {
     val result = Reflector.reflectOn[WithAnnotation] match {
       case c @ StaticClassInfo(
         "co.blocke.dotty_reflection.WithAnnotation",
@@ -88,8 +81,7 @@ class ScalaTasty extends munit.FunSuite {
     assert(result)
   }
 
-  @Test
-  def parameterizedClass() = {
+  test("handle parameterized class") {
     val wp = WithParam(1,true)
     val result = Reflector.reflectOnClass(wp.getClass) match {
       case StaticClassInfo(
@@ -107,13 +99,12 @@ class ScalaTasty extends munit.FunSuite {
     assert(result)
   }
 
-  @Test
-  def opaqueTypeAlias() = {
+  test("handle opaque type alias") {
     val result = Reflector.reflectOn[Employee] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Employee",
         List(
-         ScalaFieldInfo(0,"eId",StaticAliasInfo("co.blocke.dotty_reflection.Model$package.EMP_ID",Scala_Int),_,_,None),
+         ScalaFieldInfo(0,"eId",AliasInfo("co.blocke.dotty_reflection.Model$package.EMP_ID",Scala_Int),_,_,None),
          ScalaFieldInfo(1,"age",Scala_Int,_,_,None)
         ),
         Nil,
@@ -125,12 +116,11 @@ class ScalaTasty extends munit.FunSuite {
     assert(result)
   }
 
-  @Test
-  def opaqueTypeIsUnion() = {
+  test("opaque type alias is a union type") {
     val result = Reflector.reflectOn[OpaqueUnion] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.OpaqueUnion",
-        List(ScalaFieldInfo(0,"id",StaticAliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo("__union_type__",Nil,List(Scala_Int, Scala_String))),_,_,None)),
+        List(ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo("__union_type__",Nil,List(Scala_Int, Scala_String))),_,_,None)),
         Nil,
         _,
         false
@@ -140,22 +130,12 @@ class ScalaTasty extends munit.FunSuite {
     assert(result)
   }
 
-  @Test(expected = classOf[java.lang.IllegalArgumentException])
-  def unionProtections() = {
-    val ou = Reflector.reflectOn[OpaqueUnion]
-    val materialized = ou.asInstanceOf[StaticClassInfo].constructWith[OpaqueUnion](List(true))
-  }
-
-  // TODO: Test union protections for inheritance / interface-trait tree!
-
-  @Test
-  def valueClassSupport() = {
+  test("support value classes") {
     def e = Reflector.reflectOn[Employee2]
     assertEquals(1,1)
   }
 
-  @Test
-  def withDefault() = {
+  test("detect default values in case class constructor fields") {
     val wd = Reflector.reflectOn[WithDefault].asInstanceOf[StaticClassInfo]
     val result = wd match {
       case StaticClassInfo(
@@ -174,5 +154,4 @@ class ScalaTasty extends munit.FunSuite {
     val newWd = wd.constructWith[WithDefault](List(5,wd.fields(1).defaultValueAccessor.get()))
     assertEquals(newWd, WithDefault(5))
   }
-  */
 }

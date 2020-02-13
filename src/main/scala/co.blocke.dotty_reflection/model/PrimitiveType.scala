@@ -14,3 +14,4 @@ enum PrimitiveType(baseClass: String) extends IsAable
   case Scala_Long extends PrimitiveType("java.lang.Long")
   case Scala_Short extends PrimitiveType("java.lang.Short")
   case Scala_String extends PrimitiveType("java.lang.String")
+  case Java_Object extends PrimitiveType("java.lang.Object")

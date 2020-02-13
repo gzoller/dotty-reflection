@@ -125,31 +125,40 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
     }
 
   private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
-    import reflect.{given,_}
+    import reflect.{_, given _}
 
-    if typeRef.isOpaqueAlias then
-      typeRef.translucentSuperType match {
-        // TODO: Need an OpaqueAliasInfo that captures the alias AND the wrapped type
-        case tr: TypeRef => StaticAliasInfo(typeRef.show, inspectType(reflect)(tr))
-        case ot: OrType => StaticAliasInfo(typeRef.show, inspectUnionType(reflect)(ot))
-        case _ => throw new Exception("Boom!")
-      }
-    else
-      val classSymbol = typeRef.classSymbol.get
-      classSymbol.name match {
-        case "Boolean" => PrimitiveType.Scala_Boolean
-        case "Byte"    => PrimitiveType.Scala_Byte
-        case "Char"    => PrimitiveType.Scala_Char
-        case "Double"  => PrimitiveType.Scala_Double
-        case "Float"   => PrimitiveType.Scala_Float
-        case "Int"     => PrimitiveType.Scala_Int
-        case "Long"    => PrimitiveType.Scala_Long
-        case "Short"   => PrimitiveType.Scala_Short
-        case "String"  => PrimitiveType.Scala_String
-        case _ =>
-          val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
-          if(!isTypeParam)
-            descendInto(reflect)(classSymbol.tree).get
-          else
-            typeRef.name.asInstanceOf[TypeSymbol]
-      }
+    typeRef match {
+      case named: dotty.tools.dotc.core.Types.NamedType if typeRef.isOpaqueAlias =>  // Scala3 opaque type alias
+        typeRef.translucentSuperType match {
+          case tr: TypeRef => AliasInfo(typeRef.show, inspectType(reflect)(tr))
+          case ot: OrType => AliasInfo(typeRef.show, inspectUnionType(reflect)(ot))
+          case _ => throw new Exception("Boom!")
+        }
+      case named: dotty.tools.dotc.core.Types.NamedType =>  // Scala3 Tasty-enabled type
+        val classSymbol = typeRef.classSymbol.get
+        classSymbol.name match {
+          case "Boolean" => PrimitiveType.Scala_Boolean
+          case "Byte"    => PrimitiveType.Scala_Byte
+          case "Char"    => PrimitiveType.Scala_Char
+          case "Double"  => PrimitiveType.Scala_Double
+          case "Float"   => PrimitiveType.Scala_Float
+          case "Int"     => PrimitiveType.Scala_Int
+          case "Long"    => PrimitiveType.Scala_Long
+          case "Short"   => PrimitiveType.Scala_Short
+          case "String"  => PrimitiveType.Scala_String
+          case _ =>
+            val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
+            if(!isTypeParam) 
+              descendInto(reflect)(classSymbol.tree).get
+            else
+              typeRef.name.asInstanceOf[TypeSymbol]
+        }
+      case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.Option") =>
+        ScalaOptionInfo(t.classSymbol.get.fullName, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
+
+      case _ =>  // Something else (either Java or Scala2 most likely)--go diving
+        println("Oops: "+typeRef)
+        val classSymbol = typeRef.classSymbol.get
+        println("HERE: "+classSymbol.name)
+        PrimitiveType.Scala_String
+    }

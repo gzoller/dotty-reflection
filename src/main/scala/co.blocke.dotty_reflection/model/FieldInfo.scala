@@ -25,7 +25,7 @@ case class ScalaFieldInfo(
 
   private def constructorClassFor(t: ALL_TYPE): Class[_] = t match 
     case ci:StaticUnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
-    case ot:StaticAliasInfo => constructorClassFor(ot.unwrappedType)
+    case ot:AliasInfo => constructorClassFor(ot.unwrappedType)
     case ci:StaticClassInfo if ci.isValueClass => constructorClassFor(ci.fields(0).fieldType)
     case ci:ReflectedThing => Class.forName(ci.name)  // class or trait
     case PrimitiveType.Scala_Boolean => implicitly[reflect.ClassTag[Boolean]].runtimeClass
@@ -37,6 +37,7 @@ case class ScalaFieldInfo(
     case PrimitiveType.Scala_Long => implicitly[reflect.ClassTag[Long]].runtimeClass
     case PrimitiveType.Scala_Short => implicitly[reflect.ClassTag[Short]].runtimeClass
     case PrimitiveType.Scala_String => classOf[String]
+    case PrimitiveType.Java_Object => classOf[Object]
     case _:TypeSymbol => Class.forName("java.lang.Object")
 }
 

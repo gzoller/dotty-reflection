@@ -35,16 +35,15 @@ case class StaticClassInfo protected (
     private def unionArgOk( arg: Object, idx: Int ) = 
       val unionKind = fields(idx).fieldType match {
         case s: StaticUnionInfo => s
-        case a: StaticAliasInfo => a.unwrappedType.asInstanceOf[StaticUnionInfo] // safe cast if we got to this point!
+        case a: AliasInfo => a.unwrappedType.asInstanceOf[StaticUnionInfo] // safe cast if we got to this point!
         case _ => throw new Exception("Boom")  // Should Never Happen(tm)
       }
       unionKind.unionTypes.collectFirst{
         case ci: ClassInfo if ci.isA(arg.getClass) => idx
-        case ai: StaticAliasInfo if ai.isA(arg.getClass) => idx
+        case ai: AliasInfo if ai.isA(arg.getClass) => idx
         case ti: StaticTraitInfo if ti.isA(arg.getClass) => idx
         case p: PrimitiveType if(p.isA(arg.getClass)) => idx
         case _:TypeSymbol => idx // Sure... anything goes for 'T'.... why not?
-        // TODO: Check for alias of union type:  opaque type foo = bar | other
       }
 
     def constructWith[T](args: List[Object]): T = 
