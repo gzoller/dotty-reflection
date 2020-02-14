@@ -1,7 +1,5 @@
 package co.blocke.dotty_reflection
 
-import com.mypkg._
-import com.mypkg.sub.Person
 
 trait X
 trait Y
@@ -13,6 +11,8 @@ class C(a: Int) extends B(a) with Z
 case class Maybe(a:Option[Int])
 
 case class VCString(vc: String) extends AnyVal
+
+class Foom(val a:Int, b: Boolean) 
 
 @main def runme(): Unit =
 
@@ -53,13 +53,12 @@ case class VCString(vc: String) extends AnyVal
   // val cScala = classOf[com.mypkg.FooScala]
   // println(cScala.getModule())
 
-  val j = new co.blocke.reflect.JavaCap[java.lang.Boolean]()
-  try {
-    val f = Reflector.reflectOnClass(j.getClass)//[co.blocke.reflect.JavaCap]
+  // try {
+    val f = Reflector.reflectOn[Foom]
     println(f)
-  } catch {
-    case _ => println("=== BOOM! ===")
-  }
+  // } catch {
+  //   case e => println("=== BOOM! ==="+e.getStackTrace)
+  // }
 
   // val f = Reflector.reflectOn[Definitely]
   // println(f)

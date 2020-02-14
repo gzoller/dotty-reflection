@@ -1,5 +1,7 @@
 package co.blocke.reflect;
 
+import co.blocke.dotty_reflection.Ignore;
+
 @ClassAnno(name="Foom")
 public class ParamAnno<T> {
   public ParamAnno() {}
@@ -13,4 +15,9 @@ public class ParamAnno<T> {
   public T getAge() { return age; }
   @FieldAnno(idx=2)
   public void setAge(T n) { age = n; }
+
+  private Boolean bogus;
+  @Ignore
+  public Boolean getBogus() { return bogus; }
+  public void setBogus(Boolean n) { bogus = n; }
 }

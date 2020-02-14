@@ -74,4 +74,8 @@ public class JavaTypes {
   private Short jShort2;
   public Short getJShort2() { return jShort2; }
   public void setJShort2(Short n) { jShort2 = n; }
+
+  private Object jObj;
+  public Object getJObj() { return jObj; }
+  public void setJObj(Object n) { jObj = n; }
 }

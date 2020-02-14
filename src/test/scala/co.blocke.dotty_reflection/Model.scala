@@ -43,3 +43,12 @@ case class OpaqueUnion(id: GEN_ID)
 
 // With default value
 case class WithDefault(a: Int, b: String = "wow")
+
+// Options
+case class NormalOption(a: Option[Int])
+case class NestedOption(a: Option[Option[Int]])
+case class ParamOption[T](a: Option[T])
+
+// Plain class
+class PlainGood(val a: Int, val b: String)
+class PlainBad(val a: Int, b: String)

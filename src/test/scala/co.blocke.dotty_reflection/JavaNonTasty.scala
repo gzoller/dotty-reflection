@@ -14,9 +14,9 @@ class JavaNonTasty extends munit.FunSuite {
       case StaticJavaClassInfo(
         "co.blocke.reflect.Person",
         List(
-          JavaFieldInfo(0,"age",Scala_Int,_,_,_,None),
-          JavaFieldInfo(1,"name",Scala_String,_,_,_,None),
-          JavaFieldInfo(2,"other",Scala_Int,_,_,_,None)
+          JavaFieldInfo(0,"age",Scala_Int,_,_,_),
+          JavaFieldInfo(1,"name",Scala_String,_,_,_),
+          JavaFieldInfo(2,"other",Scala_Int,_,_,_)
         ),
         Nil,
         _
@@ -41,7 +41,7 @@ class JavaNonTasty extends munit.FunSuite {
   test("Verify Java primitives") {
     val jx = Reflector.reflectOn[co.blocke.reflect.JavaTypes].asInstanceOf[StaticJavaClassInfo]
     val inst = jx.constructWith[co.blocke.reflect.JavaTypes](List(
-      true,false, 5.toByte, 3.toByte, 'x', 'y', 1.2D, 2.3D, 4.5F, 5.6F, 1, 2, 3L, 4L, 5.toShort, 6.toShort, "foom"
+      true,false, 5.toByte, 3.toByte, 'x', 'y', 1.2D, 2.3D, 4.5F, 5.6F, 1, 2, 3L, 4L, "something", 5.toShort, 6.toShort, "foom"
     ))
 
     val _a = jx.field("jBoolean").get
@@ -109,8 +109,12 @@ class JavaNonTasty extends munit.FunSuite {
     val p = _p.valueAccessor.invoke(inst)
 
     val _q = jx.field("jString").get 
-    _q.valueSetter.invoke(inst, java.lang.String.valueOf("blather"))
+    _q.valueSetter.invoke(inst, "blather")
     val q = _q.valueAccessor.invoke(inst)
+
+    val _r = jx.field("jObj").get 
+    _r.valueSetter.invoke(inst, "empty")
+    val r = _r.valueAccessor.invoke(inst)
 
     assert( a.asInstanceOf[java.lang.Boolean].booleanValue == false && a.getClass.getName == "java.lang.Boolean" )
     assert( b.asInstanceOf[java.lang.Boolean].booleanValue == true && b.getClass.getName == "java.lang.Boolean" )
@@ -129,6 +133,7 @@ class JavaNonTasty extends munit.FunSuite {
     assert( o.asInstanceOf[java.lang.Short].doubleValue == 6.toShort && o.getClass.getName == "java.lang.Short" )
     assert( p.asInstanceOf[java.lang.Short].floatValue == 5.toShort && p.getClass.getName == "java.lang.Short" )
     assert( q.asInstanceOf[java.lang.String] == "blather" && q.getClass.getName == "java.lang.String" )
+    assert( r.asInstanceOf[java.lang.Object] == "empty" && r.getClass.getName == "java.lang.String" )
   }
 
   test("Detect parameterized Java class") {
@@ -137,8 +142,8 @@ class JavaNonTasty extends munit.FunSuite {
       case a @ StaticJavaClassInfo(
         "co.blocke.reflect.ParamAnno",
         List(
-          JavaFieldInfo(0,"age","T",_,_,_,None),
-          JavaFieldInfo(1,"name",Scala_String,_,_,_,None)
+          JavaFieldInfo(0,"age","T",_,_,_),
+          JavaFieldInfo(1,"name",Scala_String,_,_,_)
         ),
         List("T"),
         _

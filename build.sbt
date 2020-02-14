@@ -11,7 +11,8 @@ lazy val root = project
 
     Test / parallelExecution := false,
 
-    scalacOptions ++= Seq("-language:implicitConversions"), //,"-Xprint:typer"),
+    // scalacOptions ++= Seq("-language:implicitConversions","-Xprint:typer"),
+    scalacOptions ++= Seq("-language:implicitConversions"),
 
     testFrameworks += new TestFramework("munit.Framework"),
 
@@ -19,6 +20,5 @@ lazy val root = project
       Seq("ch.epfl.lamp" %% "dotty-compiler" % dottyVersion,
         "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion,
         "ch.epfl.lamp" %% "tasty-core" % dottyVersion,
-        "org.scalameta" %% "munit" % "0.4.5+7-e0c3caca+20200212-1005-SNAPSHOT" % "test") //0.4.5+7-e0c3caca+20200210-1547-SNAPSHOT" % "test")
-        // "com.novocode" % "junit-interface" % "0.11" % "test")
+        "org.scalameta" %% "munit" % "0.4.5+14-37ac0912+20200214-1019-SNAPSHOT" % "test")
   )

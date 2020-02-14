@@ -2,15 +2,18 @@
 - Opaque Type Aliases
 - Dependent type support (match types)
 - Java Class Support
-* Scala plain-class support
-* Option (java/scala)
+X Scala plain-class support
+- Option (java/scala)
 * Either
 * Scala Collections Support
 * Java Collections Support
-* Runtime object blending
 * Any type support
-* Java Object type (like Any)
+- Java Object type (like Any)
+
+* Runtime object blending
 * Discern initial/requested value of [T], e.g. write[Person](obj)... T = Person
+
+NOTE: Scala plain classes *not* using val constructor args are no longer supported!
 
 
 Build Dotty:

@@ -41,12 +41,13 @@ case class ScalaFieldInfo(
     case _:TypeSymbol => Class.forName("java.lang.Object")
 }
 
+/* This is also used for Scala plain-class getter/setter fields */
 case class JavaFieldInfo(
   index: Int,
   name: String,
   fieldType: ALL_TYPE,
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
-  valueSetter: Method,
-  defaultValueAccessor: Option[()=>Object]
+  valueSetter: Method
 ) extends FieldInfo
+  val defaultValueAccessor = None

@@ -7,7 +7,7 @@ import scala.reflect._
 import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
-class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.HashMap[String, ReflectedThing]) extends TastyInspector
+class ScalaClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.HashMap[String, ReflectedThing]) extends TastyInspector
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{given,_}
@@ -44,12 +44,18 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
             StaticTraitInfo(className, typeParams)
           else
             // === Scala Class (case or non-case) ===
+            val clazz = Class.forName(className)
+            val isCaseClass = t.symbol.flags.is(Flags.Case)
             val paramz = constructor.paramss
             val members = t.body.collect {
               case vd: ValDef => vd
             }
             val fields = paramz.head.zipWithIndex.map{ (valDef, i) =>
               val fieldName = valDef.name
+              if(!isCaseClass)
+                scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
+                  throw new Exception(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
+                )
               // Field annotations (stored internal 'val' definitions in class)
               val annoSymbol = members.find(_.name == fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
               val fieldAnnos = annoSymbol.map{ a => 
@@ -74,8 +80,7 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
             }.toMap
  
             val isValueClass = t.parents.collectFirst {
-              case Apply(Select(New(x),_),_) => x // Ident(AnyVal)
-              // case Apply(Select(New(Ident(x)),_),_) => x
+              case Apply(Select(New(x),_),_) => x 
             }.map(_.symbol.name == "AnyVal").getOrElse(false)
 
             StaticClassInfo(className, fields, typeParams, annos, isValueClass)
@@ -86,7 +91,12 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
     }
 
 
-  private def inspectField(reflect: Reflection)(valDef: reflect.ValDef, index: Int, annos: Map[String,Map[String,String]], className: String): FieldInfo =
+  private def inspectField(reflect: Reflection)(
+    valDef: reflect.ValDef, 
+    index: Int, 
+    annos: Map[String,Map[String,String]], 
+    className: String
+    ): FieldInfo =
     import reflect.{given,_}
 
     val fieldTypeInfo: ALL_TYPE = 
@@ -107,9 +117,12 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
           const.setAccessible(true)
           ()=>defaultMethod.invoke(const.newInstance())
         }.toOption
-    val valueAccessor = Class.forName(className).getDeclaredMethod(valDef.name)
-
+    
+    val clazz = Class.forName(className)
+    val valueAccessor = scala.util.Try(clazz.getDeclaredMethod(valDef.name))
+      .getOrElse(throw new Exception(s"Problem with class $className, field ${valDef.name}: All non-case class constructor fields must be vals"))
     ScalaFieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
+
 
   private def inspectUnionType( reflect: Reflection )(union: reflect.OrType): StaticUnionInfo =
     import reflect.{given,_}
@@ -123,6 +136,7 @@ class TastyClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
       case u: StaticUnionInfo => StaticUnionInfo("__union_type__", List.empty[TypeSymbol], u.unionTypes :+ resolvedRight )
       case x => StaticUnionInfo("__union_type__", List.empty[TypeSymbol], List(x, resolvedRight))
     }
+
 
   private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
     import reflect.{_, given _}

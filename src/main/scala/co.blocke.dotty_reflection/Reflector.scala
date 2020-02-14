@@ -16,7 +16,7 @@ object Reflector
   def reflectOnClass[T](clazz: Class[T]): ReflectedThing =
     val className = clazz.getName
     cache.getOrElse(className,{
-      val tc = new TastyClassInspector[T](clazz, cache)
+      val tc = new ScalaClassInspector[T](clazz, cache)
       tc.inspect("", List(className))
       cache.get(className).getOrElse(null)
     })

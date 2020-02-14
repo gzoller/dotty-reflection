@@ -1,8 +1,6 @@
 package co.blocke.dotty_reflection
 
 import munit._
-// import org.junit.Assert.assertEquals
-// import org.junit.Test
 import co.blocke.reflect.{ClassAnno,FieldAnno}
 import model._
 import PrimitiveType._
@@ -153,5 +151,27 @@ class ScalaTasty extends munit.FunSuite {
     assert(result)
     val newWd = wd.constructWith[WithDefault](List(5,wd.fields(1).defaultValueAccessor.get()))
     assertEquals(newWd, WithDefault(5))
+  }
+
+  test("plain class support") {
+    val r = Reflector.reflectOn[PlainGood].asInstanceOf[StaticClassInfo]
+    val result = r match {
+      case StaticClassInfo(
+          "co.blocke.dotty_reflection.PlainGood",
+          List(
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None),
+            ScalaFieldInfo(1,"b",Scala_String,_,_,None)
+          ),
+          Nil,
+          _,
+          false
+        ) => true
+      case _ => false
+    }
+    assert(result)
+
+    interceptMessage[java.lang.Exception]("Class [co.blocke.dotty_reflection.PlainBad]: Non-case class constructor arguments must all be 'val'"){
+      Reflector.reflectOn[PlainBad]
+    }
   }
 }

@@ -24,19 +24,20 @@ object JavaClassInspector
       .getPropertyDescriptors
       .toList
       .filterNot(_.getName == "class")
-      .zipWithIndex
       .collect { 
-        case (desc,i) if desc.getReadMethod() != null && desc.getWriteMethod() != null =>
+        case desc if desc.getReadMethod() != null && desc.getWriteMethod() != null =>
           val getter = desc.getReadMethod()
           val setter = desc.getWriteMethod()
           val getterAnnos = getter.getAnnotations.map(a => parseAnno(a)).toMap
           val setterAnnos = setter.getAnnotations.map(a => parseAnno(a)).toMap
           val fieldAnnos = getterAnnos ++ setterAnnos
           val fieldName = s"${setter.getName.charAt(3).toLower}${setter.getName.drop(4)}"
-          val fieldType = inspectType3(clazz.getTypeParameters.toList, getter.getGenericReturnType)
+          val fieldType = inspectType(clazz.getTypeParameters.toList, getter.getGenericReturnType)
 
-          JavaFieldInfo(i,fieldName, fieldType, fieldAnnos, getter, setter, None)
-      }.toList
+          JavaFieldInfo(0,fieldName, fieldType, fieldAnnos, getter, setter)
+      }.toList.filterNot(_.annotations.contains("co.blocke.dotty_reflection.Ignore")).zipWithIndex.map{
+        (f,i) => f.copy(index = i)
+      }
 
   private def inspectType(mainTypeParams: List[TypeVariable[_]], fieldType: JType): ALL_TYPE =
     if !fieldType.isInstanceOf[ParameterizedType] then
@@ -59,7 +60,7 @@ object JavaClassInspector
       val paramTypeClass = paramType.getRawType.asInstanceOf[Class[_]]
       paramTypeClass.getName match {
         case "java.util.Optional" => 
-          val optionType = inspectType3(mainTypeParams, paramType.getActualTypeArguments.head)
+          val optionType = inspectType(mainTypeParams, paramType.getActualTypeArguments.head)
           JavaOptionInfo(paramTypeClass.getName, optionType)
         case n => throw new Exception("Unknown type 2 "+n)
       }
