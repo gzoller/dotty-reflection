@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package model
 
 
-trait ClassInfo extends ReflectedThing with ClassOrTrait with IsAable
+trait ClassInfo extends ReflectedThing with ClassOrTrait
   val name: String
   val fields: List[FieldInfo]
   val typeParameters: List[TypeSymbol]
@@ -38,10 +38,13 @@ case class StaticClassInfo protected (
         case a: AliasInfo => a.unwrappedType.asInstanceOf[StaticUnionInfo] // safe cast if we got to this point!
         case _ => throw new Exception("Boom")  // Should Never Happen(tm)
       }
+      // TODO: Is MyClass[Int] isA MyClass[Boolean]?  Likely not.... need ClassInfo.isA (and traits) to consider type params for isA!
       unionKind.unionTypes.collectFirst{
         case ci: ClassInfo if ci.isA(arg.getClass) => idx
         case ai: AliasInfo if ai.isA(arg.getClass) => idx
         case ti: StaticTraitInfo if ti.isA(arg.getClass) => idx
+        case oi: ScalaOptionInfo if oi.isA2(arg) => idx
+        case ei: ScalaEitherInfo if ei.isA(arg.getClass) => idx
         case p: PrimitiveType if(p.isA(arg.getClass)) => idx
         case _:TypeSymbol => idx // Sure... anything goes for 'T'.... why not?
       }

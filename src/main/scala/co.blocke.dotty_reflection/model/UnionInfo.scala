@@ -7,6 +7,7 @@ case class StaticUnionInfo protected (
   val typeParameters: List[TypeSymbol],
   val unionTypes: List[ALL_TYPE]
   ) extends ReflectedThing
+  def isA(c: Class[_]): Boolean = false  // TODO
 
 
 /** Extractor to see if a FieldInfo is in fact either a Union itself, or an alias that resolves to a Union */

@@ -4,7 +4,8 @@
 - Java Class Support
 X Scala plain-class support
 - Option (java/scala)
-* Either
+- Structural Types
+- Either
 * Scala Collections Support
 * Java Collections Support
 * Any type support

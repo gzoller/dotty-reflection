@@ -7,7 +7,7 @@ import scala.reflect._
 import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
-class ScalaClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.HashMap[String, ReflectedThing]) extends TastyInspector
+class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{given,_}
@@ -18,20 +18,27 @@ class ScalaClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
     }
     
 
-  def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ReflectedThing] =
+  def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
     import reflect.{given,_}
 
+    object Descended {
+      def unapply(t: reflect.Tree): Option[ConcreteType] = descendInto(reflect)(t)
+    }
+  
     // We expect a certain structure:  PackageClause, which contains ClassDef's for target class + companion object
-    val foundClasses = tree match {
-      case t: reflect.PackageClause =>
-        t.stats.map( m => descendInto(reflect)(m) ).find(_.isDefined).get
+    val foundClass = tree match {
+      case t: reflect.PackageClause => 
+        t.stats collectFirst {
+          case Descended(m) => m
+        }
+        //t.stats.map( m => descendInto(reflect)(m) ).find(_.isDefined).get
       case t => 
         None  // not what we expected!
     }
-    foundClasses.iterator.to(List).headOption
+    foundClass //.iterator.to(List).headOption
 
 
-  private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ReflectedThing] =
+  private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
     import reflect.{given,_}
     tree match {
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
@@ -39,7 +46,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
         cache.get(className).orElse{
           val constructor = t.constructor
           val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
-          val inspected = if(t.symbol.flags.is(Flags.Trait))
+          val inspected:ReflectedThing = if(t.symbol.flags.is(Flags.Trait))
             // === Trait ===
             StaticTraitInfo(className, typeParams)
           else
@@ -169,6 +176,13 @@ class ScalaClassInspector[T](clazz: Class[_], cache: scala.collection.mutable.Ha
         }
       case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.Option") =>
         ScalaOptionInfo(t.classSymbol.get.fullName, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
+
+      case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.util.Either") =>
+        ScalaEitherInfo(
+          t.classSymbol.get.fullName,
+          inspectType(reflect)(tob.head.asInstanceOf[TypeRef]),
+          inspectType(reflect)(tob.last.asInstanceOf[TypeRef])
+        )
 
       case _ =>  // Something else (either Java or Scala2 most likely)--go diving
         println("Oops: "+typeRef)

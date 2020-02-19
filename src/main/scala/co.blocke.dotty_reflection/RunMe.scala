@@ -1,5 +1,6 @@
 package co.blocke.dotty_reflection
 
+import model._
 
 trait X
 trait Y
@@ -8,11 +9,7 @@ class A(a: Int) extends X
 class B(a: Int) extends A(a) with Y
 class C(a: Int) extends B(a) with Z
 
-case class Maybe(a:Option[Int])
-
-case class VCString(vc: String) extends AnyVal
-
-class Foom(val a:Int, b: Boolean) 
+case class Foom(a: Boolean | Option[Int])
 
 @main def runme(): Unit =
 
@@ -54,7 +51,8 @@ class Foom(val a:Int, b: Boolean)
   // println(cScala.getModule())
 
   // try {
-    val f = Reflector.reflectOn[Foom]
+    val f = Reflector.reflectOn[Foom].asInstanceOf[StaticClassInfo]
+    f.constructWith[Foom](List(true))
     println(f)
   // } catch {
   //   case e => println("=== BOOM! ==="+e.getStackTrace)
