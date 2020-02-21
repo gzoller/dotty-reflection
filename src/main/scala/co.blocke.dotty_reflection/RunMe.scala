@@ -52,7 +52,7 @@ case class Foom(a: Boolean | Option[Int])
 
   // try {
     val f = Reflector.reflectOn[Foom].asInstanceOf[StaticClassInfo]
-    f.constructWith[Foom](List(true))
+    println(">>> "+f.constructWith[Foom](List(Some(12))))
     println(f)
   // } catch {
   //   case e => println("=== BOOM! ==="+e.getStackTrace)

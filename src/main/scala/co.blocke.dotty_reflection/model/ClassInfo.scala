@@ -44,6 +44,7 @@ case class StaticClassInfo protected (
         case ai: AliasInfo if ai.isA(arg.getClass) => idx
         case ti: StaticTraitInfo if ti.isA(arg.getClass) => idx
         case oi: ScalaOptionInfo if oi.isA2(arg) => idx
+        case joi: JavaOptionInfo if joi.isA2(arg) => idx
         case ei: ScalaEitherInfo if ei.isA(arg.getClass) => idx
         case p: PrimitiveType if(p.isA(arg.getClass)) => idx
         case _:TypeSymbol => idx // Sure... anything goes for 'T'.... why not?

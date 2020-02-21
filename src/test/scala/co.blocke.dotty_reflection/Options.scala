@@ -3,6 +3,7 @@ package co.blocke.dotty_reflection
 import munit._
 import model._
 import PrimitiveType._
+import java.util.Optional
 
 class Options extends munit.FunSuite {
 
@@ -100,5 +101,25 @@ class Options extends munit.FunSuite {
       case _ => false
     }
     assert(result)
+  }
+
+  test("Option assignments in union type - working") {
+    val r = Reflector.reflectOn[OptionUnion].asInstanceOf[StaticClassInfo]
+    assert(
+      r.constructWith[OptionUnion](List(None,Optional.empty())) == OptionUnion(None,Optional.empty())
+    )
+    assert(
+      r.constructWith[OptionUnion](List(Some(3),Optional.of(3))) == OptionUnion(Some(3),Optional.of(3))
+    )
+  }
+
+  test("Option assignments in union type - invalid assignment") {
+    val r = Reflector.reflectOn[OptionUnion].asInstanceOf[StaticClassInfo]
+    interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
+      r.constructWith[OptionUnion](List(Some(3.4),Optional.of(3)))
+    }
+    interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
+      r.constructWith[OptionUnion](List(Some(3),Optional.of(3.4)))
+    }
   }
 }

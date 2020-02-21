@@ -174,6 +174,9 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
             else
               typeRef.name.asInstanceOf[TypeSymbol]
         }
+
+      // Extract & Handle Scala Collection types
+      //----------------------------------------
       case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.Option") =>
         ScalaOptionInfo(t.classSymbol.get.fullName, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
@@ -184,9 +187,15 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
           inspectType(reflect)(tob.last.asInstanceOf[TypeRef])
         )
 
+      // Extract & Handle Java Collection types (we do this here vs in JavaClassInspector because here we have
+      // all the needed type parameter information)
+      //---------------------------------------
+      case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "java.util.Optional") =>
+        JavaOptionInfo("java.util.Optional", inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
+
+      // Do our best with anything else that falls thru the cracks
+      //----------------------------------------------------------
       case _ =>  // Something else (either Java or Scala2 most likely)--go diving
-        println("Oops: "+typeRef)
         val classSymbol = typeRef.classSymbol.get
-        println("HERE: "+classSymbol.name)
-        PrimitiveType.Scala_String
+        Reflector.reflectOnClass(Class.forName(classSymbol.fullName))
     }

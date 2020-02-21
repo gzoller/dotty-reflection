@@ -48,6 +48,7 @@ case class WithDefault(a: Int, b: String = "wow")
 case class NormalOption(a: Option[Int])
 case class NestedOption(a: Option[Option[Int]])
 case class ParamOption[T](a: Option[T])
+case class OptionUnion(a: Boolean | Option[Int], b: Boolean | java.util.Optional[Int])
 
 // Plain class
 class PlainGood(val a: Int, val b: String)

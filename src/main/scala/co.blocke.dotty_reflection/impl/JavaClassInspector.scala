@@ -6,12 +6,8 @@ import java.lang.reflect.{Type=>JType,_}
 import java.lang.annotation.Annotation
 import java.beans.{ Introspector, PropertyDescriptor }
 
-// TODO: an Option[java.lang.Integer]... the Integer part finds its way here to be resolved.
-// The front door of inspectClass creates a StaticJavaClassInfo object, when in this case we'd want & expect
-// a PrimitiveType
-
 object JavaClassInspector
-  def inspectClass(c: Class[?], cache: Reflector.CacheType): StaticJavaClassInfo =
+  def inspectClass(c: Class[?], cache: Reflector.CacheType): ConcreteType =
     val annos:List[Annotation] = c.getAnnotations.toList
     val allAnnos = annos.map(a => parseAnno(a)).toMap
     StaticJavaClassInfo(c.getName, parseFields(c), c.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]), allAnnos)

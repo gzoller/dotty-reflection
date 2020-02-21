@@ -2,9 +2,12 @@ package co.blocke.dotty_reflection
 package model
 
 import java.lang.reflect._
+import java.util.Optional
 
 trait OptionInfo extends ReflectedThing {
   val optionParamType: ALL_TYPE
+
+  def isA(c: Class[_]): Boolean = false // should never be called
 }
 
 case class ScalaOptionInfo(
@@ -14,34 +17,13 @@ case class ScalaOptionInfo(
   val typeParameters = Nil
 
   def isA2( arg: Object ): Boolean =
-    println("arg is : "+Reflector.reflectOnClass(arg.asInstanceOf[Some[_]].get.getClass))
-    println("Option is : "+optionParamType)
-    arg == None || optionParamType == Reflector.reflectOnClass(arg.asInstanceOf[Some[_]].get.getClass)    
-
-  def isA(c: Class[_]): Boolean = 
-    c == None.getClass || (c.getName == "scala.Some" && isOk(c))
-  
-  private def isOk(c: Class[_]) =
-    println("-- 1: "+c.getTypeParameters.toList)
-    println("-- 2: "+c.getGenericSuperclass)
-    println("-- 3: "+c.getTypeParameters.head.getAnnotatedBounds.toList)
-    println("-- 4: "+c.getTypeParameters.head.getBounds.toList)
-    println("-- 5: "+c.getTypeParameters.head.getGenericDeclaration)
-    println("-- 6: "+c.getTypeParameters.head.getName)
-    false
-    /*
-    println(">> "+c.getName)
-    val paramMatches = optionParamType match {
-      case r: ReflectedThing => r.name == c.getTypeParameters.head.getName
-      case p: PrimitiveType => 
-        println("HERE: "+c.getTypeParameters.head)
-        println("THERE: "+c.getGenericSuperclass.asInstanceOf[ParameterizedType].getOwnerType)
-        println("FOOM: "+c.getGenericSuperclass.asInstanceOf[ParameterizedType].getRawType)
-        false
-      case _:TypeSymbol => true
-    }
-    c.getName == name && paramMatches
-    */
+    optionParamType match {
+      case _:TypeSymbol => throw new Exception("Unexpected type symbol")
+      case ct:ReflectedThing =>
+        arg == None || (arg.isInstanceOf[Some[_]] && ct.isA(arg.asInstanceOf[Some[_]].get.getClass))
+      case ct:PrimitiveType =>
+        arg == None || (arg.isInstanceOf[Some[_]] && ct.isA(arg.asInstanceOf[Some[_]].get.getClass))
+      }
 }
 
 case class JavaOptionInfo(
@@ -49,5 +31,16 @@ case class JavaOptionInfo(
   optionParamType: ALL_TYPE
 ) extends OptionInfo {
   val typeParameters = Nil
-  def isA(c: Class[_]): Boolean = false // TODO
+
+  def isA2( arg: Object ): Boolean =
+    arg.isInstanceOf[Optional[_]] && {
+      val optionalArg = arg.asInstanceOf[Optional[_]]
+      optionParamType match {
+        case _:TypeSymbol => throw new Exception("Unexpected type symbol")
+        case ct:ReflectedThing =>
+          optionalArg.isEmpty || ct.isA(optionalArg.get.getClass)
+        case ct:PrimitiveType =>
+          optionalArg.isEmpty || ct.isA(optionalArg.get.getClass)
+        }
+    }
 }
