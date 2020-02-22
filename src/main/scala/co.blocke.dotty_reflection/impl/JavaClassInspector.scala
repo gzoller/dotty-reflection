@@ -6,7 +6,7 @@ import java.lang.reflect.{Type=>JType,_}
 import java.lang.annotation.Annotation
 import java.beans.{ Introspector, PropertyDescriptor }
 
-object JavaClassInspector
+object JavaClassInspector:
   def inspectClass(c: Class[?], cache: Reflector.CacheType): ConcreteType =
     val annos:List[Annotation] = c.getAnnotations.toList
     val allAnnos = annos.map(a => parseAnno(a)).toMap

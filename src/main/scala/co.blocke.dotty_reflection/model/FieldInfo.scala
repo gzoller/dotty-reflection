@@ -3,7 +3,7 @@ package model
 
 import java.lang.reflect.Method
 
-trait FieldInfo
+trait FieldInfo:
   val index: Int
   val name: String
   val fieldType: ALL_TYPE
@@ -49,5 +49,5 @@ case class JavaFieldInfo(
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
   valueSetter: Method
-) extends FieldInfo
+) extends FieldInfo:
   val defaultValueAccessor = None

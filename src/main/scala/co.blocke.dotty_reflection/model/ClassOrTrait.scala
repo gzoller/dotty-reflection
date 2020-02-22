@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package model
 
 
-trait ClassOrTrait {
+trait ClassOrTrait:
   val name: String
   protected lazy val clazz = Class.forName(name)
 
@@ -19,4 +19,3 @@ trait ClassOrTrait {
 
   // Does this class either implement the given mixin name, or inherit from a class named for the mixin?
   def hasMixin(mixin: String): Boolean = superclassEcosystem.contains(mixin)
-}

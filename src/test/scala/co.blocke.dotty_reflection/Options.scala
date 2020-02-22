@@ -7,6 +7,7 @@ import java.util.Optional
 
 class Options extends munit.FunSuite {
 
+/*
   test("Scala optional field") {
     val r = Reflector.reflectOn[NormalOption].asInstanceOf[StaticClassInfo]
     val result = r match {
@@ -104,22 +105,60 @@ class Options extends munit.FunSuite {
   }
 
   test("Option assignments in union type - working") {
-    val r = Reflector.reflectOn[OptionUnion].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[StaticClassInfo]
     assert(
-      r.constructWith[OptionUnion](List(None,Optional.empty())) == OptionUnion(None,Optional.empty())
+      r.constructWith[UnionHavingOption](List(None,Optional.empty())) == UnionHavingOption(None,Optional.empty())
     )
     assert(
-      r.constructWith[OptionUnion](List(Some(3),Optional.of(3))) == OptionUnion(Some(3),Optional.of(3))
+      r.constructWith[UnionHavingOption](List(Some(3),Optional.of(3))) == UnionHavingOption(Some(3),Optional.of(3))
     )
   }
 
   test("Option assignments in union type - invalid assignment") {
-    val r = Reflector.reflectOn[OptionUnion].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[StaticClassInfo]
     interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
-      r.constructWith[OptionUnion](List(Some(3.4),Optional.of(3)))
+      r.constructWith[UnionHavingOption](List(Some(3.4),Optional.of(3)))
     }
     interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
-      r.constructWith[OptionUnion](List(Some(3),Optional.of(3.4)))
+      r.constructWith[UnionHavingOption](List(Some(3),Optional.of(3.4)))
+    }
+  }
+
+  test("Option of a union") {    
+    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[StaticClassInfo]
+    val result = r match {
+      case StaticClassInfo(
+        "co.blocke.dotty_reflection.OptionHavingUnion",
+        List(
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",StaticUnionInfo("__union_type__",Nil,List(Scala_Boolean,Scala_String))),_,_,None)
+        ),
+        Nil,
+        _,
+        flase
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("Option of a union assignment - working") {    
+    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[StaticClassInfo]
+    assert(
+      r.constructWith[OptionHavingUnion](List(None)) == OptionHavingUnion(None)
+    )
+    assert(
+      r.constructWith[OptionHavingUnion](List(Some(true))) == OptionHavingUnion(Some(true))
+    )
+    assert(
+      r.constructWith[OptionHavingUnion](List(Some("wow"))) == OptionHavingUnion(Some("wow"))
+    )
+  }
+  */
+
+  test("Option of a union assignemnt - invalid") {
+    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[StaticClassInfo]
+    interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
+      r.constructWith[OptionHavingUnion](List(Some(1.23)))
     }
   }
 }

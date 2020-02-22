@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package model
 
 
-trait ClassInfo extends ReflectedThing with ClassOrTrait
+trait ClassInfo extends ReflectedThing with ClassOrTrait:
   val name: String
   val fields: List[FieldInfo]
   val typeParameters: List[TypeSymbol]
@@ -45,7 +45,7 @@ case class StaticClassInfo protected (
         case ti: StaticTraitInfo if ti.isA(arg.getClass) => idx
         case oi: ScalaOptionInfo if oi.isA2(arg) => idx
         case joi: JavaOptionInfo if joi.isA2(arg) => idx
-        case ei: ScalaEitherInfo if ei.isA(arg.getClass) => idx
+        case ei: ScalaEitherInfo if ei.isA2(arg) => idx
         case p: PrimitiveType if(p.isA(arg.getClass)) => idx
         case _:TypeSymbol => idx // Sure... anything goes for 'T'.... why not?
       }

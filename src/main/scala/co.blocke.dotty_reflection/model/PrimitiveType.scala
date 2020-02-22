@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package model
 
 
-enum PrimitiveType(baseClass: String) extends IsAable 
+enum PrimitiveType(baseClass: String) extends IsAable:
   def isA(c: Class[_]): Boolean = c.getName == baseClass
 
   case Scala_Boolean extends PrimitiveType("java.lang.Boolean")

@@ -4,10 +4,16 @@ package model
 import java.lang.reflect._
 import java.util.Optional
 
-trait OptionInfo extends ReflectedThing {
+trait OptionInfo extends ReflectedThing { //} with UnionContainer {
   val optionParamType: ALL_TYPE
 
   def isA(c: Class[_]): Boolean = false // should never be called
+
+  val hasUnion: Boolean = false
+  //   optionParamType match {
+  //   case f @ UnionKind() => true
+  //   case _ => false
+  // }
 }
 
 case class ScalaOptionInfo(
@@ -17,14 +23,16 @@ case class ScalaOptionInfo(
   val typeParameters = Nil
 
   def isA2( arg: Object ): Boolean =
-    optionParamType match {
-      case _:TypeSymbol => throw new Exception("Unexpected type symbol")
-      case ct:ReflectedThing =>
-        arg == None || (arg.isInstanceOf[Some[_]] && ct.isA(arg.asInstanceOf[Some[_]].get.getClass))
-      case ct:PrimitiveType =>
-        arg == None || (arg.isInstanceOf[Some[_]] && ct.isA(arg.asInstanceOf[Some[_]].get.getClass))
-      }
+    arg == None || (arg.isInstanceOf[Some[_]] && {
+      val someArg = arg.asInstanceOf[Some[_]]
+      optionParamType match {
+        case _:TypeSymbol => throw new Exception("Unexpected type symbol")
+        case ct:ReflectedThing => ct.isA(someArg.get.getClass)
+        case ct:PrimitiveType => ct.isA(someArg.get.getClass)
+        }
+    })
 }
+
 
 case class JavaOptionInfo(
   name: String,

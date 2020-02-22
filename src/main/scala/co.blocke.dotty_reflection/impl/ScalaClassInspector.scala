@@ -7,10 +7,10 @@ import scala.reflect._
 import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
-class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector
+class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector:
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
-    import reflect.{given,_}
+    import reflect.{given _}
     reflect.rootContext match {
       case ctx if ctx.isJavaCompilationUnit() => cache.put( clazz.getName, JavaClassInspector.inspectClass(clazz, cache))
       case ctx if ctx.isScala2CompilationUnit() => // do nothing... can't handle Scala2 non-Tasty classes at present
@@ -19,7 +19,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
     
 
   def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
-    import reflect.{given,_}
+    import reflect.{given _}
 
     object Descended {
       def unapply(t: reflect.Tree): Option[ConcreteType] = descendInto(reflect)(t)
@@ -39,23 +39,23 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
 
 
   private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
-    import reflect.{given,_}
+    import reflect.{_, given _}
     tree match {
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
         val className = t.symbol.show
         cache.get(className).orElse{
           val constructor = t.constructor
           val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
-          val inspected:ReflectedThing = if(t.symbol.flags.is(Flags.Trait))
+          val inspected:ReflectedThing = if(t.symbol.flags.is(reflect.Flags.Trait))
             // === Trait ===
             StaticTraitInfo(className, typeParams)
           else
             // === Scala Class (case or non-case) ===
             val clazz = Class.forName(className)
-            val isCaseClass = t.symbol.flags.is(Flags.Case)
+            val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
             val paramz = constructor.paramss
             val members = t.body.collect {
-              case vd: ValDef => vd
+              case vd: reflect.ValDef => vd
             }
             val fields = paramz.head.zipWithIndex.map{ (valDef, i) =>
               val fieldName = valDef.name
@@ -66,7 +66,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
               // Field annotations (stored internal 'val' definitions in class)
               val annoSymbol = members.find(_.name == fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
               val fieldAnnos = annoSymbol.map{ a => 
-                val Apply(_, params) = a
+                val reflect.Apply(_, params) = a
                 val annoName = a.symbol.signature.resultSig
                 (annoName,(params collect {
                   case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
@@ -79,7 +79,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
             // Class annotations
             val annoSymbol = t.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
             val annos = annoSymbol.map{ a => 
-              val Apply(_, params) = a
+              val reflect.Apply(_, params) = a
               val annoName = a.symbol.signature.resultSig
               (annoName,(params collect {
                 case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
@@ -104,12 +104,12 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
     annos: Map[String,Map[String,String]], 
     className: String
     ): FieldInfo =
-    import reflect.{given,_}
+    import reflect.{_, given _}
 
     val fieldTypeInfo: ALL_TYPE = 
       valDef.tpt.tpe match {
-        case t: TypeRef => inspectType(reflect)(t)
         case ot: OrType => inspectUnionType(reflect)(ot)
+        case t: TypeRef => inspectType(reflect)(t)
         case matchType => inspectType(reflect)(matchType.simplified.asInstanceOf[TypeRef])
       }
   
@@ -124,7 +124,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
           const.setAccessible(true)
           ()=>defaultMethod.invoke(const.newInstance())
         }.toOption
-    
+
     val clazz = Class.forName(className)
     val valueAccessor = scala.util.Try(clazz.getDeclaredMethod(valDef.name))
       .getOrElse(throw new Exception(s"Problem with class $className, field ${valDef.name}: All non-case class constructor fields must be vals"))
@@ -132,7 +132,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
 
 
   private def inspectUnionType( reflect: Reflection )(union: reflect.OrType): StaticUnionInfo =
-    import reflect.{given,_}
+    import reflect.{_, given _}
     val OrType(left,right) = union
     val resolvedLeft: ALL_TYPE = left match {
       case ot: OrType => inspectUnionType(reflect)(ot)
@@ -148,11 +148,17 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
   private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
     import reflect.{_, given _}
 
+    def evalNestedType(tr:TypeRef): ALL_TYPE = 
+      tr match {
+        case ot: OrType => inspectUnionType(reflect)(ot)
+        case t: TypeRef => inspectType(reflect)(t)
+      }
+
     typeRef match {
       case named: dotty.tools.dotc.core.Types.NamedType if typeRef.isOpaqueAlias =>  // Scala3 opaque type alias
         typeRef.translucentSuperType match {
-          case tr: TypeRef => AliasInfo(typeRef.show, inspectType(reflect)(tr))
           case ot: OrType => AliasInfo(typeRef.show, inspectUnionType(reflect)(ot))
+          case tr: TypeRef => AliasInfo(typeRef.show, inspectType(reflect)(tr))
           case _ => throw new Exception("Boom!")
         }
       case named: dotty.tools.dotc.core.Types.NamedType =>  // Scala3 Tasty-enabled type
@@ -178,13 +184,14 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
       // Extract & Handle Scala Collection types
       //----------------------------------------
       case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.Option") =>
-        ScalaOptionInfo(t.classSymbol.get.fullName, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
+        ScalaOptionInfo(t.classSymbol.get.fullName, evalNestedType(tob.head.asInstanceOf[TypeRef]))
 
       case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.util.Either") =>
+        // tob is a list, either side of which could be a union...must check both!
         ScalaEitherInfo(
           t.classSymbol.get.fullName,
-          inspectType(reflect)(tob.head.asInstanceOf[TypeRef]),
-          inspectType(reflect)(tob.last.asInstanceOf[TypeRef])
+          evalNestedType(tob(0).asInstanceOf[TypeRef]),
+          evalNestedType(tob(1).asInstanceOf[TypeRef])
         )
 
       // Extract & Handle Java Collection types (we do this here vs in JavaClassInspector because here we have

@@ -6,7 +6,7 @@ import scala.reflect.ClassTag
 import model._
 import scala.collection.mutable.HashMap
 
-object Reflector
+object Reflector:
 
   type CacheType = HashMap[String, ConcreteType]
 
@@ -40,7 +40,7 @@ object Reflector
     "java.lang.Object"    -> PrimitiveType.Java_Object
   )
 
-  def reflectOn[T](given ct: ClassTag[T]): ConcreteType = 
+  def reflectOn[T](implicit ct: ClassTag[T]): ConcreteType = 
     val clazz = ct.runtimeClass
     reflectOnClass(clazz)
 

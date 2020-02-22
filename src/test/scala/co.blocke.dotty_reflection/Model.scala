@@ -44,11 +44,17 @@ case class OpaqueUnion(id: GEN_ID)
 // With default value
 case class WithDefault(a: Int, b: String = "wow")
 
+// Either
+case class BothSides(a: scala.util.Either[Int,String])
+case class BothSidesWithOption(a: scala.util.Either[Int, Option[String]])
+case class BothSidesWithUnion(a: scala.util.Either[Int, String|Boolean])
+
 // Options
 case class NormalOption(a: Option[Int])
 case class NestedOption(a: Option[Option[Int]])
 case class ParamOption[T](a: Option[T])
-case class OptionUnion(a: Boolean | Option[Int], b: Boolean | java.util.Optional[Int])
+case class UnionHavingOption(a: Boolean | Option[Int], b: Boolean | java.util.Optional[Int])
+case class OptionHavingUnion(a: Option[Boolean|String])
 
 // Plain class
 class PlainGood(val a: Int, val b: String)
