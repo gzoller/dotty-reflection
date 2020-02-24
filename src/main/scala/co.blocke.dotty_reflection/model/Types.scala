@@ -1,9 +1,19 @@
 package co.blocke.dotty_reflection
 package model
 
+opaque type TypeSymbol = String // Placeholder type, e.g. T as in Foo[T](x: T)
 
-enum PrimitiveType(baseClass: String) extends IsAable:
-  def isA(c: Class[_]): Boolean = c.getName == baseClass
+trait ConcreteType:
+  val name: String
+  val typeParameters: List[TypeSymbol]
+
+type ALL_TYPE = ConcreteType | TypeSymbol
+
+
+enum PrimitiveType(val name: String) extends ConcreteType:
+  def canAssign(arg: Object): Boolean = arg.getClass.getName == name
+  val hasUnion = false
+  val typeParameters: List[TypeSymbol] = Nil
 
   case Scala_Boolean extends PrimitiveType("java.lang.Boolean")
   case Scala_Byte extends PrimitiveType("java.lang.Byte")

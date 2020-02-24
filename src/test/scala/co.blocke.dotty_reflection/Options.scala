@@ -7,7 +7,6 @@ import java.util.Optional
 
 class Options extends munit.FunSuite {
 
-/*
   test("Scala optional field") {
     val r = Reflector.reflectOn[NormalOption].asInstanceOf[StaticClassInfo]
     val result = r match {
@@ -104,7 +103,7 @@ class Options extends munit.FunSuite {
     assert(result)
   }
 
-  test("Option assignments in union type - working") {
+  test("Option assignments in union type") {
     val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[StaticClassInfo]
     assert(
       r.constructWith[UnionHavingOption](List(None,Optional.empty())) == UnionHavingOption(None,Optional.empty())
@@ -112,16 +111,6 @@ class Options extends munit.FunSuite {
     assert(
       r.constructWith[UnionHavingOption](List(Some(3),Optional.of(3))) == UnionHavingOption(Some(3),Optional.of(3))
     )
-  }
-
-  test("Option assignments in union type - invalid assignment") {
-    val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[StaticClassInfo]
-    interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
-      r.constructWith[UnionHavingOption](List(Some(3.4),Optional.of(3)))
-    }
-    interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
-      r.constructWith[UnionHavingOption](List(Some(3),Optional.of(3.4)))
-    }
   }
 
   test("Option of a union") {    
@@ -141,7 +130,7 @@ class Options extends munit.FunSuite {
     assert(result)
   }
 
-  test("Option of a union assignment - working") {    
+  test("Option of a union assignment") {    
     val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[StaticClassInfo]
     assert(
       r.constructWith[OptionHavingUnion](List(None)) == OptionHavingUnion(None)
@@ -152,13 +141,5 @@ class Options extends munit.FunSuite {
     assert(
       r.constructWith[OptionHavingUnion](List(Some("wow"))) == OptionHavingUnion(Some("wow"))
     )
-  }
-  */
-
-  test("Option of a union assignemnt - invalid") {
-    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[StaticClassInfo]
-    interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
-      r.constructWith[OptionHavingUnion](List(Some(1.23)))
-    }
   }
 }

@@ -31,15 +31,6 @@ class ScalaTasty extends munit.FunSuite {
     assertEquals(person, Person("Frank",35,5))
   }
 
-  // @Test(expected = classOf[java.lang.IllegalArgumentException])
-  test("wrong parameters for union type") {
-    val p = Reflector.reflectOn[Person]
-    intercept[java.lang.IllegalArgumentException] {
-      val person = p.asInstanceOf[StaticClassInfo].constructWith[Person](List("Frank", 35, 12.34))
-    }
-  }
-
-  // TODO: Test union protections for inheritance / interface-trait tree!
 
   test("handle match types") {
     val result = Reflector.reflectOn[Definitely] match {

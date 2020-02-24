@@ -11,6 +11,7 @@ class C(a: Int) extends B(a) with Z
 
 case class Foom(a: Boolean | Option[Int])
 
+
 @main def runme(): Unit =
 
   /*
@@ -51,9 +52,8 @@ case class Foom(a: Boolean | Option[Int])
   // println(cScala.getModule())
 
   // try {
-    val f = Reflector.reflectOn[Foom].asInstanceOf[StaticClassInfo]
-    println(">>> "+f.constructWith[Foom](List(Some(12))))
-    println(f)
+    // val f = Reflector.reflectOn[Foomx[Int]].asInstanceOf[StaticClassInfo]
+    // println(f)
   // } catch {
   //   case e => println("=== BOOM! ==="+e.getStackTrace)
   // }

@@ -18,16 +18,14 @@ case class ScalaFieldInfo(
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
   defaultValueAccessor: Option[()=>Object]
-) extends FieldInfo {
+) extends FieldInfo:
   def valueOf(target: Object) = valueAccessor.invoke(target)
-
   def constructorClass: Class[_] = constructorClassFor(fieldType)
 
   private def constructorClassFor(t: ALL_TYPE): Class[_] = t match 
     case ci:StaticUnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
     case ot:AliasInfo => constructorClassFor(ot.unwrappedType)
     case ci:StaticClassInfo if ci.isValueClass => constructorClassFor(ci.fields(0).fieldType)
-    case ci:ReflectedThing => Class.forName(ci.name)  // class or trait
     case PrimitiveType.Scala_Boolean => implicitly[reflect.ClassTag[Boolean]].runtimeClass
     case PrimitiveType.Scala_Byte => implicitly[reflect.ClassTag[Byte]].runtimeClass
     case PrimitiveType.Scala_Char => implicitly[reflect.ClassTag[Char]].runtimeClass
@@ -38,8 +36,9 @@ case class ScalaFieldInfo(
     case PrimitiveType.Scala_Short => implicitly[reflect.ClassTag[Short]].runtimeClass
     case PrimitiveType.Scala_String => classOf[String]
     case PrimitiveType.Java_Object => classOf[Object]
+    case ci:ConcreteType => Class.forName(ci.name)  // class or trait
     case _:TypeSymbol => Class.forName("java.lang.Object")
-}
+
 
 /* This is also used for Scala plain-class getter/setter fields */
 case class JavaFieldInfo(

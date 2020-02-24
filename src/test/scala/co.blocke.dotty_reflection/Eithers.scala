@@ -24,7 +24,7 @@ class Eithers extends munit.FunSuite {
     assert(result)
   }
 
-  test("Scala simple Either field assignment -- works") {
+  test("Scala simple Either field assignment") {
     val r = Reflector.reflectOn[BothSides].asInstanceOf[StaticClassInfo]
     assert(
       r.constructWith[BothSides](List(Right("Foom"))) == BothSides(Right("Foom"))
@@ -51,7 +51,7 @@ class Eithers extends munit.FunSuite {
     assert(result)
   }
 
-  test("Scala Either with Option assignment -- works") {
+  test("Scala Either with Option assignment") {
     val r = Reflector.reflectOn[BothSidesWithOption].asInstanceOf[StaticClassInfo]
     assert(
       r.constructWith[BothSidesWithOption](List(Right(None))) == BothSidesWithOption(Right(None))
@@ -78,7 +78,7 @@ class Eithers extends munit.FunSuite {
     assert(result)
   }
 
-  test("Scala Either with Union type assignment -- works") {
+  test("Scala Either with Union type assignment") {
     val r = Reflector.reflectOn[BothSidesWithUnion].asInstanceOf[StaticClassInfo]
     assert(
       r.constructWith[BothSidesWithUnion](List(Right("foo"))) == BothSidesWithUnion(Right("foo"))
@@ -86,12 +86,5 @@ class Eithers extends munit.FunSuite {
     assert(
       r.constructWith[BothSidesWithUnion](List(Right(true))) == BothSidesWithUnion(Right(true))
     )
-  }
-
-  test("Scala Either with Union type assignment -- invalid") {
-    val r = Reflector.reflectOn[BothSidesWithUnion].asInstanceOf[StaticClassInfo]
-    interceptMessage[java.lang.IllegalArgumentException]("argument type mismatch"){
-      r.constructWith[BothSidesWithUnion](List(Right(3)))
-    }
   }
 }

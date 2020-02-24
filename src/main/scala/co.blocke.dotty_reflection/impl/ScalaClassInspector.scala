@@ -13,6 +13,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
     import reflect.{given _}
     reflect.rootContext match {
       case ctx if ctx.isJavaCompilationUnit() => cache.put( clazz.getName, JavaClassInspector.inspectClass(clazz, cache))
+      // TODO: May want to handle Scala2 top-level parsing of collections--we allow them as fields after all
       case ctx if ctx.isScala2CompilationUnit() => // do nothing... can't handle Scala2 non-Tasty classes at present
       case _ => inspectClass(clazz.getName, reflect)(root)
     }
@@ -31,11 +32,10 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
         t.stats collectFirst {
           case Descended(m) => m
         }
-        //t.stats.map( m => descendInto(reflect)(m) ).find(_.isDefined).get
       case t => 
         None  // not what we expected!
     }
-    foundClass //.iterator.to(List).headOption
+    foundClass
 
 
   private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
@@ -46,7 +46,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
         cache.get(className).orElse{
           val constructor = t.constructor
           val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
-          val inspected:ReflectedThing = if(t.symbol.flags.is(reflect.Flags.Trait))
+          val inspected: ConcreteType = if(t.symbol.flags.is(reflect.Flags.Trait))
             // === Trait ===
             StaticTraitInfo(className, typeParams)
           else
@@ -158,8 +158,13 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
       case named: dotty.tools.dotc.core.Types.NamedType if typeRef.isOpaqueAlias =>  // Scala3 opaque type alias
         typeRef.translucentSuperType match {
           case ot: OrType => AliasInfo(typeRef.show, inspectUnionType(reflect)(ot))
-          case tr: TypeRef => AliasInfo(typeRef.show, inspectType(reflect)(tr))
-          case _ => throw new Exception("Boom!")
+          case tr: TypeRef => 
+            val x = inspectType(reflect)(tr) match {
+              case _:TypeSymbol => throw new Exception("Opaque aliases cannot be set to a type symbol, e.g. 'T'")
+              case f => f.asInstanceOf[ConcreteType]
+            }
+            AliasInfo(typeRef.show, x)
+          case t => throw new Exception("Unexpected typeref kind: "+t)
         }
       case named: dotty.tools.dotc.core.Types.NamedType =>  // Scala3 Tasty-enabled type
         val classSymbol = typeRef.classSymbol.get
