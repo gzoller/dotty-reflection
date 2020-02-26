@@ -2,12 +2,12 @@ package co.blocke.dotty_reflection
 
 import model._
 
-trait Stackable
-trait Movable
-trait Findable
-trait Eatable
-case class Foom( a: (Stackable & Movable & Findable) | String )
-// case class Foom( a: Int & String & Boolean )
+type Elem[X] = X match {
+  case String => Char
+  case Array[t] => t
+  case Iterable[t] => t
+}
+case class Definitely( id: Elem[List[Int]], stuff: Elem[String] )
 
 
 @main def runme(): Unit =
@@ -38,57 +38,12 @@ case class Foom( a: (Stackable & Movable & Findable) | String )
   println(t)
   */
 
-  case class S() extends Stackable with Movable with Findable
-  case class T() extends Stackable with Eatable with Findable
-  case class U() extends Stackable with Movable with Eatable
+  // case class S() extends Stackable with Movable with Findable
+  // case class T() extends Stackable with Eatable with Findable
+  // case class U() extends Stackable with Movable with Eatable
 
   try {
-    println(Reflector.reflectOn[Foom])
+    println(Reflector.reflectOn[Definitely])
   } catch {
     case x => //x.printStackTrace()
   }
-
-  /*
- OrType(
-   AndType(
-     AndType(
-       TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
-       TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Movable)
-      ),
-      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Findable)
-    ),
-    AndType(
-      AndType(
-        TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
-        TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Eatable)
-      ),
-      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Findable)
-    )
-  ) 
-
-OrType(
-  AndType(
-    AndType(
-      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
-      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Movable)
-    ),
-    TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Findable)
-  ),
-  AndType(
-    AndType(
-      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
-      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Movable)
-    ),
-    TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Eatable)
-  )
-)
-
-AndType(
-  AndType(
-    TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
-    TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Movable)
-  ),
-  TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Findable)
-)
-  */
-    

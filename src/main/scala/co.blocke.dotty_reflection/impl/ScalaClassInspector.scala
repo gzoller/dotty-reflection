@@ -56,15 +56,17 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
             val paramz = constructor.paramss
             val members = t.body.collect {
               case vd: reflect.ValDef => vd
-            }
-            val fields = paramz.head.zipWithIndex.map{ (valDef, i) =>
+            }.map(f => (f.name->f)).toMap
+            val fields = paramz.head.zipWithIndex.map{ (paramValDef, i) =>
+              val valDef = members(paramValDef.name) // we use the members here because match types aren't resolved in paramValDef but are resolved in members
               val fieldName = valDef.name
               if(!isCaseClass)
                 scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
                   throw new Exception(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
                 )
               // Field annotations (stored internal 'val' definitions in class)
-              val annoSymbol = members.find(_.name == fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
+              val annoSymbol = members.get(fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
+              // val annoSymbol = members.find(_.name == fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
               val fieldAnnos = annoSymbol.map{ a => 
                 val reflect.Apply(_, params) = a
                 val annoName = a.symbol.signature.resultSig
@@ -197,8 +199,8 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
       // Do our best with anything else that falls thru the cracks
       //----------------------------------------------------------
       case x =>  // Something else (either Java or Scala2 most likely)--go diving
-        inspectType(reflect)(x.simplified.asInstanceOf[TypeRef])
-        // println("HeyX: "+x)
-        // val classSymbol = typeRef.classSymbol.get
-        // Reflector.reflectOnClass(Class.forName(classSymbol.fullName))
+        // inspectType(reflect)(x.simplified.asInstanceOf[TypeRef])
+        println("HeyX: "+x)
+        val classSymbol = typeRef.classSymbol.get
+        Reflector.reflectOnClass(Class.forName(classSymbol.fullName))
     }

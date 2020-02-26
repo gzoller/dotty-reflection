@@ -2,7 +2,7 @@
 - Opaque Type Aliases
 - Dependent type support (match types)
 - Java Class Support
-X Scala plain-class support
+* Scala plain-class support
 - Option (java/scala)
 - Structural Types
 - Either
