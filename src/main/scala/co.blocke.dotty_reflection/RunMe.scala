@@ -2,14 +2,12 @@ package co.blocke.dotty_reflection
 
 import model._
 
-trait X
-trait Y
-trait Z
-class A(a: Int) extends X
-class B(a: Int) extends A(a) with Y
-class C(a: Int) extends B(a) with Z
-
-case class Foom(a: Boolean | Option[Int])
+trait Stackable
+trait Movable
+trait Findable
+trait Eatable
+case class Foom( a: (Stackable & Movable & Findable) | String )
+// case class Foom( a: Int & String & Boolean )
 
 
 @main def runme(): Unit =
@@ -40,47 +38,57 @@ case class Foom(a: Boolean | Option[Int])
   println(t)
   */
 
-  // ======== Macro-based Reflection
+  case class S() extends Stackable with Movable with Findable
+  case class T() extends Stackable with Eatable with Findable
+  case class U() extends Stackable with Movable with Eatable
 
-  // println(Reflector.reflectOn[Dog[Person]].asInstanceOf[StaticClassInfo].mixins)
+  try {
+    println(Reflector.reflectOn[Foom])
+  } catch {
+    case x => //x.printStackTrace()
+  }
 
+  /*
+ OrType(
+   AndType(
+     AndType(
+       TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
+       TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Movable)
+      ),
+      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Findable)
+    ),
+    AndType(
+      AndType(
+        TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
+        TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Eatable)
+      ),
+      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Findable)
+    )
+  ) 
 
-  // val cJava = classOf[co.blocke.reflect.FooJava]
-  // println(cJava.getModule())
-  // println("---------")
-  // val cScala = classOf[com.mypkg.FooScala]
-  // println(cScala.getModule())
+OrType(
+  AndType(
+    AndType(
+      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
+      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Movable)
+    ),
+    TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Findable)
+  ),
+  AndType(
+    AndType(
+      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
+      TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Movable)
+    ),
+    TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Eatable)
+  )
+)
 
-  // try {
-    // val f = Reflector.reflectOn[Foomx[Int]].asInstanceOf[StaticClassInfo]
-    // println(f)
-  // } catch {
-  //   case e => println("=== BOOM! ==="+e.getStackTrace)
-  // }
-
-  // val f = Reflector.reflectOn[Definitely]
-  // println(f)
-
-  // println(f.asInstanceOf[StaticClassInfo].constructWith[Maybe](List(true)))
-
-  // val x = 5
-  // println(f)
-  // println(f.asInstanceOf[StaticClassInfo].constructWith[Maybe](List(Person("Greg",53))))
-
-  // val vc = Reflector.reflectOn[VCString].asInstanceOf[StaticClassInfo]
-  // val vcObj = VCString("Foom!")
-  // println(vc.fields(0).valueOf(vcObj.asInstanceOf[Object]))
-  // println(vc.constructWith[VCString](List("Greg")))
-    
-  // def getSuperclasses(c: Class[_], stack:List[String]): List[String] = 
-  //   val sc = c.getSuperclass()
-  //   if( sc == classOf[Object])
-  //     stack
-  //   else 
-  //     getSuperclasses(sc, stack :+ sc.getName)
-  
-
-  // val c = classOf[C]
-  // println("Class "+c.getName)
-  // println(getSuperclasses(c, List(c.getName)))
+AndType(
+  AndType(
+    TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Stackable),
+    TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Movable)
+  ),
+  TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Findable)
+)
+  */
     

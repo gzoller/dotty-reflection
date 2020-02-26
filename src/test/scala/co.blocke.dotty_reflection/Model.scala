@@ -59,3 +59,15 @@ case class OptionHavingUnion(a: Option[Boolean|String])
 // Plain class
 class PlainGood(val a: Int, val b: String)
 class PlainBad(val a: Int, b: String)
+
+/*
+
+AppliedType(
+  TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Model$package),Elem),
+  List(
+    AppliedType(
+      TypeRef(ThisType(TypeRef(NoPrefix,module class immutable)),class List),List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),Int))
+    )
+  )
+)
+*/

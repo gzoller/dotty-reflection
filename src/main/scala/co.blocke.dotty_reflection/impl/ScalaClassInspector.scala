@@ -106,12 +106,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
     ): FieldInfo =
     import reflect.{_, given _}
 
-    val fieldTypeInfo: ALL_TYPE = 
-      valDef.tpt.tpe match {
-        case ot: OrType => inspectUnionType(reflect)(ot)
-        case t: TypeRef => inspectType(reflect)(t)
-        case matchType => inspectType(reflect)(matchType.simplified.asInstanceOf[TypeRef])
-      }
+    val fieldTypeInfo: ALL_TYPE = inspectType(reflect)(valDef.tpt.tpe.asInstanceOf[reflect.TypeRef])
   
     // See if there's default values specified -- look for gonzo method on companion class.  If exists, default value is available.
     val defaultAccessor = fieldTypeInfo match
@@ -131,42 +126,21 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
     ScalaFieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
 
 
-  private def inspectUnionType( reflect: Reflection )(union: reflect.OrType): StaticUnionInfo =
-    import reflect.{_, given _}
-    val OrType(left,right) = union
-    val resolvedLeft: ALL_TYPE = left match {
-      case ot: OrType => inspectUnionType(reflect)(ot)
-      case _ => inspectType(reflect)(left.asInstanceOf[TypeRef])
-    }
-    val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[TypeRef])
-    resolvedLeft match { 
-      case u: StaticUnionInfo => StaticUnionInfo("__union_type__", List.empty[TypeSymbol], u.unionTypes :+ resolvedRight )
-      case x => StaticUnionInfo("__union_type__", List.empty[TypeSymbol], List(x, resolvedRight))
-    }
-
-
   private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
     import reflect.{_, given _}
 
-    def evalNestedType(tr:TypeRef): ALL_TYPE = 
-      tr match {
-        case ot: OrType => inspectUnionType(reflect)(ot)
-        case t: TypeRef => inspectType(reflect)(t)
-      }
-
     typeRef match {
-      case named: dotty.tools.dotc.core.Types.NamedType if typeRef.isOpaqueAlias =>  // Scala3 opaque type alias
-        typeRef.translucentSuperType match {
-          case ot: OrType => AliasInfo(typeRef.show, inspectUnionType(reflect)(ot))
-          case tr: TypeRef => 
-            val x = inspectType(reflect)(tr) match {
-              case _:TypeSymbol => throw new Exception("Opaque aliases cannot be set to a type symbol, e.g. 'T'")
-              case f => f.asInstanceOf[ConcreteType]
-            }
-            AliasInfo(typeRef.show, x)
-          case t => throw new Exception("Unexpected typeref kind: "+t)
+      // Scala3 opaque type alias
+      //----------------------------------------
+      case named: dotty.tools.dotc.core.Types.NamedType if typeRef.isOpaqueAlias =>
+        inspectType(reflect)(typeRef.translucentSuperType.asInstanceOf[reflect.TypeRef]) match {
+          case c:ConcreteType => AliasInfo(typeRef.show, c)
+          case _ => throw new Exception("Opaque aliases for type symbols currently unsupported")
         }
-      case named: dotty.tools.dotc.core.Types.NamedType =>  // Scala3 Tasty-enabled type
+
+      // Scala3 Tasty-equipped type
+      //----------------------------------------
+      case named: dotty.tools.dotc.core.Types.NamedType => 
         val classSymbol = typeRef.classSymbol.get
         classSymbol.name match {
           case "Boolean" => PrimitiveType.Scala_Boolean
@@ -186,28 +160,45 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
               typeRef.name.asInstanceOf[TypeSymbol]
         }
 
-      // Extract & Handle Scala Collection types
+      // Union Type
+      //----------------------------------------
+      case OrType(left,right) =>
+        val resolvedLeft: ALL_TYPE = inspectType(reflect)(left.asInstanceOf[reflect.TypeRef])
+        val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[reflect.TypeRef])
+        StaticUnionInfo("__union_type__", List.empty[TypeSymbol], resolvedLeft, resolvedRight)
+
+      // Intersection Type
+      //----------------------------------------
+      case AndType(left,right) =>
+        val resolvedLeft: ALL_TYPE = inspectType(reflect)(left.asInstanceOf[reflect.TypeRef])
+        val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[reflect.TypeRef])
+        StaticIntersectionInfo("__intersection_type__", List.empty[TypeSymbol], resolvedLeft, resolvedRight)
+    
+      // Scala Option
       //----------------------------------------
       case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.Option") =>
-        ScalaOptionInfo(t.classSymbol.get.fullName, evalNestedType(tob.head.asInstanceOf[TypeRef]))
+        ScalaOptionInfo(t.classSymbol.get.fullName, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
+      // Scala Either
+      //----------------------------------------
       case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.util.Either") =>
         // tob is a list, either side of which could be a union...must check both!
         ScalaEitherInfo(
           t.classSymbol.get.fullName,
-          evalNestedType(tob(0).asInstanceOf[TypeRef]),
-          evalNestedType(tob(1).asInstanceOf[TypeRef])
+          inspectType(reflect)(tob(0).asInstanceOf[TypeRef]),
+          inspectType(reflect)(tob(1).asInstanceOf[TypeRef])
         )
 
-      // Extract & Handle Java Collection types (we do this here vs in JavaClassInspector because here we have
-      // all the needed type parameter information)
+      // Java Optional
       //---------------------------------------
       case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "java.util.Optional") =>
         JavaOptionInfo("java.util.Optional", inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
       // Do our best with anything else that falls thru the cracks
       //----------------------------------------------------------
-      case _ =>  // Something else (either Java or Scala2 most likely)--go diving
-        val classSymbol = typeRef.classSymbol.get
-        Reflector.reflectOnClass(Class.forName(classSymbol.fullName))
+      case x =>  // Something else (either Java or Scala2 most likely)--go diving
+        inspectType(reflect)(x.simplified.asInstanceOf[TypeRef])
+        // println("HeyX: "+x)
+        // val classSymbol = typeRef.classSymbol.get
+        // Reflector.reflectOnClass(Class.forName(classSymbol.fullName))
     }

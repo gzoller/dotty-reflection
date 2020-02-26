@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package model
 
 
-case class StaticUnionInfo protected (
+case class StaticIntersectionInfo protected (
   val name: String,
   val typeParameters: List[TypeSymbol],
   val leftType: ALL_TYPE,

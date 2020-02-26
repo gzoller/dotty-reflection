@@ -67,7 +67,7 @@ class Eithers extends munit.FunSuite {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.BothSidesWithUnion",
         List(
-          ScalaFieldInfo(0,"a",ScalaEitherInfo("scala.util.Either",Scala_Int,StaticUnionInfo("__union_type__",Nil,List(Scala_String,Scala_Boolean))),_,_,None)
+          ScalaFieldInfo(0,"a",ScalaEitherInfo("scala.util.Either",Scala_Int,StaticUnionInfo("__union_type__",Nil,Scala_String,Scala_Boolean)),_,_,None)
         ),
         Nil,
         _,

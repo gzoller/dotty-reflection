@@ -14,7 +14,7 @@ class ScalaTasty extends munit.FunSuite {
         List(
           ScalaFieldInfo(0,"name",Scala_String,_,_,None),
           ScalaFieldInfo(1,"age",Scala_Int,_,_,None),
-          ScalaFieldInfo(2,"other",StaticUnionInfo("__union_type__",_,List(Scala_Int, Scala_Boolean)),_,_,None)
+          ScalaFieldInfo(2,"other",StaticUnionInfo("__union_type__",_,Scala_Int, Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -109,7 +109,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = Reflector.reflectOn[OpaqueUnion] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.OpaqueUnion",
-        List(ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo("__union_type__",Nil,List(Scala_Int, Scala_String))),_,_,None)),
+        List(ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo("__union_type__",Nil,Scala_Int, Scala_String)),_,_,None)),
         Nil,
         _,
         false
