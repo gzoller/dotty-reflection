@@ -7,7 +7,7 @@ type Elem[X] = X match {
   case Array[t] => t
   case Iterable[t] => t
 }
-case class Definitely( id: Elem[List[Int]], stuff: Elem[String] )
+case class Definitely( id: Elem[List[Int]], stuff: Elem[String], wow: Option[Boolean] )
 
 
 @main def runme(): Unit =

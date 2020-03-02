@@ -7,7 +7,17 @@ import scala.reflect._
 import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
+object Clazzes {
+  val MapClazz = Class.forName("scala.collection.Map")
+  val SetClazz = Class.forName("scala.collection.Set")
+  val SeqClazz = Class.forName("scala.collection.Seq")
+  val OptionClazz = Class.forName("scala.Option")
+  val EitherClazz = Class.forName("scala.util.Either")
+  val OptionalClazz = Class.forName("java.util.Optional") // Java
+}
+
 class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector:
+  import Clazzes._
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{given _}
@@ -109,7 +119,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
     import reflect.{_, given _}
 
     val fieldTypeInfo: ALL_TYPE = inspectType(reflect)(valDef.tpt.tpe.asInstanceOf[reflect.TypeRef])
-  
+
     // See if there's default values specified -- look for gonzo method on companion class.  If exists, default value is available.
     val defaultAccessor = fieldTypeInfo match
       case _: TypeSymbol => None
@@ -176,31 +186,44 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
         val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[reflect.TypeRef])
         StaticIntersectionInfo("__intersection_type__", List.empty[TypeSymbol], resolvedLeft, resolvedRight)
     
-      // Scala Option
-      //----------------------------------------
-      case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.Option") =>
-        ScalaOptionInfo(t.classSymbol.get.fullName, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
+      case AppliedType(t,tob) => 
+        val className = t.classSymbol.get.fullName
+        val clazz = Class.forName(className)
 
-      // Scala Either
-      //----------------------------------------
-      case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "scala.util.Either") =>
-        // tob is a list, either side of which could be a union...must check both!
-        ScalaEitherInfo(
-          t.classSymbol.get.fullName,
-          inspectType(reflect)(tob(0).asInstanceOf[TypeRef]),
-          inspectType(reflect)(tob(1).asInstanceOf[TypeRef])
-        )
+        clazz match {
+          case c if c == OptionClazz =>
+            ScalaOptionInfo(className, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
-      // Java Optional
-      //---------------------------------------
-      case AppliedType(t,tob) if(t.classSymbol.isDefined && t.classSymbol.get.fullName == "java.util.Optional") =>
-        JavaOptionInfo("java.util.Optional", inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
+          case c if c == EitherClazz =>
+            ScalaEitherInfo(
+              className,
+              inspectType(reflect)(tob(0).asInstanceOf[TypeRef]),
+              inspectType(reflect)(tob(1).asInstanceOf[TypeRef])
+            )
+  
+          case c if c == OptionalClazz =>
+            JavaOptionInfo(className, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
-      // Do our best with anything else that falls thru the cracks
-      //----------------------------------------------------------
-      case x =>  // Something else (either Java or Scala2 most likely)--go diving
-        // inspectType(reflect)(x.simplified.asInstanceOf[TypeRef])
-        println("HeyX: "+x)
-        val classSymbol = typeRef.classSymbol.get
-        Reflector.reflectOnClass(Class.forName(classSymbol.fullName))
+          case c if(SeqClazz.isAssignableFrom(c) || SetClazz.isAssignableFrom(c)) =>
+            Collection_A1_Info(
+              className, 
+              clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]), 
+              inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
+
+          case c if MapClazz.isAssignableFrom(c) =>
+            Collection_A2_Info(
+              className, 
+              clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]), 
+              inspectType(reflect)(tob(0).asInstanceOf[TypeRef]),
+              inspectType(reflect)(tob(1).asInstanceOf[TypeRef]))
+
+          case _ =>
+            val classSymbol = typeRef.classSymbol.get
+            Reflector.reflectOnClass(Class.forName(classSymbol.fullName))
+        }
+            // TODO in DottyJack: Here's how to get companion object to then find newBuilder method to construct the List-like thing
+            // val companionClazz = Class.forName(className+"$").getMethod("newBuilder")
+            // println("HERE "+companionClazz)
+      
+      case x => throw new Exception("Unknown/unexpected type "+x)
     }

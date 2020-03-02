@@ -17,7 +17,7 @@ lazy val root = project
 
     libraryDependencies ++= 
       Seq("ch.epfl.lamp" %% "dotty-compiler" % dottyVersion,
-        "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion,
-        "ch.epfl.lamp" %% "tasty-core" % dottyVersion,
-        "org.scalameta" %% "munit" % "0.5.2+5-062d0198-SNAPSHOT" % "test")
+      "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion,
+      "ch.epfl.lamp" %% "tasty-core" % dottyVersion,
+      "org.scalameta" %% "munit" % "0.5.2+5-062d0198-SNAPSHOT" % "test")
   )
