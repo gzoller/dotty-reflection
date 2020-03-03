@@ -16,3 +16,41 @@ case class Collection_A2_Info(
   elementType1: ALL_TYPE,
   elementType2: ALL_TYPE
 ) extends ConcreteType
+
+
+/** Java Set dirivative */
+case class JavaSetInfo(
+  name: String,
+  typeParameters: List[TypeSymbol],
+  elementType: ALL_TYPE
+) extends ConcreteType
+
+/** Java List dirivative */
+case class JavaListInfo(
+  name: String,
+  typeParameters: List[TypeSymbol],
+  elementType: ALL_TYPE
+) extends ConcreteType
+
+/** Java Array */
+case class JavaArrayInfo(
+  elementType: ALL_TYPE
+) extends ConcreteType {
+  val name: String = "__array__"
+  val typeParameters: List[TypeSymbol] = Nil
+}
+
+/** Java Queue dirivative */
+case class JavaQueueInfo(
+  name: String,
+  typeParameters: List[TypeSymbol],
+  elementType: ALL_TYPE
+) extends ConcreteType
+
+/** Java Set dirivative */
+case class JavaMapInfo(
+  name: String,
+  typeParameters: List[TypeSymbol],
+  elementType1: ALL_TYPE,
+  elementType2: ALL_TYPE
+) extends ConcreteType

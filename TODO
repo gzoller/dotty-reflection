@@ -7,9 +7,13 @@
 - Structural Types
 - Either
 - Scala Collections Support
-* Java Collections Support
+- Java Collections Support
+* Tuple support
 - Any type support
 - Java Object type (like Any)
+* Extensible Info support (e.g. UUID, datetime)
+- Nested Java classes (field of Java class is another Java class)
+* User-written Java parameterized type
 
 * Runtime object blending
 * Discern initial/requested value of [T], e.g. write[Person](obj)... T = Person

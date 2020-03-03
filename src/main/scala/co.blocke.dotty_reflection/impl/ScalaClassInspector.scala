@@ -7,27 +7,6 @@ import scala.reflect._
 import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
-object Clazzes {
-  val MapClazz      = Class.forName("scala.collection.Map")
-  val SetClazz      = Class.forName("scala.collection.Set")
-  val SeqClazz      = Class.forName("scala.collection.Seq")
-  val OptionClazz   = Class.forName("scala.Option")
-  val EitherClazz   = Class.forName("scala.util.Either")
-  val OptionalClazz = Class.forName("java.util.Optional") // Java
-  val BooleanClazz  = Class.forName("scala.Boolean")
-  val ByteClazz     = Class.forName("scala.Byte")
-  val CharClazz     = Class.forName("scala.Char")
-  val DoubleClazz   = Class.forName("scala.Double")
-  val FloatClazz    = Class.forName("scala.Float")
-  val IntClazz      = Class.forName("scala.Int")
-  val LongClazz     = Class.forName("scala.Long")
-  val ShortClazz    = Class.forName("scala.Short")
-  val StringClazz   = Class.forName("java.lang.String")
-
-  def (c: Class[_]).=:=(other: Class[_]): Boolean = c == other
-  def (c: Class[_]).<:<(other: Class[_]): Boolean = other.isAssignableFrom(c)
-}
-
 class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector:
   import Clazzes._
 
@@ -221,8 +200,8 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
               inspectType(reflect)(tob(1).asInstanceOf[TypeRef])
             )
   
-          case c if c =:= OptionalClazz =>
-            JavaOptionInfo(className, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
+          // case c if c =:= OptionalClazz =>
+          //   JavaOptionInfo(className, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
           case c if(c <:< SeqClazz || c <:< SetClazz) =>
             Collection_A1_Info(
@@ -237,9 +216,8 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
               inspectType(reflect)(tob(0).asInstanceOf[TypeRef]),
               inspectType(reflect)(tob(1).asInstanceOf[TypeRef]))
 
-          case _ =>
-            val classSymbol = typeRef.classSymbol.get
-            Reflector.reflectOnClass(Class.forName(classSymbol.fullName))
+          case c =>
+            Reflector.reflectOnClass(c)
         }
             // TODO in DottyJack: Here's how to get companion object to then find newBuilder method to construct the List-like thing
             // val companionClazz = Class.forName(className+"$").getMethod("newBuilder")

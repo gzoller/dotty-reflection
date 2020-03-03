@@ -1,13 +1,14 @@
 package co.blocke.dotty_reflection
 
 import model._
+import impl.Clazzes._
 
 type Elem[X] = X match {
   case String => Char
   case Array[t] => t
   case Iterable[t] => t
 }
-case class Definitely( id: Elem[List[Int]], stuff: Elem[String], wow: List[Boolean] )
+case class Definitely( id: Elem[List[Int]], stuff: Elem[String], wow: java.util.Optional[Int] )
 
 case class Shell(a: Char)
 
@@ -39,14 +40,16 @@ case class Shell(a: Char)
   println(t)
   */
 
+  println("OK")
+
   // case class S() extends Stackable with Movable with Findable
   // case class T() extends Stackable with Eatable with Findable
   // case class U() extends Stackable with Movable with Eatable
 
   // try {
-    //println(Reflector.reflectOn[Definitely])
+    // println(Reflector.reflectOn[You])
 
-    println(Reflector.reflectOn[Shell])
+    // println(Reflector.reflectOn[Shell])
 
   // } catch {
   //   case x => //x.printStackTrace()

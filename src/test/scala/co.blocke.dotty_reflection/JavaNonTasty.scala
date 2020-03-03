@@ -154,4 +154,50 @@ class JavaNonTasty extends munit.FunSuite {
     }
     assert(result)
   }
+
+  test("Java collection types") {
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaCollections].asInstanceOf[StaticJavaClassInfo]
+    val result = r match {
+      case StaticJavaClassInfo(
+          "co.blocke.reflect.JavaCollections",
+          List(
+            JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",List("K","V"),Scala_String,Scala_Int),_,_,_),
+            JavaFieldInfo(1,"myArr",JavaArrayInfo(Scala_String),_,_,_),
+            JavaFieldInfo(2,"myList",JavaListInfo("java.util.ArrayList",List("E"),Scala_String),_,_,_),
+            JavaFieldInfo(3,"myQ",JavaQueueInfo("java.util.concurrent.BlockingQueue",List("E"),Scala_String),_,_,_),
+            JavaFieldInfo(4,"myTree",JavaSetInfo("java.util.TreeSet",List("E"),Scala_String),_,_,_),
+            JavaFieldInfo(5,"nested",JavaArrayInfo(JavaListInfo("java.util.List",List("E"),Scala_Int)),_,_,_)
+          ),
+          Nil,
+          _
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("Nested Java classes") {
+    val r = Reflector.reflectOn[co.blocke.reflect.You].asInstanceOf[StaticJavaClassInfo]
+    val result = r match {
+      case StaticJavaClassInfo(
+          "co.blocke.reflect.You",
+          List(
+            JavaFieldInfo(0,"sayHey",
+              StaticJavaClassInfo(
+                "co.blocke.reflect.Hey",
+                List(
+                  JavaFieldInfo(0,"jString",Scala_String,_,_,_)
+                ),
+                Nil,
+                _
+              ),
+              _,_,_)
+          ),
+          Nil,
+          _
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
 }
