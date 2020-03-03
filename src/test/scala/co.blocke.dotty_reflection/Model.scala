@@ -13,6 +13,19 @@ type Elem[X] = X match {
 }
 case class Definitely( id: Elem[List[Int]], stuff: Elem[String] )
 
+case class ScalaPrimitives(
+  a: Boolean,
+  b: Byte,
+  c: Char,
+  d: Double,
+  e: Float,
+  f: Int,
+  g: Long,
+  h: Short,
+  i: String,
+  j: Any
+)
+
 // Mixin tests
 trait SJCapture {
   var captured: java.util.HashMap[String, _] =
@@ -60,14 +73,14 @@ case class OptionHavingUnion(a: Option[Boolean|String])
 class PlainGood(val a: Int, val b: String)
 class PlainBad(val a: Int, b: String)
 
-/*
-
-AppliedType(
-  TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class blocke)),module dotty_reflection),Model$package),Elem),
-  List(
-    AppliedType(
-      TypeRef(ThisType(TypeRef(NoPrefix,module class immutable)),class List),List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),Int))
-    )
-  )
-)
-*/
+// Collections - immutable
+case class Coll1(a: List[String])
+case class Coll2(a: scala.collection.immutable.HashSet[String])
+case class Coll3(a: Map[String,Float])
+case class Coll4(a: scala.collection.immutable.ListMap[String,Boolean])
+// Collections - mutable
+case class Coll1m(a: scala.collection.mutable.ListBuffer[String])
+case class Coll2m(a: scala.collection.mutable.HashSet[String])
+case class Coll3m(a: scala.collection.mutable.Map[String,Float])
+case class Coll4m(a: scala.collection.mutable.ListMap[String,Boolean])
+case class NestedColl(a: Map[String, List[Option[Int]]])

@@ -8,12 +8,24 @@ import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
 object Clazzes {
-  val MapClazz = Class.forName("scala.collection.Map")
-  val SetClazz = Class.forName("scala.collection.Set")
-  val SeqClazz = Class.forName("scala.collection.Seq")
-  val OptionClazz = Class.forName("scala.Option")
-  val EitherClazz = Class.forName("scala.util.Either")
+  val MapClazz      = Class.forName("scala.collection.Map")
+  val SetClazz      = Class.forName("scala.collection.Set")
+  val SeqClazz      = Class.forName("scala.collection.Seq")
+  val OptionClazz   = Class.forName("scala.Option")
+  val EitherClazz   = Class.forName("scala.util.Either")
   val OptionalClazz = Class.forName("java.util.Optional") // Java
+  val BooleanClazz  = Class.forName("scala.Boolean")
+  val ByteClazz     = Class.forName("scala.Byte")
+  val CharClazz     = Class.forName("scala.Char")
+  val DoubleClazz   = Class.forName("scala.Double")
+  val FloatClazz    = Class.forName("scala.Float")
+  val IntClazz      = Class.forName("scala.Int")
+  val LongClazz     = Class.forName("scala.Long")
+  val ShortClazz    = Class.forName("scala.Short")
+  val StringClazz   = Class.forName("java.lang.String")
+
+  def (c: Class[_]).=:=(other: Class[_]): Boolean = c == other
+  def (c: Class[_]).<:<(other: Class[_]): Boolean = other.isAssignableFrom(c)
 }
 
 class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector:
@@ -154,22 +166,30 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
       //----------------------------------------
       case named: dotty.tools.dotc.core.Types.NamedType => 
         val classSymbol = typeRef.classSymbol.get
-        classSymbol.name match {
-          case "Boolean" => PrimitiveType.Scala_Boolean
-          case "Byte"    => PrimitiveType.Scala_Byte
-          case "Char"    => PrimitiveType.Scala_Char
-          case "Double"  => PrimitiveType.Scala_Double
-          case "Float"   => PrimitiveType.Scala_Float
-          case "Int"     => PrimitiveType.Scala_Int
-          case "Long"    => PrimitiveType.Scala_Long
-          case "Short"   => PrimitiveType.Scala_Short
-          case "String"  => PrimitiveType.Scala_String
+        val className = classSymbol.fullName
+        val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
+        val anySymbol = Symbol.classSymbol("scala.Any")
+        classSymbol match {
+          case cs if cs == anySymbol && !isTypeParam => PrimitiveType.Scala_Any
+          case cs if cs == anySymbol => typeRef.name.asInstanceOf[TypeSymbol]
           case _ =>
-            val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
-            if(!isTypeParam) 
-              descendInto(reflect)(classSymbol.tree).get
-            else
-              typeRef.name.asInstanceOf[TypeSymbol]
+            val clazz = Class.forName(className)
+            clazz match {
+              case c if c =:= BooleanClazz => PrimitiveType.Scala_Boolean
+              case c if c =:= ByteClazz    => PrimitiveType.Scala_Byte
+              case c if c =:= CharClazz    => PrimitiveType.Scala_Char
+              case c if c =:= DoubleClazz  => PrimitiveType.Scala_Double
+              case c if c =:= FloatClazz   => PrimitiveType.Scala_Float
+              case c if c =:= IntClazz     => PrimitiveType.Scala_Int
+              case c if c =:= LongClazz    => PrimitiveType.Scala_Long
+              case c if c =:= ShortClazz   => PrimitiveType.Scala_Short
+              case c if c =:= StringClazz  => PrimitiveType.Scala_String
+              case _ =>
+                if(!isTypeParam) 
+                  descendInto(reflect)(classSymbol.tree).get
+                else
+                  typeRef.name.asInstanceOf[TypeSymbol]
+            }
         }
 
       // Union Type
@@ -191,26 +211,26 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
         val clazz = Class.forName(className)
 
         clazz match {
-          case c if c == OptionClazz =>
+          case c if c =:= OptionClazz =>
             ScalaOptionInfo(className, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
-          case c if c == EitherClazz =>
+          case c if c =:= EitherClazz =>
             ScalaEitherInfo(
               className,
               inspectType(reflect)(tob(0).asInstanceOf[TypeRef]),
               inspectType(reflect)(tob(1).asInstanceOf[TypeRef])
             )
   
-          case c if c == OptionalClazz =>
+          case c if c =:= OptionalClazz =>
             JavaOptionInfo(className, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
-          case c if(SeqClazz.isAssignableFrom(c) || SetClazz.isAssignableFrom(c)) =>
+          case c if(c <:< SeqClazz || c <:< SetClazz) =>
             Collection_A1_Info(
               className, 
               clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]), 
               inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
 
-          case c if MapClazz.isAssignableFrom(c) =>
+          case c if c <:< MapClazz =>
             Collection_A2_Info(
               className, 
               clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]), 

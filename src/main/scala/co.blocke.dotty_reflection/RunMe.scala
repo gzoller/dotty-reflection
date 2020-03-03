@@ -7,8 +7,9 @@ type Elem[X] = X match {
   case Array[t] => t
   case Iterable[t] => t
 }
-case class Definitely( id: Elem[List[Int]], stuff: Elem[String], wow: Option[Boolean] )
+case class Definitely( id: Elem[List[Int]], stuff: Elem[String], wow: List[Boolean] )
 
+case class Shell(a: Char)
 
 @main def runme(): Unit =
 
@@ -42,8 +43,11 @@ case class Definitely( id: Elem[List[Int]], stuff: Elem[String], wow: Option[Boo
   // case class T() extends Stackable with Eatable with Findable
   // case class U() extends Stackable with Movable with Eatable
 
-  try {
-    println(Reflector.reflectOn[Definitely])
-  } catch {
-    case x => //x.printStackTrace()
-  }
+  // try {
+    //println(Reflector.reflectOn[Definitely])
+
+    println(Reflector.reflectOn[Shell])
+
+  // } catch {
+  //   case x => //x.printStackTrace()
+  // }

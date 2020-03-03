@@ -165,4 +165,30 @@ class ScalaTasty extends munit.FunSuite {
       Reflector.reflectOn[PlainBad]
     }
   }
+
+  test("all Scala primitive types") {
+    val r = Reflector.reflectOn[ScalaPrimitives].asInstanceOf[StaticClassInfo]
+    val result = r match {
+      case StaticClassInfo(
+          "co.blocke.dotty_reflection.ScalaPrimitives",
+          List(
+            ScalaFieldInfo(0,"a",Scala_Boolean,_,_,None),
+            ScalaFieldInfo(1,"b",Scala_Byte,_,_,None),
+            ScalaFieldInfo(2,"c",Scala_Char,_,_,None),
+            ScalaFieldInfo(3,"d",Scala_Double,_,_,None),
+            ScalaFieldInfo(4,"e",Scala_Float,_,_,None),
+            ScalaFieldInfo(5,"f",Scala_Int,_,_,None),
+            ScalaFieldInfo(6,"g",Scala_Long,_,_,None),
+            ScalaFieldInfo(7,"h",Scala_Short,_,_,None),
+            ScalaFieldInfo(8,"i",Scala_String,_,_,None),
+            ScalaFieldInfo(9,"j",Scala_Any,_,_,None)
+          ),
+          Nil,
+          _,
+          false
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
 }

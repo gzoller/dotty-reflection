@@ -25,3 +25,4 @@ enum PrimitiveType(val name: String) extends ConcreteType:
   case Scala_Short extends PrimitiveType("java.lang.Short")
   case Scala_String extends PrimitiveType("java.lang.String")
   case Java_Object extends PrimitiveType("java.lang.Object")
+  case Scala_Any extends PrimitiveType("scala.Any")

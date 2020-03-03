@@ -6,9 +6,9 @@
 - Option (java/scala)
 - Structural Types
 - Either
-* Scala Collections Support
+- Scala Collections Support
 * Java Collections Support
-* Any type support
+- Any type support
 - Java Object type (like Any)
 
 * Runtime object blending
