@@ -8,12 +8,18 @@
 - Either
 - Scala Collections Support
 - Java Collections Support
-* Tuple support
+- Tuple support
 - Any type support
 - Java Object type (like Any)
-* Extensible Info support (e.g. UUID, datetime)
+- Extensible Info support (e.g. UUID, datetime)
 - Nested Java classes (field of Java class is another Java class)
+* UnknownClass ConcreteType implementationtest
 * User-written Java parameterized type
+
+Extractors Needed:
+* Try 
+- Enumeration (various flavors?)
+* Sealed Trait
 
 * Runtime object blending
 * Discern initial/requested value of [T], e.g. write[Person](obj)... T = Person

@@ -2,12 +2,14 @@ package co.blocke.dotty_reflection
 package impl
 
 import model._
+import extractors._
 import scala.quoted._
 import scala.reflect._
 import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
-class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector:
+
+class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector:
   import Clazzes._
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
@@ -44,15 +46,15 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
     tree match {
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
         val className = t.symbol.show
+        val clazz = Class.forName(className)
         cache.get(className).orElse{
           val constructor = t.constructor
           val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
           val inspected: ConcreteType = if(t.symbol.flags.is(reflect.Flags.Trait))
             // === Trait ===
-            StaticTraitInfo(className, typeParams)
+            StaticTraitInfo(className, clazz, typeParams)
           else
             // === Scala Class (case or non-case) ===
-            val clazz = Class.forName(className)
             val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
             val paramz = constructor.paramss
             val members = t.body.collect {
@@ -93,7 +95,7 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
               case Apply(Select(New(x),_),_) => x 
             }.map(_.symbol.name == "AnyVal").getOrElse(false)
 
-            StaticClassInfo(className, fields, typeParams, annos, isValueClass)
+            StaticClassInfo(className, clazz, fields, typeParams, annos, isValueClass)
           cache.put(className, inspected)
           Some(inspected)
         }
@@ -129,8 +131,16 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
     ScalaFieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
 
 
-  private def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
+  def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
     import reflect.{_, given _}
+
+    val classSymbol = typeRef.classSymbol.get
+    val (is2xEnumeration, className) = classSymbol.fullName match { // Handle gobbled non-class scala.Enumeration.Value (old 2.x Enumeration class values)
+      case raw if raw == "scala.Enumeration.Value" => 
+        val emerationClass = typeRef.typeSymbol.fullName
+        (true, emerationClass.dropRight(emerationClass.length - emerationClass.lastIndexOf('$')))
+      case _                                       => (false, classSymbol.fullName)
+    }
 
     typeRef match {
       // Scala3 opaque type alias
@@ -141,28 +151,27 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
           case _ => throw new Exception("Opaque aliases for type symbols currently unsupported")
         }
 
-      // Scala3 Tasty-equipped type
+      // Scala3 Tasty-equipped type incl. primitive types
       //----------------------------------------
       case named: dotty.tools.dotc.core.Types.NamedType => 
-        val classSymbol = typeRef.classSymbol.get
-        val className = classSymbol.fullName
         val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
         val anySymbol = Symbol.classSymbol("scala.Any")
         classSymbol match {
           case cs if cs == anySymbol && !isTypeParam => PrimitiveType.Scala_Any
-          case cs if cs == anySymbol => typeRef.name.asInstanceOf[TypeSymbol]
+          case cs if cs == anySymbol => typeRef.name.asInstanceOf[TypeSymbol]  // TypeSymbols Foo[T] have typeRef of Any
           case _ =>
-            val clazz = Class.forName(className)
-            clazz match {
-              case c if c =:= BooleanClazz => PrimitiveType.Scala_Boolean
-              case c if c =:= ByteClazz    => PrimitiveType.Scala_Byte
-              case c if c =:= CharClazz    => PrimitiveType.Scala_Char
-              case c if c =:= DoubleClazz  => PrimitiveType.Scala_Double
-              case c if c =:= FloatClazz   => PrimitiveType.Scala_Float
-              case c if c =:= IntClazz     => PrimitiveType.Scala_Int
-              case c if c =:= LongClazz    => PrimitiveType.Scala_Long
-              case c if c =:= ShortClazz   => PrimitiveType.Scala_Short
-              case c if c =:= StringClazz  => PrimitiveType.Scala_String
+            Class.forName(className) match {
+              case c if c =:= BooleanClazz     => PrimitiveType.Scala_Boolean
+              case c if c =:= ByteClazz        => PrimitiveType.Scala_Byte
+              case c if c =:= CharClazz        => PrimitiveType.Scala_Char
+              case c if c =:= DoubleClazz      => PrimitiveType.Scala_Double
+              case c if c =:= FloatClazz       => PrimitiveType.Scala_Float
+              case c if c =:= IntClazz         => PrimitiveType.Scala_Int
+              case c if c =:= LongClazz        => PrimitiveType.Scala_Long
+              case c if c =:= ShortClazz       => PrimitiveType.Scala_Short
+              case c if c =:= StringClazz      => PrimitiveType.Scala_String
+              case c if c <:< EnumClazz        => ScalaEnum(className, c)
+              case c if is2xEnumeration        => ScalaEnumeration(className, c)
               case _ =>
                 if(!isTypeParam) 
                   descendInto(reflect)(classSymbol.tree).get
@@ -185,40 +194,16 @@ class ScalaClassInspector[T](clazz: Class[_], cache: Reflector.CacheType) extend
         val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[reflect.TypeRef])
         StaticIntersectionInfo("__intersection_type__", List.empty[TypeSymbol], resolvedLeft, resolvedRight)
     
+      // Most other "normal" Types
+      //----------------------------------------
       case AppliedType(t,tob) => 
-        val className = t.classSymbol.get.fullName
         val clazz = Class.forName(className)
 
-        clazz match {
-          case c if c =:= OptionClazz =>
-            ScalaOptionInfo(className, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
-
-          case c if c =:= EitherClazz =>
-            ScalaEitherInfo(
-              className,
-              inspectType(reflect)(tob(0).asInstanceOf[TypeRef]),
-              inspectType(reflect)(tob(1).asInstanceOf[TypeRef])
-            )
-  
-          // case c if c =:= OptionalClazz =>
-          //   JavaOptionInfo(className, inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
-
-          case c if(c <:< SeqClazz || c <:< SetClazz) =>
-            Collection_A1_Info(
-              className, 
-              clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]), 
-              inspectType(reflect)(tob.head.asInstanceOf[TypeRef]))
-
-          case c if c <:< MapClazz =>
-            Collection_A2_Info(
-              className, 
-              clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]), 
-              inspectType(reflect)(tob(0).asInstanceOf[TypeRef]),
-              inspectType(reflect)(tob(1).asInstanceOf[TypeRef]))
-
-          case c =>
-            Reflector.reflectOnClass(c)
+        val foundType: Option[ALL_TYPE] = ExtractorRegistry.extractors.collectFirst {
+          case e if e.matches(clazz) => e.extractInfo(reflect)(t, tob, className, clazz, this)   
         }
+        foundType.getOrElse(throw new Exception("Unknown/unexpected type "+clazz))
+
             // TODO in DottyJack: Here's how to get companion object to then find newBuilder method to construct the List-like thing
             // val companionClazz = Class.forName(className+"$").getMethod("newBuilder")
             // println("HERE "+companionClazz)

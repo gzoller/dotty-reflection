@@ -12,8 +12,9 @@ class Options extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.NormalOption",
+        _,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",Scala_Int),_,_,None)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Int),_,_,None)
         ),
         Nil,
         _,
@@ -29,8 +30,9 @@ class Options extends munit.FunSuite {
     val result = r match {
       case StaticJavaClassInfo(
         "co.blocke.reflect.JavaOption1",
+        _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", Scala_Int),_,_,_)
+          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, Scala_Int),_,_,_)
         ),
         Nil,
         _) => true
@@ -44,8 +46,9 @@ class Options extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.NestedOption",
+        _,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",ScalaOptionInfo("scala.Option",Scala_Int)),_,_,None)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,ScalaOptionInfo("scala.Option",_,Scala_Int)),_,_,None)
         ),
         Nil,
         _,
@@ -61,8 +64,9 @@ class Options extends munit.FunSuite {
     val result = r match {
       case StaticJavaClassInfo(
         "co.blocke.reflect.JavaOption2",
+        _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", JavaOptionInfo("java.util.Optional", Scala_Int)),_,_,_)
+          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, JavaOptionInfo("java.util.Optional", _, Scala_Int)),_,_,_)
         ),
         Nil,
         _) => true
@@ -76,8 +80,9 @@ class Options extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.ParamOption",
+        _,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option","T"),_,_,None)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,"T"),_,_,None)
         ),
         List("T"),
         _,
@@ -93,8 +98,9 @@ class Options extends munit.FunSuite {
     val result = r match {
       case StaticJavaClassInfo(
         "co.blocke.reflect.JavaOption3",
+        _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", "T"),_,_,_)
+          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, "T"),_,_,_)
         ),
         List("T"),
         _) => true
@@ -118,8 +124,9 @@ class Options extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.OptionHavingUnion",
+        _,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",StaticUnionInfo("__union_type__",Nil,Scala_Boolean,Scala_String)),_,_,None)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,StaticUnionInfo("__union_type__",Nil,Scala_Boolean,Scala_String)),_,_,None)
         ),
         Nil,
         _,

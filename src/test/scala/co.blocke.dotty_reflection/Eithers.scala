@@ -12,6 +12,7 @@ class Eithers extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.BothSides",
+        _,
         List(
           ScalaFieldInfo(0,"a",ScalaEitherInfo("scala.util.Either",Scala_Int,Scala_String),_,_,None)
         ),
@@ -39,8 +40,9 @@ class Eithers extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.BothSidesWithOption",
+        _,
         List(
-          ScalaFieldInfo(0,"a",ScalaEitherInfo("scala.util.Either",Scala_Int,ScalaOptionInfo("scala.Option",Scala_String)),_,_,None)
+          ScalaFieldInfo(0,"a",ScalaEitherInfo("scala.util.Either",Scala_Int,ScalaOptionInfo("scala.Option",_,Scala_String)),_,_,None)
         ),
         Nil,
         _,
@@ -66,6 +68,7 @@ class Eithers extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.BothSidesWithUnion",
+        _,
         List(
           ScalaFieldInfo(0,"a",ScalaEitherInfo("scala.util.Either",Scala_Int,StaticUnionInfo("__union_type__",Nil,Scala_String,Scala_Boolean)),_,_,None)
         ),

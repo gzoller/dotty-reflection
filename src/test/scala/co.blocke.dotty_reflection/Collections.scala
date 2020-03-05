@@ -11,8 +11,9 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Coll1",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.List",List("A"),Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.List",_,List("A"),Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -28,8 +29,9 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Coll2",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.HashSet",List("A"),Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.HashSet",_,List("A"),Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -45,8 +47,9 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Coll3",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",List("K","V"),Scala_String,Scala_Float),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,List("K","V"),Scala_String,Scala_Float),_,_,None)
         ),
         Nil,
         _,
@@ -62,8 +65,9 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Coll4",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.ListMap",List("K","V"),Scala_String,Scala_Boolean),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.ListMap",_,List("K","V"),Scala_String,Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -79,8 +83,9 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Coll1m",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.ListBuffer",List("A"),Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.ListBuffer",_,List("A"),Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -96,8 +101,9 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Coll2m",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.HashSet",List("A"),Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.HashSet",_,List("A"),Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -113,8 +119,9 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Coll3m",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.Map",List("K","V"),Scala_String,Scala_Float),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.Map",_,List("K","V"),Scala_String,Scala_Float),_,_,None)
         ),
         Nil,
         _,
@@ -130,8 +137,9 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Coll4m",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.ListMap",List("K","V"),Scala_String,Scala_Boolean),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.ListMap",_,List("K","V"),Scala_String,Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -147,12 +155,48 @@ class Collections extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.NestedColl",
+        _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",List("K","V"),Scala_String,Collection_A1_Info("scala.collection.immutable.List",List("A"),ScalaOptionInfo("scala.Option",Scala_Int))),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,List("K","V"),Scala_String,Collection_A1_Info("scala.collection.immutable.List",_,List("A"),ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None)
         ),
         Nil,
         _,
         flase
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("Tuples") {
+    val r = Reflector.reflectOn[TupleTurtle[Boolean]].asInstanceOf[StaticClassInfo]
+    val result = r match {
+      case StaticClassInfo(
+        "co.blocke.dotty_reflection.TupleTurtle",
+        _,
+        List(
+          ScalaFieldInfo(0,"t",
+            TupleInfo(
+              "scala.Tuple4",_,List(
+                Scala_Int,
+                "Z",
+                Collection_A1_Info("scala.collection.immutable.List",_,List("A"),Scala_String),
+                StaticClassInfo(
+                  "co.blocke.dotty_reflection.NormalOption",
+                   _,
+                   List(
+                    ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Int),_,_,None)
+                   ),
+                   Nil,
+                   _,
+                   false
+                )
+              )
+            ),_,_,None)
+        ),
+        List("Z"),
+        _,
+        false
         ) => true
       case _ => false
     }

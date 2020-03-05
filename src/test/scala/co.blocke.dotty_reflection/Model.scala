@@ -84,3 +84,26 @@ case class Coll2m(a: scala.collection.mutable.HashSet[String])
 case class Coll3m(a: scala.collection.mutable.Map[String,Float])
 case class Coll4m(a: scala.collection.mutable.ListMap[String,Boolean])
 case class NestedColl(a: Map[String, List[Option[Int]]])
+
+// Tuple
+case class TupleTurtle[Z]( t: (Int, Z, List[String], NormalOption))
+
+// Scala 2.x style Enumeration
+object WeekDay extends Enumeration {
+  type WeekDay = Value
+  val Monday = Value(1)
+  val Tuesday = Value(2)
+  val Wednesday = Value(3)
+  val Thursday = Value(4)
+  val Friday = Value(5)
+  val Saturday = Value(6)
+  val Sunday = Value(-3)
+}
+import WeekDay._
+
+// Scala 3 Enum
+enum Month {
+  case Jan, Feb, Mar
+}
+
+case class Birthday(m: Month, d: WeekDay)

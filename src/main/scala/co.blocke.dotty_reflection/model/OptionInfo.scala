@@ -10,6 +10,7 @@ trait OptionInfo extends ConcreteType:
 
 case class ScalaOptionInfo(
   name: String,
+  infoClass: Class[_],
   optionParamType: ALL_TYPE
 ) extends OptionInfo:
   val typeParameters = Nil
@@ -17,6 +18,7 @@ case class ScalaOptionInfo(
 
 case class JavaOptionInfo(
   name: String,
+  infoClass: Class[_],
   optionParamType: ALL_TYPE
 ) extends OptionInfo:
   val typeParameters = Nil

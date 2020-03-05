@@ -2,20 +2,21 @@ package co.blocke.dotty_reflection
 package impl
 
 object Clazzes {
-  val MapClazz       = Class.forName("scala.collection.Map")
-  val SetClazz       = Class.forName("scala.collection.Set")
-  val SeqClazz       = Class.forName("scala.collection.Seq")
-  val OptionClazz    = Class.forName("scala.Option")
-  val EitherClazz    = Class.forName("scala.util.Either")
-  val BooleanClazz   = Class.forName("scala.Boolean")
-  val ByteClazz      = Class.forName("scala.Byte")
-  val CharClazz      = Class.forName("scala.Char")
-  val DoubleClazz    = Class.forName("scala.Double")
-  val FloatClazz     = Class.forName("scala.Float")
-  val IntClazz       = Class.forName("scala.Int")
-  val LongClazz      = Class.forName("scala.Long")
-  val ShortClazz     = Class.forName("scala.Short")
-  val StringClazz    = Class.forName("java.lang.String") // shared Java/Scala
+  val EnumClazz        = Class.forName("scala.Enum")
+  val MapClazz         = Class.forName("scala.collection.Map")
+  val SetClazz         = Class.forName("scala.collection.Set")
+  val SeqClazz         = Class.forName("scala.collection.Seq")
+  val OptionClazz      = Class.forName("scala.Option")
+  val EitherClazz      = Class.forName("scala.util.Either")
+  val BooleanClazz     = Class.forName("scala.Boolean")
+  val ByteClazz        = Class.forName("scala.Byte")
+  val CharClazz        = Class.forName("scala.Char")
+  val DoubleClazz      = Class.forName("scala.Double")
+  val FloatClazz       = Class.forName("scala.Float")
+  val IntClazz         = Class.forName("scala.Int")
+  val LongClazz        = Class.forName("scala.Long")
+  val ShortClazz       = Class.forName("scala.Short")
+  val StringClazz      = Class.forName("java.lang.String") // shared Java/Scala
 
   // Java-specific -- lots of wrapped/primitive type stuff going on
   val booleanClazz    = java.lang.Boolean.TYPE

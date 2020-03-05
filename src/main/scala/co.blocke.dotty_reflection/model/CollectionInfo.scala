@@ -4,6 +4,7 @@ package model
 /** Arity 1 Collections, e.g. List, Set, Seq */
 case class Collection_A1_Info(
   name: String,
+  infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType: ALL_TYPE
 ) extends ConcreteType
@@ -12,6 +13,7 @@ case class Collection_A1_Info(
 /** Arity 2 Collections, Map flavors, basiclly */
 case class Collection_A2_Info(
   name: String,
+  infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType1: ALL_TYPE,
   elementType2: ALL_TYPE
@@ -21,6 +23,7 @@ case class Collection_A2_Info(
 /** Java Set dirivative */
 case class JavaSetInfo(
   name: String,
+  infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType: ALL_TYPE
 ) extends ConcreteType
@@ -28,6 +31,7 @@ case class JavaSetInfo(
 /** Java List dirivative */
 case class JavaListInfo(
   name: String,
+  infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType: ALL_TYPE
 ) extends ConcreteType
@@ -43,6 +47,7 @@ case class JavaArrayInfo(
 /** Java Queue dirivative */
 case class JavaQueueInfo(
   name: String,
+  infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType: ALL_TYPE
 ) extends ConcreteType
@@ -50,6 +55,7 @@ case class JavaQueueInfo(
 /** Java Set dirivative */
 case class JavaMapInfo(
   name: String,
+  infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType1: ALL_TYPE,
   elementType2: ALL_TYPE

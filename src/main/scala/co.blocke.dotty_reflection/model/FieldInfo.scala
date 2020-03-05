@@ -37,8 +37,9 @@ case class ScalaFieldInfo(
     case PrimitiveType.Scala_String => classOf[String]
     case PrimitiveType.Java_Object => classOf[Object]
     case PrimitiveType.Scala_Any => classOf[Any]
-    case ci:ConcreteType => Class.forName(ci.name)  // class or trait
-    case _:TypeSymbol => classOf[Object]
+    case e: ScalaEnumeration => Class.forName("scala.Enumeration$Value")
+    case ci: ConcreteType => Class.forName(ci.name)  // class or trait
+    case _: TypeSymbol => classOf[Object]
 
 
 /* This is also used for Scala plain-class getter/setter fields */

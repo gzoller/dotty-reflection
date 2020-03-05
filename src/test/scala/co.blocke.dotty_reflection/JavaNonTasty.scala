@@ -13,6 +13,7 @@ class JavaNonTasty extends munit.FunSuite {
     val result = r match {
       case StaticJavaClassInfo(
         "co.blocke.reflect.Person",
+        _,
         List(
           JavaFieldInfo(0,"age",Scala_Int,_,_,_),
           JavaFieldInfo(1,"name",Scala_String,_,_,_),
@@ -141,6 +142,7 @@ class JavaNonTasty extends munit.FunSuite {
     val result = Reflector.reflectOnClass(wp) match {
       case a @ StaticJavaClassInfo(
         "co.blocke.reflect.ParamAnno",
+        _,
         List(
           JavaFieldInfo(0,"age","T",_,_,_),
           JavaFieldInfo(1,"name",Scala_String,_,_,_)
@@ -160,13 +162,14 @@ class JavaNonTasty extends munit.FunSuite {
     val result = r match {
       case StaticJavaClassInfo(
           "co.blocke.reflect.JavaCollections",
+          _,
           List(
-            JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",List("K","V"),Scala_String,Scala_Int),_,_,_),
+            JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",_,List("K","V"),Scala_String,Scala_Int),_,_,_),
             JavaFieldInfo(1,"myArr",JavaArrayInfo(Scala_String),_,_,_),
-            JavaFieldInfo(2,"myList",JavaListInfo("java.util.ArrayList",List("E"),Scala_String),_,_,_),
-            JavaFieldInfo(3,"myQ",JavaQueueInfo("java.util.concurrent.BlockingQueue",List("E"),Scala_String),_,_,_),
-            JavaFieldInfo(4,"myTree",JavaSetInfo("java.util.TreeSet",List("E"),Scala_String),_,_,_),
-            JavaFieldInfo(5,"nested",JavaArrayInfo(JavaListInfo("java.util.List",List("E"),Scala_Int)),_,_,_)
+            JavaFieldInfo(2,"myList",JavaListInfo("java.util.ArrayList",_,List("E"),Scala_String),_,_,_),
+            JavaFieldInfo(3,"myQ",JavaQueueInfo("java.util.concurrent.BlockingQueue",_,List("E"),Scala_String),_,_,_),
+            JavaFieldInfo(4,"myTree",JavaSetInfo("java.util.TreeSet",_,List("E"),Scala_String),_,_,_),
+            JavaFieldInfo(5,"nested",JavaArrayInfo(JavaListInfo("java.util.List",_,List("E"),Scala_Int)),_,_,_)
           ),
           Nil,
           _
@@ -181,10 +184,12 @@ class JavaNonTasty extends munit.FunSuite {
     val result = r match {
       case StaticJavaClassInfo(
           "co.blocke.reflect.You",
+          _,
           List(
             JavaFieldInfo(0,"sayHey",
               StaticJavaClassInfo(
                 "co.blocke.reflect.Hey",
+                _,
                 List(
                   JavaFieldInfo(0,"jString",Scala_String,_,_,_)
                 ),

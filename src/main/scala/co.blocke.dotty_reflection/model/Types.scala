@@ -9,7 +9,6 @@ trait ConcreteType:
 
 type ALL_TYPE = ConcreteType | TypeSymbol
 
-
 enum PrimitiveType(val name: String) extends ConcreteType:
   def canAssign(arg: Object): Boolean = arg.getClass.getName == name
   val hasUnion = false

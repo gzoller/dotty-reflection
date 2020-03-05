@@ -11,21 +11,23 @@ trait ClassInfo extends ConcreteType with ClassOrTrait:
 
 
 case class StaticClassInfo protected (
-  val name: String,
-  val fields: List[FieldInfo],
-  val typeParameters: List[TypeSymbol],
-  val annotations: Map[String, Map[String,String]],
-  val isValueClass: Boolean
+  name: String,
+  infoClass: Class[_],
+  fields: List[FieldInfo],
+  typeParameters: List[TypeSymbol],
+  annotations: Map[String, Map[String,String]],
+  isValueClass: Boolean
   ) extends ClassInfo:
     private val constructor = clazz.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
     def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
 
   
 case class StaticJavaClassInfo protected (
-  val name: String,
-  val fields: List[FieldInfo],
-  val typeParameters: List[TypeSymbol],
-  val annotations: Map[String, Map[String,String]],
+  name: String,
+  infoClass: Class[_],
+  fields: List[FieldInfo],
+  typeParameters: List[TypeSymbol],
+  annotations: Map[String, Map[String,String]],
   ) extends ClassInfo:
     private val fieldsByName = fields.map(f => (f.name, f.asInstanceOf[JavaFieldInfo])).toMap
     def field(name: String): Option[JavaFieldInfo] = fieldsByName.get(name)

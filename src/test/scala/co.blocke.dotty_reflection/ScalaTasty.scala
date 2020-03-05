@@ -11,6 +11,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = Reflector.reflectOn[Person] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Person",
+        _,
         List(
           ScalaFieldInfo(0,"name",Scala_String,_,_,None),
           ScalaFieldInfo(1,"age",Scala_Int,_,_,None),
@@ -36,6 +37,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = Reflector.reflectOn[Definitely] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Definitely",
+        _,
         List(
           ScalaFieldInfo(0,"id",Scala_Int,_,_,None),
           ScalaFieldInfo(1,"stuff",Scala_Char,_,_,None)
@@ -58,6 +60,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = Reflector.reflectOn[WithAnnotation] match {
       case c @ StaticClassInfo(
         "co.blocke.dotty_reflection.WithAnnotation",
+        _,
         List(
           ScalaFieldInfo(0,"id",Scala_String,_,_,None)
         ),
@@ -75,6 +78,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = Reflector.reflectOnClass(wp.getClass) match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.WithParam",
+        _,
         List(
           ScalaFieldInfo(0,"one","T",_,_,None),
           ScalaFieldInfo(1,"two","U",_,_,None)
@@ -92,6 +96,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = Reflector.reflectOn[Employee] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.Employee",
+        _,
         List(
          ScalaFieldInfo(0,"eId",AliasInfo("co.blocke.dotty_reflection.Model$package.EMP_ID",Scala_Int),_,_,None),
          ScalaFieldInfo(1,"age",Scala_Int,_,_,None)
@@ -109,6 +114,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = Reflector.reflectOn[OpaqueUnion] match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.OpaqueUnion",
+        _,
         List(ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo("__union_type__",Nil,Scala_Int, Scala_String)),_,_,None)),
         Nil,
         _,
@@ -129,6 +135,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = wd match {
       case StaticClassInfo(
         "co.blocke.dotty_reflection.WithDefault",
+        _,
         List(
           ScalaFieldInfo(0,"a",Scala_Int,_,_,None),
           ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -149,6 +156,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
           "co.blocke.dotty_reflection.PlainGood",
+          _,
           List(
             ScalaFieldInfo(0,"a",Scala_Int,_,_,None),
             ScalaFieldInfo(1,"b",Scala_String,_,_,None)
@@ -171,6 +179,7 @@ class ScalaTasty extends munit.FunSuite {
     val result = r match {
       case StaticClassInfo(
           "co.blocke.dotty_reflection.ScalaPrimitives",
+          _,
           List(
             ScalaFieldInfo(0,"a",Scala_Boolean,_,_,None),
             ScalaFieldInfo(1,"b",Scala_Byte,_,_,None),
