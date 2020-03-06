@@ -13,7 +13,7 @@
 - Java Object type (like Any)
 - Extensible Info support (e.g. UUID, datetime)
 - Nested Java classes (field of Java class is another Java class)
-* UnknownClass ConcreteType implementationtest
+- UnknownClass ConcreteType implementation
 * User-written Java parameterized type
 
 Extractors Needed:

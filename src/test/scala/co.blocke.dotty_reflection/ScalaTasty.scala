@@ -200,4 +200,10 @@ class ScalaTasty extends munit.FunSuite {
     }
     assert(result)
   }
+
+  test("unknown class") {
+    val r = Reflector.reflectOn[scala.math.BigDecimal]
+    assert(r.isInstanceOf[UnknownInfo])
+  }
 }
+

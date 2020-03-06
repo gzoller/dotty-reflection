@@ -62,8 +62,8 @@ object JavaClassInspector:
             JavaQueueInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, p.getActualTypeArguments.head))
           case c if c <:< JSetClazz =>
             JavaSetInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, p.getActualTypeArguments.head))
-          case _ =>
-            throw new Exception("Boom - unknown parameterized type")
+          case c =>
+            UnknownInfo(c)
         }
       case v: TypeVariable[_] => 
         v.getName.asInstanceOf[TypeSymbol]
@@ -86,5 +86,5 @@ object JavaClassInspector:
           case c => Reflector.reflectOnClass(c)
         }
       case u =>
-        throw new Exception("Unknown (2) Java type "+u)
+        throw new Exception("Unknown Java type "+u)  // This isn't a Class so we can't use UnknownInfo here
     }

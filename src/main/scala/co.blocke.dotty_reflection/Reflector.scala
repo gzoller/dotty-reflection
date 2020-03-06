@@ -44,11 +44,11 @@ object Reflector:
     val clazz = ct.runtimeClass
     reflectOnClass(clazz)
 
-  def reflectOnClass[T](clazz: Class[T]): ConcreteType =
+  def reflectOnClass(clazz: Class[_]): ConcreteType =
     val className = clazz.getName
     val found: Option[ConcreteType] = cache.get(className)
     found.getOrElse({
       val tc = new ScalaClassInspector(clazz, cache)
       tc.inspect("", List(className))
-      cache.get(className).getOrElse(throw new Exception(s"Unable to reflect on class $className"))
+      cache.get(className).getOrElse(UnknownInfo(clazz))
     })

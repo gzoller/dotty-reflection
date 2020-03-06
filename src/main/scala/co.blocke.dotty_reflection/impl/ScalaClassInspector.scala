@@ -202,11 +202,11 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
         val foundType: Option[ALL_TYPE] = ExtractorRegistry.extractors.collectFirst {
           case e if e.matches(clazz) => e.extractInfo(reflect)(t, tob, className, clazz, this)   
         }
-        foundType.getOrElse(throw new Exception("Unknown/unexpected type "+clazz))
+        foundType.getOrElse(UnknownInfo(clazz))
 
             // TODO in DottyJack: Here's how to get companion object to then find newBuilder method to construct the List-like thing
             // val companionClazz = Class.forName(className+"$").getMethod("newBuilder")
             // println("HERE "+companionClazz)
       
-      case x => throw new Exception("Unknown/unexpected type "+x)
+      case x => throw new Exception("Unknown/unexpected type "+x)  // Unsure if this a Class or not--won't use UnknownInfo here
     }
