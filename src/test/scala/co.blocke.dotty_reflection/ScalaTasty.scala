@@ -205,5 +205,23 @@ class ScalaTasty extends munit.FunSuite {
     val r = Reflector.reflectOn[scala.math.BigDecimal]
     assert(r.isInstanceOf[UnknownInfo])
   }
+
+  test("Try type") {
+    val r = Reflector.reflectOn[TryMe]
+    val result = r match {
+      case StaticClassInfo(
+          "co.blocke.dotty_reflection.TryMe",
+          _,
+          List(
+            ScalaFieldInfo(0,"maybe",TryInfo("scala.util.Try",_,List("T"),Scala_Boolean),_,_,None),
+          ),
+          Nil,
+          _,
+          false
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
 }
 

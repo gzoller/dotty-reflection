@@ -205,4 +205,21 @@ class JavaNonTasty extends munit.FunSuite {
     }
     assert(result)
   }
+
+  test("Java parameterized class") {
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaParam[_]].asInstanceOf[StaticJavaClassInfo]
+    val result = r match {
+      case StaticJavaClassInfo(
+          "co.blocke.reflect.JavaParam",
+          _,
+          List(
+            JavaFieldInfo(0,"jThing","K",_,_,_)
+          ),
+          List("K"),
+          _
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
 }

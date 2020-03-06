@@ -107,3 +107,5 @@ enum Month {
 }
 
 case class Birthday(m: Month, d: WeekDay)
+
+case class TryMe(maybe: scala.util.Try[Boolean])

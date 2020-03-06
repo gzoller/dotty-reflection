@@ -2,47 +2,123 @@ package co.blocke.dotty_reflection
 
 import model._
 import impl.Clazzes._
+import scala.util.Try
 
-// object WeekDay extends Enumeration {
-//   type WeekDay = Value
-//   val Mon, Tue, Wed, Thu, Fri, Sat, Sun = Value
-// }
-object WeekDay extends Enumeration {
-  type WeekDay = Value
-  val Monday = Value(1)
-  val Tuesday = Value(2)
-  val Wednesday = Value(3)
-  val Thursday = Value(4)
-  val Friday = Value(5)
-  val Saturday = Value(6)
-  val Sunday = Value(-3)
-}
-import WeekDay._
+// Unambiguous member names
+sealed trait ContactPoint
+case class EmailAddress(emailAddress: String) extends ContactPoint
+case class PhoneNumber(phoneNumber: String) extends ContactPoint
 
-enum Month {
-  case Jan, Feb, Mar
-}
+// Ambiguous member names
+sealed trait Vehicle
+case class Truck(numberOfWheels: Int) extends Vehicle
+case class Car(numberOfWheels: Int, color: String) extends Vehicle
+case class Plane(numberOfEngines: Int) extends Vehicle
 
-case class Shell(a: Month)
-// case class Shell(a: WeekDay, b: Month)
+// Case object implementation
+sealed trait Flavor
+case object Vanilla extends Flavor
+case object Chocolate extends Flavor
+case object Bourbon extends Flavor
+
+sealed trait Stay
+case class VillaStay(name: String) extends Stay
+case class RanchStay(name: String) extends Stay
+
+case class NotSealed()
+
+case class Shell(a: ContactPoint)
 
 @main def runme(): Unit =
 
   // try {
-    // println(Reflector.reflectOn[You])
-
-    // println(Reflector.reflectOn[Shell])
-
-    println("-------------")
-
-    val s = ScalaEnumeration("co.blocke.dotty_reflection.WeekDay",Class.forName("co.blocke.dotty_reflection.WeekDay"))
-    println(s.values)
-    println(s.ordinal("Sunday"))
-    println(s.valueOf("Wednesday").isInstanceOf[WeekDay])
-    println(s.valueOf(1))
-
-    println("HEY: "+Class.forName("scala.Enumeration$Value"))
+    println(Reflector.reflectOn[Shell])
     
   // } catch {
   //   case x => //x.printStackTrace()
   // }
+
+
+  /*
+package co.blocke.scalajack
+package json.misc
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+import scala.reflect.runtime.universe._
+
+
+
+class SealedTraits extends AnyFunSpec with Matchers {
+
+  val sj = ScalaJack()
+
+  describe(
+    "------------------------\n:  Sealed Trait Tests  :\n------------------------"
+  ) {
+      it("Read - unambiguous") {
+        assertResult(EmailAddress("foo@bar.com")) {
+          sj.read[ContactPoint]("""{"emailAddress":"foo@bar.com"}""")
+        }
+      }
+      it("Write - unambiguous") {
+        assertResult("""{"phoneNumber":"12223334444"}""") {
+          sj.render[ContactPoint](PhoneNumber("12223334444"))
+        }
+      }
+      it("Read - ambiguous") {
+        assertResult(Truck(numberOfWheels = 4)) {
+          sj.read[Vehicle](
+            """{"_hint":"co.blocke.scalajack.json.misc.Truck","numberOfWheels":4}"""
+          )
+        }
+      }
+      it("Write - ambiguous") {
+        assertResult(
+          """{"_hint":"co.blocke.scalajack.json.misc.Car","numberOfWheels":3,"color":"Red"}"""
+        ) {
+            sj.render[Vehicle](Car(numberOfWheels = 3, color = "Red"))
+          }
+      }
+      it("Case object implementation") {
+        val flavors: List[Flavor] = List(Bourbon, Vanilla, Chocolate)
+        val js = sj.render(flavors)
+        assertResult("""["Bourbon","Vanilla","Chocolate"]""") { js }
+        assertResult(flavors) { sj.read[List[Flavor]](js) }
+      }
+      it("Type hints with modification") {
+        val sj2 = ScalaJack().withHints((typeOf[Stay] -> "stay_kind"))
+        val s: Stay = VillaStay("Hacienda")
+        val js = sj2.render(s)
+        assertResult(
+          """{"stay_kind":"co.blocke.scalajack.json.misc.VillaStay","name":"Hacienda"}"""
+        ) { js }
+        assertResult(s) { sj2.read[Stay](js) }
+      }
+      it("Handles null") {
+        val js = """null"""
+        val inst = sj.read[ContactPoint](js)
+        inst should be(null)
+        sj.render[ContactPoint](inst) should be(js)
+      }
+      it("Handle not a sealed trait") {
+        val js = """{"d":3,"color":"Red"}"""
+        val msg =
+          """No sub-classes of co.blocke.scalajack.json.misc.ContactPoint match field names Set(d, color)
+          |{"d":3,"color":"Red"}
+          |--------------------^""".stripMargin
+        the[ScalaJackError] thrownBy sj.read[ContactPoint](js) should have message msg
+      }
+      it("Invalid ambiguous trait") {
+        val msg =
+          """co.blocke.scalajack.json.misc.NotSealed isn't a subclass of sealed trait co.blocke.scalajack.json.misc.Vehicle
+                  |....misc.NotSealed","numberOfWheels":3,"color":"Red"}
+                  |----------------------------------------------------^""".stripMargin
+        val js =
+          """{"_hint":"co.blocke.scalajack.json.misc.NotSealed","numberOfWheels":3,"color":"Red"}"""
+        the[ScalaJackError] thrownBy sj.read[Vehicle](js) should have message msg
+      }
+    }
+}
+
+*/

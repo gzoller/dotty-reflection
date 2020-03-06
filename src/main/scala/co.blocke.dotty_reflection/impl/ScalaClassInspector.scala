@@ -50,8 +50,18 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
         cache.get(className).orElse{
           val constructor = t.constructor
           val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
-          val inspected: ConcreteType = if(t.symbol.flags.is(reflect.Flags.Trait))
+          val inspected: ConcreteType = if(t.symbol.flags.is(reflect.Flags.Trait)) then
             // === Trait ===
+            println("Is Sealed? "+(t.symbol.flags.is(reflect.Flags.Sealed)))
+            /*
+            implicit val ctx = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context]
+            val symutil = dotty.tools.dotc.transform.SymUtils(t.symbol.asInstanceOf[dotty.tools.dotc.core.Symbols.Symbol])
+            val m = symutil.children //t.getClass.getMethods.toList.mkString("   \n")
+            println("M: "+m.map(_.fullName))
+            */
+            // println(t.symbol.getClass.getMethods.toList.mkString("    \n   "))
+            val s: reflect.Symbol = t.symbol
+            println( s.children.map(_.fullName))
             StaticTraitInfo(className, clazz, typeParams)
           else
             // === Scala Class (case or non-case) ===
@@ -133,6 +143,8 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
 
   def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
     import reflect.{_, given _}
+
+    println("HERE: "+typeRef)
 
     val classSymbol = typeRef.classSymbol.get
     val (is2xEnumeration, className) = classSymbol.fullName match { // Handle gobbled non-class scala.Enumeration.Value (old 2.x Enumeration class values)

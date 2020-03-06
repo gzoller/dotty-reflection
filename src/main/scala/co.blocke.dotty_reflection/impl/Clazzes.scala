@@ -3,6 +3,7 @@ package impl
 
 object Clazzes {
   val EnumClazz        = Class.forName("scala.Enum")
+  val TryClazz         = Class.forName("scala.util.Try")
   val MapClazz         = Class.forName("scala.collection.Map")
   val SetClazz         = Class.forName("scala.collection.Set")
   val SeqClazz         = Class.forName("scala.collection.Seq")

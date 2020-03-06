@@ -14,10 +14,10 @@
 - Extensible Info support (e.g. UUID, datetime)
 - Nested Java classes (field of Java class is another Java class)
 - UnknownClass ConcreteType implementation
-* User-written Java parameterized type
+- User-written Java parameterized type
 
 Extractors Needed:
-* Try 
+_ Try support
 - Enumeration (various flavors?)
 * Sealed Trait
 

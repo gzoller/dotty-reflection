@@ -10,5 +10,6 @@ object ExtractorRegistry:
       SeqExtractor(), 
       MapExtractor(), 
       TupleExtractor(),
+      TryExtractor(),
       CatchAllExtractor()
     )
