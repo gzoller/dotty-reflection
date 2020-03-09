@@ -223,5 +223,68 @@ class ScalaTasty extends munit.FunSuite {
     }
     assert(result)
   }
+
+  test("sealed trait with case classes") {
+    val r = Reflector.reflectOn[VehicleHolder]
+    val result = r match {
+      case StaticClassInfo(
+          "co.blocke.dotty_reflection.VehicleHolder",
+          _,
+          List(
+            ScalaFieldInfo(0,"v",
+              StaticSealedTraitInfo(
+                "co.blocke.dotty_reflection.Vehicle",
+                _,
+                Nil,
+                List(
+                  StaticClassInfo("co.blocke.dotty_reflection.Truck",_,List(ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None)),List(),_,false), 
+                  StaticClassInfo("co.blocke.dotty_reflection.Car",_,List(
+                    ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None),
+                    ScalaFieldInfo(1,"color",Scala_String,_,_,None)
+                  ),List(),_,false), 
+                  StaticClassInfo("co.blocke.dotty_reflection.Plane",_,List(ScalaFieldInfo(0,"numberOfEngines",Scala_Int,_,_,None)),List(),_,false)
+                )
+              ),
+              _,_,None
+            ),
+          ),
+          Nil,
+          _,
+          false
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("sealed trait with case objects") {
+    val r = Reflector.reflectOn[FlavorHolder]
+    val result = r match {
+      case StaticClassInfo(
+          "co.blocke.dotty_reflection.FlavorHolder",
+          _,
+          List(
+            ScalaFieldInfo(0,"f",
+              StaticSealedTraitInfo(
+                "co.blocke.dotty_reflection.Flavor",
+                _,
+                Nil,
+                List(
+                  ObjectInfo("co.blocke.dotty_reflection.Vanilla",_), 
+                  ObjectInfo("co.blocke.dotty_reflection.Chocolate",_), 
+                  ObjectInfo("co.blocke.dotty_reflection.Bourbon",_)
+                )
+              ),
+              _,_,None
+            ),
+          ),
+          Nil,
+          _,
+          false
+        ) => true
+      case _ => false
+    }
+    assert(result)
+  }
 }
 
