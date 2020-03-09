@@ -27,7 +27,7 @@ case class RanchStay(name: String) extends Stay
 
 case class NotSealed()
 
-case class Shell(a: ContactPoint)
+case class Shell(a: Flavor)
 
 @main def runme(): Unit =
 

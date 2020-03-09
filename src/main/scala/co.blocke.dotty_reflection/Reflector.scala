@@ -50,5 +50,6 @@ object Reflector:
     found.getOrElse({
       val tc = new ScalaClassInspector(clazz, cache)
       tc.inspect("", List(className))
+      println(s"GOT CLASS $className: "+cache.get(className))
       cache.get(className).getOrElse(UnknownInfo(clazz))
     })

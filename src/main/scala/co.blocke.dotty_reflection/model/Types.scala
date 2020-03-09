@@ -17,6 +17,10 @@ case class UnknownInfo(clazz: Class[_]) extends ConcreteType:
   val name = clazz.getName
   val typeParameters = Nil
 
+case class ScalaObjectInfo(clazz: Class[_]) extends ConcreteType:
+  val name = clazz.getName
+  val typeParameters = Nil
+
 type ALL_TYPE = ConcreteType | TypeSymbol
 
 enum PrimitiveType(val name: String) extends ConcreteType:

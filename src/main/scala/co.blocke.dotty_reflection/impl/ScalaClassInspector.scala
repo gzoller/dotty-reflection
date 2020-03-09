@@ -18,11 +18,11 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
       case ctx if ctx.isJavaCompilationUnit() => cache.put( clazz.getName, JavaClassInspector.inspectClass(clazz, cache))
       // TODO: May want to handle Scala2 top-level parsing of collections--we allow them as fields after all
       case ctx if ctx.isScala2CompilationUnit() => // do nothing... can't handle Scala2 non-Tasty classes at present
-      case _ => inspectClass(clazz.getName, reflect)(root)
+      case _ => cache.put( clazz.getName, inspectClass(clazz.getName, reflect)(root))
     }
     
 
-  def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
+  def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): ConcreteType =
     import reflect.{given _}
 
     object Descended {
@@ -38,12 +38,15 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
       case t => 
         None  // not what we expected!
     }
-    foundClass
+    foundClass.getOrElse(UnknownInfo(Class.forName(className)))
 
 
   private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
     import reflect.{_, given _}
     tree match {
+      case vd: reflect.ValDef if(vd.symbol.flags.is(reflect.Flags.Object)) =>
+        // === Object (Scala Object) ===
+        Some(ObjectInfo(vd.symbol.fullName, Class.forName(vd.symbol.fullName)))
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
         val className = t.symbol.show
         val clazz = Class.forName(className)
@@ -52,17 +55,20 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
           val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
           val inspected: ConcreteType = if(t.symbol.flags.is(reflect.Flags.Trait)) then
             // === Trait ===
-            println("Is Sealed? "+(t.symbol.flags.is(reflect.Flags.Sealed)))
-            /*
+            if t.symbol.flags.is(reflect.Flags.Sealed) then
+              StaticSealedTraitInfo(
+                className, 
+                clazz, 
+                typeParams, 
+                t.symbol.children.map(c => Reflector.reflectOnClass(Class.forName(c.fullName))))
+            else
+              StaticTraitInfo(className, clazz, typeParams)
+              /*
             implicit val ctx = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context]
             val symutil = dotty.tools.dotc.transform.SymUtils(t.symbol.asInstanceOf[dotty.tools.dotc.core.Symbols.Symbol])
             val m = symutil.children //t.getClass.getMethods.toList.mkString("   \n")
             println("M: "+m.map(_.fullName))
             */
-            // println(t.symbol.getClass.getMethods.toList.mkString("    \n   "))
-            val s: reflect.Symbol = t.symbol
-            println( s.children.map(_.fullName))
-            StaticTraitInfo(className, clazz, typeParams)
           else
             // === Scala Class (case or non-case) ===
             val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
@@ -109,7 +115,8 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
           cache.put(className, inspected)
           Some(inspected)
         }
-      case _ => None
+      case _ =>
+        None
     }
 
 
@@ -143,8 +150,6 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
 
   def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
     import reflect.{_, given _}
-
-    println("HERE: "+typeRef)
 
     val classSymbol = typeRef.classSymbol.get
     val (is2xEnumeration, className) = classSymbol.fullName match { // Handle gobbled non-class scala.Enumeration.Value (old 2.x Enumeration class values)
@@ -220,5 +225,5 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
             // val companionClazz = Class.forName(className+"$").getMethod("newBuilder")
             // println("HERE "+companionClazz)
       
-      case x => throw new Exception("Unknown/unexpected type "+x)  // Unsure if this a Class or not--won't use UnknownInfo here
+      case x => UnknownInfo(Class.forName(className))
     }
