@@ -17,4 +17,5 @@ case class CatchAllExtractor() extends TypeInfoExtractor:
     typeInspector: ScalaClassInspector): ALL_TYPE =
 
     println(">>> ReflectOn: "+clazz)
+    println(tob)
     Reflector.reflectOnClass(clazz)

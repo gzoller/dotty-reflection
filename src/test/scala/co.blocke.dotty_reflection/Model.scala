@@ -122,3 +122,38 @@ case object Vanilla extends Flavor
 case object Chocolate extends Flavor
 case object Bourbon extends Flavor
 case class FlavorHolder(f: Flavor)
+
+// Type substitution models
+//-------------------------
+// 0-level
+case class DuoTypes[Q,U](a: Q, b: U)
+
+// 1st level type substitution
+case class DuoHolder( a: DuoTypes[Int,Float] )
+
+// 2nd and 3rd level type substitution - option
+case class OptHolder( a: Option[DuoTypes[String,Boolean]])
+case class OptHolder2( a: Option[Option[DuoTypes[String,Boolean]]])
+
+// 2nd and 3rd level type substitution - either
+case class EitherHolder( a: Either[DuoTypes[Int,Float], Option[DuoTypes[String,Boolean]]])
+
+// Alias type substitution
+opaque type mystery = DuoTypes[Byte,Short]
+case class AliasTypeSub(a: mystery) 
+
+// 1st and 2nd level substitution in class
+case class DuoClass( a: DuoTypes[Int,DuoTypes[Byte,Short]] )
+
+// List and Map substitution
+case class ListMapSub( a: List[DuoTypes[Int,Byte]], b: Map[String, DuoTypes[Float,Short]])
+
+// Try substitution
+case class TryHolder( a: scala.util.Try[DuoTypes[String,Int]] )
+
+// Trait type substitution
+trait TypeShell[X] { val x: X }
+case class TypeShellHolder(a: TypeShell[Int])
+
+// Union type substitution
+case class UnionHolder(a: Int | TypeShell[String])

@@ -12,10 +12,10 @@ import Clazzes._
  *  ScalaClassInspector by default.
  */
 object JavaClassInspector:
-  def inspectClass(c: Class[?], cache: Reflector.CacheType): ConcreteType =
+  def inspectClass(c: Class[?]): ConcreteType =
     val annos:List[Annotation] = c.getAnnotations.toList
     val allAnnos = annos.map(a => parseAnno(a)).toMap
-    StaticJavaClassInfo(c.getName, c, parseFields(c), typeParamSymbols(c), allAnnos)
+    JavaClassInfo(c.getName, c, parseFields(c), typeParamSymbols(c), allAnnos)
 
 
   private def parseAnno( annoClass: Annotation): (String,Map[String,String]) = 

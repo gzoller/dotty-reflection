@@ -8,9 +8,9 @@ import java.util.Optional
 class Options extends munit.FunSuite {
 
   test("Scala optional field") {
-    val r = Reflector.reflectOn[NormalOption].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[NormalOption].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.NormalOption",
         _,
         List(
@@ -26,9 +26,9 @@ class Options extends munit.FunSuite {
   }
 
   test("Java optional field") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption1].asInstanceOf[StaticJavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption1].asInstanceOf[JavaClassInfo]
     val result = r match {
-      case StaticJavaClassInfo(
+      case JavaClassInfo(
         "co.blocke.reflect.JavaOption1",
         _,
         List(
@@ -42,9 +42,9 @@ class Options extends munit.FunSuite {
   }
 
   test("Scala nested optional field") {
-    val r = Reflector.reflectOn[NestedOption].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[NestedOption].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.NestedOption",
         _,
         List(
@@ -60,9 +60,9 @@ class Options extends munit.FunSuite {
   }
 
   test("Java nested optional field") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption2].asInstanceOf[StaticJavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption2].asInstanceOf[JavaClassInfo]
     val result = r match {
-      case StaticJavaClassInfo(
+      case JavaClassInfo(
         "co.blocke.reflect.JavaOption2",
         _,
         List(
@@ -76,9 +76,9 @@ class Options extends munit.FunSuite {
   }
 
   test("Scala optional parameterized field") {
-    val r = Reflector.reflectOn[ParamOption[_]].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[ParamOption[_]].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.ParamOption",
         _,
         List(
@@ -94,9 +94,9 @@ class Options extends munit.FunSuite {
   }
 
   test("Java optional parameterized field") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption3[_]].asInstanceOf[StaticJavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption3[_]].asInstanceOf[JavaClassInfo]
     val result = r match {
-      case StaticJavaClassInfo(
+      case JavaClassInfo(
         "co.blocke.reflect.JavaOption3",
         _,
         List(
@@ -110,7 +110,7 @@ class Options extends munit.FunSuite {
   }
 
   test("Option assignments in union type") {
-    val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[ScalaClassInfo]
     assert(
       r.constructWith[UnionHavingOption](List(None,Optional.empty())) == UnionHavingOption(None,Optional.empty())
     )
@@ -120,9 +120,9 @@ class Options extends munit.FunSuite {
   }
 
   test("Option of a union") {    
-    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.OptionHavingUnion",
         _,
         List(
@@ -138,7 +138,7 @@ class Options extends munit.FunSuite {
   }
 
   test("Option of a union assignment") {    
-    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[ScalaClassInfo]
     assert(
       r.constructWith[OptionHavingUnion](List(None)) == OptionHavingUnion(None)
     )

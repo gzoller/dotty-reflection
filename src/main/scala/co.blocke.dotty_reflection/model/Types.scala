@@ -6,6 +6,7 @@ opaque type TypeSymbol = String // Placeholder type, e.g. T as in Foo[T](x: T)
 trait ConcreteType:
   val name: String
   val typeParameters: List[TypeSymbol]
+  def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = this
 
 /** This is for all the classes we don't inspect.  These may be "invalid" or just not reflectable.
   * Rather than toss our exception cookies, we just return UnknownInfo and let the caller decide

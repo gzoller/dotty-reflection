@@ -9,16 +9,18 @@ import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
 
-class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends TastyInspector:
+class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
   import Clazzes._
+
+  var inspected: ConcreteType = UnknownInfo(clazz)
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{given _}
     reflect.rootContext match {
-      case ctx if ctx.isJavaCompilationUnit() => cache.put( clazz.getName, JavaClassInspector.inspectClass(clazz, cache))
+      case ctx if ctx.isJavaCompilationUnit() => inspected = JavaClassInspector.inspectClass(clazz)
       // TODO: May want to handle Scala2 top-level parsing of collections--we allow them as fields after all
-      case ctx if ctx.isScala2CompilationUnit() => // do nothing... can't handle Scala2 non-Tasty classes at present
-      case _ => cache.put( clazz.getName, inspectClass(clazz.getName, reflect)(root))
+      case ctx if ctx.isScala2CompilationUnit() => UnknownInfo(clazz)  // Can't do much with Scala2 classes--not Tasty
+      case _ => inspected = inspectClass(clazz.getName, reflect)(root)
     }
     
 
@@ -50,71 +52,75 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
         val className = t.symbol.show
         val clazz = Class.forName(className)
-        cache.get(className).orElse{
-          val constructor = t.constructor
-          val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
-          val inspected: ConcreteType = if(t.symbol.flags.is(reflect.Flags.Trait)) then
-            // === Trait ===
-            if t.symbol.flags.is(reflect.Flags.Sealed) then
-              StaticSealedTraitInfo(
-                className, 
-                clazz, 
-                typeParams, 
-                t.symbol.children.map(c => Reflector.reflectOnClass(Class.forName(c.fullName))))
-            else
-              StaticTraitInfo(className, clazz, typeParams)
-              /*
-            implicit val ctx = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context]
-            val symutil = dotty.tools.dotc.transform.SymUtils(t.symbol.asInstanceOf[dotty.tools.dotc.core.Symbols.Symbol])
-            val m = symutil.children //t.getClass.getMethods.toList.mkString("   \n")
-            println("M: "+m.map(_.fullName))
-            */
+        // cache.get(className).orElse{
+        val constructor = t.constructor
+        val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
+        val inspected: ConcreteType = if(t.symbol.flags.is(reflect.Flags.Trait)) then
+          // === Trait ===
+          if t.symbol.flags.is(reflect.Flags.Sealed) then
+            SealedTraitInfo(
+              className, 
+              clazz, 
+              typeParams, 
+              t.symbol.children.map(c => Reflector.reflectOnClass(Class.forName(c.fullName))))
           else
-            // === Scala Class (case or non-case) ===
-            val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
-            val paramz = constructor.paramss
-            val members = t.body.collect {
-              case vd: reflect.ValDef => vd
-            }.map(f => (f.name->f)).toMap
-            val fields = paramz.head.zipWithIndex.map{ (paramValDef, i) =>
-              val valDef = members(paramValDef.name) // we use the members here because match types aren't resolved in paramValDef but are resolved in members
-              val fieldName = valDef.name
-              if(!isCaseClass)
-                scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
-                  throw new Exception(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
-                )
-              // Field annotations (stored internal 'val' definitions in class)
-              val annoSymbol = members.get(fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
-              // val annoSymbol = members.find(_.name == fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
-              val fieldAnnos = annoSymbol.map{ a => 
-                val reflect.Apply(_, params) = a
-                val annoName = a.symbol.signature.resultSig
-                (annoName,(params collect {
-                  case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
-                }).toMap)
-              }.toMap
+            TraitInfo(className, clazz, typeParams, Nil)
 
-              inspectField(reflect)(valDef, i, fieldAnnos, className) 
-            }
+            /*
+                      Reflector.reflectOnClassWithParams(clazz, tob.map(typeP => 
+            inspectType(reflect)(typeP.asInstanceOf[reflect.TypeRef])
+          ))*/
 
-            // Class annotations
-            val annoSymbol = t.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
-            val annos = annoSymbol.map{ a => 
+            /*
+          implicit val ctx = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context]
+          val symutil = dotty.tools.dotc.transform.SymUtils(t.symbol.asInstanceOf[dotty.tools.dotc.core.Symbols.Symbol])
+          val m = symutil.children //t.getClass.getMethods.toList.mkString("   \n")
+          println("M: "+m.map(_.fullName))
+          */
+        else
+          // === Scala Class (case or non-case) ===
+          val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
+          val paramz = constructor.paramss
+          val members = t.body.collect {
+            case vd: reflect.ValDef => vd
+          }.map(f => (f.name->f)).toMap
+          val fields = paramz.head.zipWithIndex.map{ (paramValDef, i) =>
+            val valDef = members(paramValDef.name) // we use the members here because match types aren't resolved in paramValDef but are resolved in members
+            val fieldName = valDef.name
+            if(!isCaseClass)
+              scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
+                throw new Exception(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
+              )
+            // Field annotations (stored internal 'val' definitions in class)
+            val annoSymbol = members.get(fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
+            val fieldAnnos = annoSymbol.map{ a => 
               val reflect.Apply(_, params) = a
               val annoName = a.symbol.signature.resultSig
               (annoName,(params collect {
                 case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
               }).toMap)
             }.toMap
- 
-            val isValueClass = t.parents.collectFirst {
-              case Apply(Select(New(x),_),_) => x 
-            }.map(_.symbol.name == "AnyVal").getOrElse(false)
 
-            StaticClassInfo(className, clazz, fields, typeParams, annos, isValueClass)
-          cache.put(className, inspected)
-          Some(inspected)
-        }
+            inspectField(reflect)(valDef, i, fieldAnnos, className) 
+          }
+
+          // Class annotations
+          val annoSymbol = t.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
+          val annos = annoSymbol.map{ a => 
+            val reflect.Apply(_, params) = a
+            val annoName = a.symbol.signature.resultSig
+            (annoName,(params collect {
+              case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
+            }).toMap)
+          }.toMap
+
+          val isValueClass = t.parents.collectFirst {
+            case Apply(Select(New(x),_),_) => x 
+          }.map(_.symbol.name == "AnyVal").getOrElse(false)
+
+          ScalaClassInfo(className, clazz, fields, typeParams, annos, isValueClass)
+        Some(inspected)
+        // }
       case _ =>
         None
     }
@@ -152,7 +158,8 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
     import reflect.{_, given _}
 
     val classSymbol = typeRef.classSymbol.get
-    val (is2xEnumeration, className) = classSymbol.fullName match { // Handle gobbled non-class scala.Enumeration.Value (old 2.x Enumeration class values)
+    // Handle gobbled non-class scala.Enumeration.Value (old 2.x Enumeration class values)
+    val (is2xEnumeration, className) = classSymbol.fullName match { 
       case raw if raw == "scala.Enumeration.Value" => 
         val emerationClass = typeRef.typeSymbol.fullName
         (true, emerationClass.dropRight(emerationClass.length - emerationClass.lastIndexOf('$')))
@@ -219,11 +226,17 @@ class ScalaClassInspector(clazz: Class[_], cache: Reflector.CacheType) extends T
         val foundType: Option[ALL_TYPE] = ExtractorRegistry.extractors.collectFirst {
           case e if e.matches(clazz) => e.extractInfo(reflect)(t, tob, className, clazz, this)   
         }
-        foundType.getOrElse(UnknownInfo(clazz))
+        foundType.getOrElse{
+          // Some other class we need to descend into, including a parameterized Scala class
+          Reflector.reflectOnClassWithParams(clazz, tob.map(typeP => 
+            inspectType(reflect)(typeP.asInstanceOf[reflect.TypeRef])
+          ))
+        }
 
             // TODO in DottyJack: Here's how to get companion object to then find newBuilder method to construct the List-like thing
             // val companionClazz = Class.forName(className+"$").getMethod("newBuilder")
             // println("HERE "+companionClazz)
       
-      case x => UnknownInfo(Class.forName(className))
+      case x => 
+        UnknownInfo(Class.forName(className))
     }

@@ -2,12 +2,15 @@ package co.blocke.dotty_reflection
 package model
 
 
-case class StaticTraitInfo protected(
+case class TraitInfo protected(
   name: String, 
   infoClass: Class[_], 
-  typeParameters: List[TypeSymbol]) extends ConcreteType with ClassOrTrait
+  typeParameters: List[TypeSymbol],
+  actualParameterTypes: List[ALL_TYPE]) extends ConcreteType with ClassOrTrait:
+  def setActualTypeParameters( params: List[ALL_TYPE] ) = this.copy(actualParameterTypes = params)
 
-case class StaticSealedTraitInfo protected(
+
+case class SealedTraitInfo protected(
   name: String, 
   infoClass: Class[_], 
   typeParameters: List[TypeSymbol],

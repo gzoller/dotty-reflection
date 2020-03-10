@@ -9,7 +9,7 @@ class ScalaTasty extends munit.FunSuite {
 
   test("reflect basic Tasty class with union") {
     val result = Reflector.reflectOn[Person] match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Person",
         _,
         List(
@@ -28,14 +28,14 @@ class ScalaTasty extends munit.FunSuite {
 
   test("create basic Tasty class") {
     val p = Reflector.reflectOn[Person]
-    val person = p.asInstanceOf[StaticClassInfo].constructWith[Person](List("Frank", 35, 5))
+    val person = p.asInstanceOf[ScalaClassInfo].constructWith[Person](List("Frank", 35, 5))
     assertEquals(person, Person("Frank",35,5))
   }
 
 
   test("handle match types") {
     val result = Reflector.reflectOn[Definitely] match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Definitely",
         _,
         List(
@@ -53,12 +53,12 @@ class ScalaTasty extends munit.FunSuite {
   
   test("process mixins") {
     val m = Reflector.reflectOn[WithMix]
-    assertEquals(m.asInstanceOf[StaticClassInfo].hasMixin("co.blocke.dotty_reflection.SJCapture"),true)
+    assertEquals(m.asInstanceOf[ScalaClassInfo].hasMixin("co.blocke.dotty_reflection.SJCapture"),true)
   }
 
   test("capture field and class annotations") {
     val result = Reflector.reflectOn[WithAnnotation] match {
-      case c @ StaticClassInfo(
+      case c @ ScalaClassInfo(
         "co.blocke.dotty_reflection.WithAnnotation",
         _,
         List(
@@ -76,7 +76,7 @@ class ScalaTasty extends munit.FunSuite {
   test("handle parameterized class") {
     val wp = WithParam(1,true)
     val result = Reflector.reflectOnClass(wp.getClass) match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.WithParam",
         _,
         List(
@@ -94,7 +94,7 @@ class ScalaTasty extends munit.FunSuite {
 
   test("handle opaque type alias") {
     val result = Reflector.reflectOn[Employee] match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Employee",
         _,
         List(
@@ -112,10 +112,12 @@ class ScalaTasty extends munit.FunSuite {
 
   test("opaque type alias is a union type") {
     val result = Reflector.reflectOn[OpaqueUnion] match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.OpaqueUnion",
         _,
-        List(ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo("__union_type__",Nil,Scala_Int, Scala_String)),_,_,None)),
+        List(
+          ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo("__union_type__",Nil,Scala_Int, Scala_String)),_,_,None)
+        ),
         Nil,
         _,
         false
@@ -131,9 +133,9 @@ class ScalaTasty extends munit.FunSuite {
   }
 
   test("detect default values in case class constructor fields") {
-    val wd = Reflector.reflectOn[WithDefault].asInstanceOf[StaticClassInfo]
+    val wd = Reflector.reflectOn[WithDefault].asInstanceOf[ScalaClassInfo]
     val result = wd match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.WithDefault",
         _,
         List(
@@ -152,9 +154,9 @@ class ScalaTasty extends munit.FunSuite {
   }
 
   test("plain class support") {
-    val r = Reflector.reflectOn[PlainGood].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[PlainGood].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
           "co.blocke.dotty_reflection.PlainGood",
           _,
           List(
@@ -175,9 +177,9 @@ class ScalaTasty extends munit.FunSuite {
   }
 
   test("all Scala primitive types") {
-    val r = Reflector.reflectOn[ScalaPrimitives].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[ScalaPrimitives].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
           "co.blocke.dotty_reflection.ScalaPrimitives",
           _,
           List(
@@ -209,7 +211,7 @@ class ScalaTasty extends munit.FunSuite {
   test("Try type") {
     val r = Reflector.reflectOn[TryMe]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
           "co.blocke.dotty_reflection.TryMe",
           _,
           List(
@@ -227,22 +229,22 @@ class ScalaTasty extends munit.FunSuite {
   test("sealed trait with case classes") {
     val r = Reflector.reflectOn[VehicleHolder]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
           "co.blocke.dotty_reflection.VehicleHolder",
           _,
           List(
             ScalaFieldInfo(0,"v",
-              StaticSealedTraitInfo(
+              SealedTraitInfo(
                 "co.blocke.dotty_reflection.Vehicle",
                 _,
                 Nil,
                 List(
-                  StaticClassInfo("co.blocke.dotty_reflection.Truck",_,List(ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None)),List(),_,false), 
-                  StaticClassInfo("co.blocke.dotty_reflection.Car",_,List(
+                  ScalaClassInfo("co.blocke.dotty_reflection.Truck",_,List(ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None)),Nil,_,false), 
+                  ScalaClassInfo("co.blocke.dotty_reflection.Car",_,List(
                     ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None),
                     ScalaFieldInfo(1,"color",Scala_String,_,_,None)
-                  ),List(),_,false), 
-                  StaticClassInfo("co.blocke.dotty_reflection.Plane",_,List(ScalaFieldInfo(0,"numberOfEngines",Scala_Int,_,_,None)),List(),_,false)
+                  ),Nil,_,false), 
+                  ScalaClassInfo("co.blocke.dotty_reflection.Plane",_,List(ScalaFieldInfo(0,"numberOfEngines",Scala_Int,_,_,None)),Nil,_,false)
                 )
               ),
               _,_,None
@@ -260,12 +262,12 @@ class ScalaTasty extends munit.FunSuite {
   test("sealed trait with case objects") {
     val r = Reflector.reflectOn[FlavorHolder]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
           "co.blocke.dotty_reflection.FlavorHolder",
           _,
           List(
             ScalaFieldInfo(0,"f",
-              StaticSealedTraitInfo(
+              SealedTraitInfo(
                 "co.blocke.dotty_reflection.Flavor",
                 _,
                 Nil,

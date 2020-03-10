@@ -10,7 +10,7 @@ trait ClassInfo extends ConcreteType with ClassOrTrait:
   def constructWith[T](args: List[Object]): T 
 
 
-case class StaticClassInfo protected (
+case class ScalaClassInfo protected (
   name: String,
   infoClass: Class[_],
   fields: List[FieldInfo],
@@ -18,11 +18,17 @@ case class StaticClassInfo protected (
   annotations: Map[String, Map[String,String]],
   isValueClass: Boolean
   ) extends ClassInfo:
-    private val constructor = clazz.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
+    private lazy val constructor = clazz.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
     def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
+    override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
+      if typeParameters != Nil then // Only sew down if this class is parameterized, otherwise it's already fully resolved.
+        val fixedFields = fields.map( _.sewTypeParams( actualTypeMap ))
+        this.copy(fields = fixedFields)
+      else 
+        this
 
   
-case class StaticJavaClassInfo protected (
+case class JavaClassInfo protected (
   name: String,
   infoClass: Class[_],
   fields: List[FieldInfo],
@@ -36,3 +42,10 @@ case class StaticJavaClassInfo protected (
       val c = Class.forName(name).getConstructors.head.newInstance()
       fields.zipWithIndex.foreach((f,a) => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(c,args(a)))
       c.asInstanceOf[T]
+
+    override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]) = 
+      if typeParameters != Nil then // Only sew down if this class is parameterized, otherwise it's already fully resolved.
+        val fixedFields = fields.map( _.sewTypeParams( actualTypeMap ))
+        this.copy(fields = fixedFields)
+      else 
+        this

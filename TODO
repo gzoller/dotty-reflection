@@ -15,14 +15,14 @@
 - Nested Java classes (field of Java class is another Java class)
 - UnknownClass ConcreteType implementation
 - User-written Java parameterized type
-* Field in class is an object (i.e. reflect on an object)
+- Field in class is an object (i.e. reflect on an object)
 
 Extractors Needed:
-_ Try support
+- Try support
 - Enumeration (various flavors?)
 - Sealed Trait
 
-* Runtime object blending
+- Runtime object blending
 * Discern initial/requested value of [T], e.g. write[Person](obj)... T = Person
 
 NOTE: Scala plain classes *not* using val constructor args are no longer supported!

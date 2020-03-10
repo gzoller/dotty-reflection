@@ -14,6 +14,11 @@ case class ScalaOptionInfo(
   optionParamType: ALL_TYPE
 ) extends OptionInfo:
   val typeParameters = Nil
+  override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = optionParamType match {
+    case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(optionParamType = actualTypeMap(ts))
+    case ts: TypeSymbol => this
+    case c: ConcreteType => this.copy(optionParamType = c.sewTypeParams(actualTypeMap))
+  }
 
 
 case class JavaOptionInfo(
@@ -22,3 +27,8 @@ case class JavaOptionInfo(
   optionParamType: ALL_TYPE
 ) extends OptionInfo:
   val typeParameters = Nil
+  override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = optionParamType match {
+    case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(optionParamType = actualTypeMap(ts))
+    case ts: TypeSymbol => this
+    case c: ConcreteType => this.copy(optionParamType = c.sewTypeParams(actualTypeMap))
+  }

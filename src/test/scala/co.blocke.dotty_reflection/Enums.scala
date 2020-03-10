@@ -7,9 +7,9 @@ import PrimitiveType._
 class Enums extends munit.FunSuite {
 
   test("Java Enums") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaEnum].asInstanceOf[StaticJavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaEnum].asInstanceOf[JavaClassInfo]
     val result = r match {
-      case StaticJavaClassInfo(
+      case JavaClassInfo(
           "co.blocke.reflect.JavaEnum",
           _,
           List(
@@ -24,9 +24,9 @@ class Enums extends munit.FunSuite {
   }
 
   test("Scala Enums (old and new)") {
-    val r = Reflector.reflectOn[Birthday].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Birthday].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Birthday",
         _,
         List(

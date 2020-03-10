@@ -10,6 +10,7 @@ trait FieldInfo:
   val annotations: Map[String,Map[String,String]]
   val valueAccessor: Method
   val defaultValueAccessor: Option[()=>Object]
+  def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): FieldInfo
 
 case class ScalaFieldInfo(
   index: Int,
@@ -21,11 +22,18 @@ case class ScalaFieldInfo(
 ) extends FieldInfo:
   def valueOf(target: Object) = valueAccessor.invoke(target)
   def constructorClass: Class[_] = constructorClassFor(fieldType)
+  def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]) = 
+    fieldType match {
+      case ts: TypeSymbol if actualTypeMap.contains(ts) =>  // 1st level direct type substitution
+        this.copy(fieldType = actualTypeMap(ts) )
+      case ct: ConcreteType => // nth level -- may be a substitution--or not
+        this.copy(fieldType = ct.sewTypeParams(actualTypeMap))
+    }
 
   private def constructorClassFor(t: ALL_TYPE): Class[_] = t match 
     case ci:StaticUnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
     case ot:AliasInfo => constructorClassFor(ot.unwrappedType)
-    case ci:StaticClassInfo if ci.isValueClass => constructorClassFor(ci.fields(0).fieldType)
+    case ci:ScalaClassInfo if ci.isValueClass => constructorClassFor(ci.fields(0).fieldType)
     case PrimitiveType.Scala_Boolean => implicitly[reflect.ClassTag[Boolean]].runtimeClass
     case PrimitiveType.Scala_Byte => implicitly[reflect.ClassTag[Byte]].runtimeClass
     case PrimitiveType.Scala_Char => implicitly[reflect.ClassTag[Char]].runtimeClass
@@ -52,3 +60,10 @@ case class JavaFieldInfo(
   valueSetter: Method
 ) extends FieldInfo:
   val defaultValueAccessor = None
+  def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]) = 
+    fieldType match {
+      case ts: TypeSymbol if actualTypeMap.contains(ts) =>  // 1st level direct type substitution
+        this.copy(fieldType = actualTypeMap(ts))
+      case ct: ConcreteType => // nth level -- may be a substitution--or not
+        this.copy(fieldType = ct.sewTypeParams(actualTypeMap))
+    }

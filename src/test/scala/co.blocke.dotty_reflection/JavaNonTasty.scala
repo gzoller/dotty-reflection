@@ -1,17 +1,15 @@
 package co.blocke.dotty_reflection
 
 import munit._
-// import org.junit.Assert.assertEquals
-// import org.junit.Test
 import model._
 import PrimitiveType._
 
 class JavaNonTasty extends munit.FunSuite {
 
   test("reflect basic with capture") {
-    val r = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[StaticJavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[JavaClassInfo]
     val result = r match {
-      case StaticJavaClassInfo(
+      case JavaClassInfo(
         "co.blocke.reflect.Person",
         _,
         List(
@@ -29,7 +27,7 @@ class JavaNonTasty extends munit.FunSuite {
   }
 
   test("create Java object") {
-    val p = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[StaticJavaClassInfo]
+    val p = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[JavaClassInfo]
     val person = p.constructWith[co.blocke.reflect.Person](List(35, "Frank", 5))
     assertEquals(person.getName,"Frank")
     assertEquals(person.getAge,35)
@@ -40,7 +38,7 @@ class JavaNonTasty extends munit.FunSuite {
   }
 
   test("Verify Java primitives") {
-    val jx = Reflector.reflectOn[co.blocke.reflect.JavaTypes].asInstanceOf[StaticJavaClassInfo]
+    val jx = Reflector.reflectOn[co.blocke.reflect.JavaTypes].asInstanceOf[JavaClassInfo]
     val inst = jx.constructWith[co.blocke.reflect.JavaTypes](List(
       true,false, 5.toByte, 3.toByte, 'x', 'y', 1.2D, 2.3D, 4.5F, 5.6F, 1, 2, 3L, 4L, "something", 5.toShort, 6.toShort, "foom"
     ))
@@ -140,7 +138,7 @@ class JavaNonTasty extends munit.FunSuite {
   test("Detect parameterized Java class") {
     val wp = Class.forName("co.blocke.reflect.ParamAnno")
     val result = Reflector.reflectOnClass(wp) match {
-      case a @ StaticJavaClassInfo(
+      case a @ JavaClassInfo(
         "co.blocke.reflect.ParamAnno",
         _,
         List(
@@ -158,9 +156,9 @@ class JavaNonTasty extends munit.FunSuite {
   }
 
   test("Java collection types") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaCollections].asInstanceOf[StaticJavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaCollections].asInstanceOf[JavaClassInfo]
     val result = r match {
-      case StaticJavaClassInfo(
+      case JavaClassInfo(
           "co.blocke.reflect.JavaCollections",
           _,
           List(
@@ -180,14 +178,14 @@ class JavaNonTasty extends munit.FunSuite {
   }
 
   test("Nested Java classes") {
-    val r = Reflector.reflectOn[co.blocke.reflect.You].asInstanceOf[StaticJavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.You].asInstanceOf[JavaClassInfo]
     val result = r match {
-      case StaticJavaClassInfo(
+      case JavaClassInfo(
           "co.blocke.reflect.You",
           _,
           List(
             JavaFieldInfo(0,"sayHey",
-              StaticJavaClassInfo(
+              JavaClassInfo(
                 "co.blocke.reflect.Hey",
                 _,
                 List(
@@ -207,9 +205,9 @@ class JavaNonTasty extends munit.FunSuite {
   }
 
   test("Java parameterized class") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaParam[_]].asInstanceOf[StaticJavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaParam[_]].asInstanceOf[JavaClassInfo]
     val result = r match {
-      case StaticJavaClassInfo(
+      case JavaClassInfo(
           "co.blocke.reflect.JavaParam",
           _,
           List(

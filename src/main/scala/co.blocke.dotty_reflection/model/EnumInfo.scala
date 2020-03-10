@@ -10,6 +10,7 @@ trait ScalaEnumInfo extends ConcreteType:
   def valueOf(s: String): Any
   def valueOf(i: Int): Any
 
+
 case class ScalaEnum(
   name: String,
   infoClass: Class[_]

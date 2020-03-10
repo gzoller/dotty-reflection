@@ -7,9 +7,9 @@ import PrimitiveType._
 class Collections extends munit.FunSuite {
 
   test("Scala List") {
-    val r = Reflector.reflectOn[Coll1].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Coll1].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll1",
         _,
         List(
@@ -25,9 +25,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala Set") {
-    val r = Reflector.reflectOn[Coll2].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Coll2].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll2",
         _,
         List(
@@ -43,9 +43,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala Map 1") {
-    val r = Reflector.reflectOn[Coll3].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Coll3].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll3",
         _,
         List(
@@ -61,9 +61,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala Map 2") {
-    val r = Reflector.reflectOn[Coll4].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Coll4].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll4",
         _,
         List(
@@ -79,9 +79,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala mutable List") {
-    val r = Reflector.reflectOn[Coll1m].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Coll1m].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll1m",
         _,
         List(
@@ -97,9 +97,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala mutable Set") {
-    val r = Reflector.reflectOn[Coll2m].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Coll2m].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll2m",
         _,
         List(
@@ -115,9 +115,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala mutable Map 1") {
-    val r = Reflector.reflectOn[Coll3m].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Coll3m].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll3m",
         _,
         List(
@@ -133,9 +133,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala mutable Map 2") {
-    val r = Reflector.reflectOn[Coll4m].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[Coll4m].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll4m",
         _,
         List(
@@ -151,9 +151,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Nested Collections") {
-    val r = Reflector.reflectOn[NestedColl].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[NestedColl].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.NestedColl",
         _,
         List(
@@ -169,9 +169,9 @@ class Collections extends munit.FunSuite {
   }
 
   test("Tuples") {
-    val r = Reflector.reflectOn[TupleTurtle[Boolean]].asInstanceOf[StaticClassInfo]
+    val r = Reflector.reflectOn[TupleTurtle[Boolean]].asInstanceOf[ScalaClassInfo]
     val result = r match {
-      case StaticClassInfo(
+      case ScalaClassInfo(
         "co.blocke.dotty_reflection.TupleTurtle",
         _,
         List(
@@ -181,7 +181,7 @@ class Collections extends munit.FunSuite {
                 Scala_Int,
                 "Z",
                 Collection_A1_Info("scala.collection.immutable.List",_,List("A"),Scala_String),
-                StaticClassInfo(
+                ScalaClassInfo(
                   "co.blocke.dotty_reflection.NormalOption",
                    _,
                    List(

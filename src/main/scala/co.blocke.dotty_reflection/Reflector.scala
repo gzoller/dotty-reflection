@@ -34,21 +34,44 @@ object Reflector:
     "Long"                -> PrimitiveType.Scala_Long,
     "java.lang.Long"      -> PrimitiveType.Scala_Long,
     "short"               -> PrimitiveType.Scala_Short,
-    "Short"               -> PrimitiveType.Scala_Short,
+     "Short"               -> PrimitiveType.Scala_Short,
     "java.lang.Short"     -> PrimitiveType.Scala_Short,
     "java.lang.String"    -> PrimitiveType.Scala_String,
     "java.lang.Object"    -> PrimitiveType.Java_Object
   )
 
+
   def reflectOn[T](implicit ct: ClassTag[T]): ConcreteType = 
     val clazz = ct.runtimeClass
     reflectOnClass(clazz)
+
 
   def reflectOnClass(clazz: Class[_]): ConcreteType =
     val className = clazz.getName
     val found: Option[ConcreteType] = cache.get(className)
     found.getOrElse({
-      val tc = new ScalaClassInspector(clazz, cache)
+      val tc = new ScalaClassInspector(clazz)
       tc.inspect("", List(className))
-      cache.get(className).getOrElse(UnknownInfo(clazz))
+      tc.inspected
+      // cache.get(className).getOrElse(UnknownInfo(clazz))
     })
+
+
+  def reflectOnClassWithParams(clazz: Class[_], params: List[ALL_TYPE]): ConcreteType =
+    val className = clazz.getName
+    val tc = new ScalaClassInspector(clazz)
+    tc.inspect("", List(className))
+    // Now sew known params into fields' type symbols, if any
+    tc.inspected match {
+      case c: ScalaClassInfo => 
+        val x: List[(TypeSymbol,ALL_TYPE)] = c.typeParameters.zip(params)
+        val m: Map[TypeSymbol,ALL_TYPE] = x.toMap
+        c.sewTypeParams(m)
+      case c: JavaClassInfo => 
+        val x: List[(TypeSymbol,ALL_TYPE)] = c.typeParameters.zip(params)
+        val m: Map[TypeSymbol,ALL_TYPE] = x.toMap
+        c.sewTypeParams(m)
+      case c: TraitInfo =>
+        c.setActualTypeParameters( params )
+      case c => c
+    }
