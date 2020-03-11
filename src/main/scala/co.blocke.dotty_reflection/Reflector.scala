@@ -10,6 +10,9 @@ object Reflector:
 
   type CacheType = HashMap[String, ConcreteType]
 
+  // NOTE: Caching used only for primitive types right now.  Let's get the rest working then
+  // decide how/if we should cache other types.
+
   // pre-loaded with known language primitive types
   private val cache:CacheType = HashMap(
     "boolean"             -> PrimitiveType.Scala_Boolean,

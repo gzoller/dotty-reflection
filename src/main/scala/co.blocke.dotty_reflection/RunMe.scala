@@ -1,20 +1,25 @@
 package co.blocke.dotty_reflection
 
+/**  This class is a "lab".  Not intended for use with the library.  It's a learning area to see if/how we might move
+ *   pieces of this to a macro.
+ */
+
 import model._
 import impl.Clazzes._
 import scala.util.Try
 
-trait TypeShell[X] { val x: X }
-case class TypeShellHolder(a: TypeShell[Int])
+case class Foo[T](a:T)
+
+case class Person(name: String, age: Int)
+
+case class Item()
 
 
 @main def runme(): Unit =
 
-  // try {
-    val z = Reflector.reflectOn[TypeShellHolder]
-    println(z)
-    // println(z.asInstanceOf[ScalaClassInfo].constructWith[Blah](List(Foom(5,Left("Greg"),1.2))) )
-    
-  // } catch {
-  //   case x => //x.printStackTrace()
-  // }
+  // println(Reflector.reflectOn[Foo[Int]])
+
+  println("Running...")
+  // println(getPerson("Greg"))
+
+  println(getInstance[Item]("co.blocke.dotty_reflection.Item").getClass.getName)

@@ -46,3 +46,21 @@ JDK13: ~17 build failures with 1000s of warning messages
 JDK11: 3 build failures
 JDK8:  2 failures
 
+Hello!  Working on the "last mile" for runtime reflection, which is the intial type parameter detection.  So for example:
+```scala
+read[Thing[Int]](js:String)
+```
+I need to detect that Thing has a parameter of Int.  Java (un)helpfully erases this for me.  Inside Tasty reflection we're all good--this information is available in the Tasty file and can be sewn down to where it is needed.  
+But top-level when I call this function it's not available--it's before we've started reading Tasty files.
+
+Would a macro work here, i.e. read() is macro?  Here's the nuance...  def read[T](js: String) internally needs to call Reflector.reflectOn[T] THEN call the parsing code with the reflected information.  Can macros "chain" to a non-macro like that?
+The logical flow:
+```scala
+def read[T](js: String) {
+  val inspected = Reflector.reflectOn[T]
+  jsonParser.readInto(js, inspected).asInstanceOf[T]
+}
+// Can read() be a macro but have it's internals execute at runtime?
+```
+
+
