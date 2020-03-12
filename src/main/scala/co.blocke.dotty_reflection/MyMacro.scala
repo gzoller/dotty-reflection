@@ -1,6 +1,7 @@
 package co.blocke.dotty_reflection
 
 import scala.reflect.ClassTag
+import model._
 
 /**  This class is a "lab".  Not intended for use with the library.  It's a learning area to see if/how we might move
  *   pieces of this to a macro.
@@ -71,22 +72,31 @@ def readImpl[T](treeObj: Expr[Object])(implicit qctx: QuoteContext, wow:scala.qu
   */
 
 // Macro entry point -- quoted w/o matching splice allowed
-inline def read[T](x: => String): T = ${readImpl[T]('x)}
+inline def read[T]: T = ${ readImpl[T]() }
 
-def readImpl[T](param: Expr[String])(implicit qctx: QuoteContext, wow:scala.quoted.Type[T]): Expr[T] = {
+def readImpl[T]()(implicit qctx: QuoteContext, ttype:scala.quoted.Type[T]): Expr[T] = {
   import qctx.tasty.{_, given _}
 
   // YAY!!!  This knows about Boolean.  WE'RE SAVED!!!
   println("T: "+typeOf[T]) // AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class dotty_reflection)),class Foo),List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),module scala),class Boolean)))
+  println("-------")
+  val classSymbol = typeOf[T].classSymbol.get
 
-  // println("T: "+sym.asInstanceOf[dotty.tools.dotc.core.Symbols.Symbol].denot(qctx.tasty.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context]))
+  val AppliedType(t,tob) = typeOf[T]
+  println(classSymbol.fullName)
+  println(tob)
 
-  // println("T: "+sym.asInstanceOf[dotty.tools.dotc.core.Symbols.Symbol].asClass)
-  //println("Sym: "+sym.getClass.getInterfaces.toList)
-
-  // implicit val mutablePackagesMap: scala.collection.mutable.HashMap[String, EmulatedPackageRepresentation] = new scala.collection.mutable.HashMap[String, EmulatedPackageRepresentation]()
-  // val classRef = new ClassRepresentation(qctx.tasty, t.classSymbol.get.asInstanceOf[ClassDef], None)
-  // println("MAP: "+mutablePackagesMap)
+  // println("Classname: "+ classSymbol.fullName)
+  // val f = Person("Greg",53)
+  // println("F: "+f.getClass.getName)
+  val clazz = Class.forName(classSymbol.fullName)
+  // val si = impl.ScalaClassInspector(clazz)
+  // val params:List[ALL_TYPE] = tob.map(p => si.inspectType(qctx.tasty)(p.asInstanceOf[TypeRef]))
+  // val ct = Reflector.reflectOnClassWithParams(clazz, params): ConcreteType
+  // println(ct)
 
   '{null.asInstanceOf[T]}
 }
+
+
+// <><><><><><><><>  Second Attempt  <><><><><><><><>

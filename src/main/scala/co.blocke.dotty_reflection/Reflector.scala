@@ -44,11 +44,21 @@ object Reflector:
   )
 
 
+  /** Runtime callable reflection on a type T.  Note that there is one corner case where this runtime-callable
+   * function does not work:  When T is itself a parameterized type.  In that case, at runtime T's actual parameter
+   * types are (un)helpfully erased by the JVM, and are un-knowable.  If you have this use case you will need to 
+   * use the compile-time macro implementation of this library instead, which can handle parameterized T's, as all
+   * that type information is accessable at compile-time, pre-erasure.
+   * 
+   * @returns ConcreteType, typically a ScalaClassInfo for a Scala class
+   */
   def reflectOn[T](implicit ct: ClassTag[T]): ConcreteType = 
     val clazz = ct.runtimeClass
     reflectOnClass(clazz)
 
 
+  /** Same as reflectOn, except given a Class object instead of a type, T.
+   */
   def reflectOnClass(clazz: Class[_]): ConcreteType =
     val className = clazz.getName
     val found: Option[ConcreteType] = cache.get(className)
@@ -60,7 +70,7 @@ object Reflector:
     })
 
 
-  def reflectOnClassWithParams(clazz: Class[_], params: List[ALL_TYPE]): ConcreteType =
+  protected[dotty_reflection] def reflectOnClassWithParams(clazz: Class[_], params: List[ALL_TYPE]): ConcreteType =
     val className = clazz.getName
     val tc = new ScalaClassInspector(clazz)
     tc.inspect("", List(className))

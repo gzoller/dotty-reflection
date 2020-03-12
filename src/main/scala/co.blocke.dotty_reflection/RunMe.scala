@@ -17,7 +17,7 @@ case class Other()
 
 @main def runme(): Unit =
 
-  // println(Reflector.reflectOn[Foo[Int]])
+  // println(Reflector.reflectOn[Foo[Double]])
 
   println("Running...")
   // println(getPerson("Greg"))
@@ -32,4 +32,12 @@ case class Other()
   println(getInstance2("b").getClass.getName)
   */
 
-  println(read[Foo[Boolean]](""))
+  println(impl.getParams[Foo[Boolean]])
+
+  /*
+  println(readMe[Foo[Boolean]])
+
+  inline def readMe[T]: String =
+    val stuff = getParams[T]
+    "Returns: "+stuff
+    */
