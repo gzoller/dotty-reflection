@@ -13,7 +13,7 @@ case class Foo[T](a:T)
 case class Person(name: String, age: Int)
 
 case class Item()
-
+case class Other()
 
 @main def runme(): Unit =
 
@@ -22,4 +22,14 @@ case class Item()
   println("Running...")
   // println(getPerson("Greg"))
 
-  println(getInstance[Item]("co.blocke.dotty_reflection.Item").getClass.getName)
+  /*
+  try {
+    println(getInstance2("b").getClass.getName)
+  } catch {
+    case _:Exception => println("Expected Failure")
+  }
+  println(getInstance2("a").getClass.getName)
+  println(getInstance2("b").getClass.getName)
+  */
+
+  println(read[Foo[Boolean]](""))
