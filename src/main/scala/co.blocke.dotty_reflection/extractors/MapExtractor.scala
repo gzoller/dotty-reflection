@@ -6,13 +6,13 @@ import impl.Clazzes._
 import model._ 
 import scala.tasty.Reflection
 
-case class MapExtractor() extends TypeInfoExtractor[Collection_A2_Info]:
+case class MapExtractor() extends TypeInfoExtractor[MapLikeInfo]:
 
   def matches(clazz: Class[_]): Boolean = clazz <:< MapClazz
 
-  def emptyInfo(clazz: Class[_]): Collection_A2_Info = 
+  def emptyInfo(clazz: Class[_]): MapLikeInfo = 
     val params = clazz.getTypeParameters.toList
-    Collection_A2_Info(
+    MapLikeInfo(
       clazz.getName, 
       clazz, 
       params(0).getName.asInstanceOf[TypeSymbol],
@@ -26,7 +26,7 @@ case class MapExtractor() extends TypeInfoExtractor[Collection_A2_Info]:
     clazz: Class[_], 
     typeInspector: ScalaClassInspector): ConcreteType =
 
-    Collection_A2_Info(
+    MapLikeInfo(
       className, 
       clazz,
       typeInspector.inspectType(reflect)(tob(0).asInstanceOf[reflect.TypeRef]),

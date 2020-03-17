@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 package model
 
-case class ScalaEitherInfo(
+case class EitherInfo(
   name: String,
   infoClass: Class[_],
   leftParamType: ALL_TYPE,

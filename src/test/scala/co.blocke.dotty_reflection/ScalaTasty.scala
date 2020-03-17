@@ -15,7 +15,7 @@ class ScalaTasty extends munit.FunSuite {
         List(
           ScalaFieldInfo(0,"name",Scala_String,_,_,None),
           ScalaFieldInfo(1,"age",Scala_Int,_,_,None),
-          ScalaFieldInfo(2,"other",StaticUnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_Boolean),_,_,None)
+          ScalaFieldInfo(2,"other",UnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -116,7 +116,7 @@ class ScalaTasty extends munit.FunSuite {
         "co.blocke.dotty_reflection.OpaqueUnion",
         _,
         List(
-          ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_String)),_,_,None)
+          ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",UnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_String)),_,_,None)
         ),
         Nil,
         _,
@@ -297,9 +297,9 @@ class ScalaTasty extends munit.FunSuite {
         _,
         List(
           ScalaFieldInfo(0,"a",
-            StaticIntersectionInfo(
+            IntersectionInfo(
               Reflector.INTERSECTION_CLASS,
-              StaticIntersectionInfo(
+              IntersectionInfo(
                 Reflector.INTERSECTION_CLASS,
                 TraitInfo("co.blocke.dotty_reflection.InterA",_,Nil,Nil),
                 TraitInfo("co.blocke.dotty_reflection.InterB",_,Nil,Nil)

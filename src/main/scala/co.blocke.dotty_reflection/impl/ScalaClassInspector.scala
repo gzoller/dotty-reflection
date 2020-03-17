@@ -158,7 +158,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
           case AndType(left,right) =>
             val resolvedLeft: ALL_TYPE = inspectType(reflect)(left.asInstanceOf[reflect.TypeRef])
             val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[reflect.TypeRef])
-            StaticIntersectionInfo(Reflector.INTERSECTION_CLASS, resolvedLeft, resolvedRight)
+            IntersectionInfo(Reflector.INTERSECTION_CLASS, resolvedLeft, resolvedRight)
           case u => throw new Exception("Unsupported TypeRef: "+typeRef)
         }
 
@@ -214,7 +214,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
           case OrType(left,right) =>
             val resolvedLeft: ALL_TYPE = inspectType(reflect)(left.asInstanceOf[reflect.TypeRef])
             val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[reflect.TypeRef])
-            StaticUnionInfo(Reflector.UNION_CLASS, resolvedLeft, resolvedRight)
+            UnionInfo(Reflector.UNION_CLASS, resolvedLeft, resolvedRight)
         
           // Most other "normal" Types
           //----------------------------------------

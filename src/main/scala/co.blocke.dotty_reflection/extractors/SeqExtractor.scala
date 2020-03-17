@@ -6,12 +6,12 @@ import impl.Clazzes._
 import model._ 
 import scala.tasty.Reflection
 
-case class SeqExtractor() extends TypeInfoExtractor[Collection_A1_Info]:
+case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
 
   def matches(clazz: Class[_]): Boolean = clazz <:< SeqClazz || clazz <:< SetClazz
 
-  def emptyInfo(clazz: Class[_]): Collection_A1_Info = 
-    Collection_A1_Info(
+  def emptyInfo(clazz: Class[_]): SeqLikeInfo = 
+    SeqLikeInfo(
       clazz.getName, 
       clazz, 
       clazz.getTypeParameters.toList.head.getName.asInstanceOf[TypeSymbol])
@@ -23,7 +23,7 @@ case class SeqExtractor() extends TypeInfoExtractor[Collection_A1_Info]:
     clazz: Class[_], 
     typeInspector: ScalaClassInspector): ConcreteType =
 
-    Collection_A1_Info(
+    SeqLikeInfo(
             className, 
             clazz,
             typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]))

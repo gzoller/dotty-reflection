@@ -13,7 +13,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll1",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.List",_,Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.immutable.List",_,Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -31,7 +31,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll2",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.HashSet",_,Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.immutable.HashSet",_,Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -49,7 +49,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll3",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,Scala_String,Scala_Float),_,_,None)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.Map",_,Scala_String,Scala_Float),_,_,None)
         ),
         Nil,
         _,
@@ -67,7 +67,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll4",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -85,7 +85,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll1m",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.ListBuffer",_,Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.mutable.ListBuffer",_,Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -103,7 +103,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll2m",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.HashSet",_,Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.mutable.HashSet",_,Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -121,7 +121,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll3m",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.Map",_,Scala_String,Scala_Float),_,_,None)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.mutable.Map",_,Scala_String,Scala_Float),_,_,None)
         ),
         Nil,
         _,
@@ -139,7 +139,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll4m",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.mutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -157,7 +157,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.NestedColl",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,Scala_String,Collection_A1_Info("scala.collection.immutable.List",_,ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.Map",_,Scala_String,SeqLikeInfo("scala.collection.immutable.List",_,ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None)
         ),
         Nil,
         _,
@@ -184,7 +184,7 @@ class Collections extends munit.FunSuite {
               List(
                 Scala_Int, 
                 Scala_Boolean, 
-                Collection_A1_Info(
+                SeqLikeInfo(
                   "scala.collection.immutable.List",
                   _,
                   Scala_String

@@ -72,10 +72,10 @@ object Reflector:
         reflectOnClass(Class.forName(className))
       case ParamStructure(className, subparams) if className == UNION_CLASS =>
         val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
-        StaticUnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1))
+        UnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1))
       case ParamStructure(className, subparams) if className == INTERSECTION_CLASS =>
         val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
-        StaticIntersectionInfo(INTERSECTION_CLASS, resolvedParams(0), resolvedParams(1))
+        IntersectionInfo(INTERSECTION_CLASS, resolvedParams(0), resolvedParams(1))
       case ParamStructure(className, subparams) =>
         val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
         reflectOnClassWithParams(Class.forName(className), resolvedParams)

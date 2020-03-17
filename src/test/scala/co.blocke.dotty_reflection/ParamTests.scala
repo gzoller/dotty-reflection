@@ -49,9 +49,9 @@ class ParamTests extends munit.FunSuite {
   }
 
   test("0-level Either substitution") {
-    val r = Reflector.reflectOn[Either[Int,WithDefault]].asInstanceOf[ScalaEitherInfo]
+    val r = Reflector.reflectOn[Either[Int,WithDefault]].asInstanceOf[EitherInfo]
     val result = r match {
-      case ScalaEitherInfo(
+      case EitherInfo(
         "scala.util.Either",
         _,
         Scala_Int,
@@ -72,9 +72,9 @@ class ParamTests extends munit.FunSuite {
   }
 
   test("0-level Map substitution") {
-    val r = Reflector.reflectOn[Map[Int,WithDefault]].asInstanceOf[Collection_A2_Info]
+    val r = Reflector.reflectOn[Map[Int,WithDefault]].asInstanceOf[MapLikeInfo]
     val result = r match {
-      case Collection_A2_Info(
+      case MapLikeInfo(
         "scala.collection.immutable.Map",
         _,
         Scala_Int,
@@ -95,9 +95,9 @@ class ParamTests extends munit.FunSuite {
   }
 
   test("0-level List (Seq) substitution") {
-    val r = Reflector.reflectOn[List[WithDefault]].asInstanceOf[Collection_A1_Info]
+    val r = Reflector.reflectOn[List[WithDefault]].asInstanceOf[SeqLikeInfo]
     val result = r match {
-      case Collection_A1_Info(
+      case SeqLikeInfo(
         "scala.collection.immutable.List",
         _,
         ScalaClassInfo(
@@ -173,9 +173,9 @@ class ParamTests extends munit.FunSuite {
   }
 
   test("0-level Union substitution") {
-    val r = Reflector.reflectOn[String | WithDefault].asInstanceOf[StaticUnionInfo]
+    val r = Reflector.reflectOn[String | WithDefault].asInstanceOf[UnionInfo]
     val result = r match {
-      case StaticUnionInfo(
+      case UnionInfo(
         Reflector.UNION_CLASS,
         Scala_String,
         ScalaClassInfo(
@@ -195,9 +195,9 @@ class ParamTests extends munit.FunSuite {
   }
 
   test("0-level Intersection substitution") {    
-    val r = Reflector.reflectOn[Stackable[Int] & Floatable[String]].asInstanceOf[StaticIntersectionInfo]
+    val r = Reflector.reflectOn[Stackable[Int] & Floatable[String]].asInstanceOf[IntersectionInfo]
     val result = r match {
-      case StaticIntersectionInfo(
+      case IntersectionInfo(
         Reflector.INTERSECTION_CLASS,
         TraitInfo(
           "co.blocke.dotty_reflection.Stackable",
@@ -320,7 +320,7 @@ class ParamTests extends munit.FunSuite {
         _,
         List(
           ScalaFieldInfo(0,"a",
-            ScalaEitherInfo(
+            EitherInfo(
               "scala.util.Either",
               _,
               ScalaClassInfo(
@@ -440,7 +440,7 @@ class ParamTests extends munit.FunSuite {
         _,
         List(
           ScalaFieldInfo(0,"a",
-            Collection_A1_Info(
+            SeqLikeInfo(
               "scala.collection.immutable.List",
               _,
               ScalaClassInfo(
@@ -458,7 +458,7 @@ class ParamTests extends munit.FunSuite {
             _,_,None
           ), 
           ScalaFieldInfo(1,"b",
-            Collection_A2_Info(
+            MapLikeInfo(
               "scala.collection.immutable.Map",
               _,
               Scala_String,
@@ -545,7 +545,7 @@ class ParamTests extends munit.FunSuite {
         "co.blocke.dotty_reflection.UnionHolder",
         _,
         List(
-          ScalaFieldInfo(0,"a",StaticUnionInfo(Reflector.UNION_CLASS,Scala_Int,TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_String))),_,_,None)
+          ScalaFieldInfo(0,"a",UnionInfo(Reflector.UNION_CLASS,Scala_Int,TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_String))),_,_,None)
         ),
         Nil,
         _,

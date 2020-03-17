@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package model
 
 /** Arity 1 Collections, e.g. List, Set, Seq */
-case class Collection_A1_Info(
+case class SeqLikeInfo(
   name: String,
   infoClass: Class[_],
   elementType: ALL_TYPE
@@ -16,7 +16,7 @@ case class Collection_A1_Info(
     }
 
 /** Arity 2 Collections, Map flavors, basiclly */
-case class Collection_A2_Info(
+case class MapLikeInfo(
   name: String,
   infoClass: Class[_],
   elementType1: ALL_TYPE,

@@ -6,15 +6,15 @@ import impl.Clazzes._
 import model._ 
 import scala.tasty.Reflection
 
-case class EitherExtractor() extends TypeInfoExtractor[ScalaEitherInfo]:
+case class EitherExtractor() extends TypeInfoExtractor[EitherInfo]:
 
   def matches(clazz: Class[_]): Boolean = clazz =:= EitherClazz
 
-  def emptyInfo(clazz: Class[_]): ScalaEitherInfo = 
+  def emptyInfo(clazz: Class[_]): EitherInfo = 
     val params = clazz.getTypeParameters.toList
     val left = params(0).getName.asInstanceOf[TypeSymbol]
     val right = params(1).getName.asInstanceOf[TypeSymbol]
-    ScalaEitherInfo(clazz.getName, clazz, left, right)
+    EitherInfo(clazz.getName, clazz, left, right)
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
@@ -23,7 +23,7 @@ case class EitherExtractor() extends TypeInfoExtractor[ScalaEitherInfo]:
     clazz: Class[_], 
     typeInspector: ScalaClassInspector): ConcreteType =
       
-      ScalaEitherInfo(
+      EitherInfo(
         className,
         clazz,
         typeInspector.inspectType(reflect)(tob(0).asInstanceOf[reflect.TypeRef]),
