@@ -40,6 +40,14 @@ def getParamsImpl[T]()(implicit qctx: QuoteContext, ttype:scala.quoted.Type[T]):
         val params = tob.map( tb => diveDeep(tb.asInstanceOf[Type]) )
         ParamStructure(className, params)
       case tr: TypeRef => ParamStructure(tr.classSymbol.get.fullName, Nil)
+      case OrType(left,right) =>
+        val resolvedLeft = diveDeep(left.asInstanceOf[Type])
+        val resolvedRight = diveDeep(right.asInstanceOf[Type])
+        ParamStructure(Reflector.UNION_CLASS, List(resolvedLeft, resolvedRight))
+      case AndType(left,right) =>
+        val resolvedLeft = diveDeep(left.asInstanceOf[Type])
+        val resolvedRight = diveDeep(right.asInstanceOf[Type])
+        ParamStructure(Reflector.INTERSECTION_CLASS, List(resolvedLeft, resolvedRight))
     }
 
   val dive = diveDeep(typeOf[T])

@@ -10,14 +10,14 @@ import scala.util.Try
 
 case class Foo[T](a:T)
 
-case class Person(name: String, age: Int)
+case class Person(name: String, age: Int|Float)
 
 case class Item()
 case class Other()
 
 @main def runme(): Unit =
 
-  println(Reflector.reflectOn[Option[Foo[Int]]])
+  println(Reflector.reflectOn[Person])
 
   // println("Running...")
   // println(getPerson("Greg"))

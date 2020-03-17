@@ -10,7 +10,11 @@ case class SeqExtractor() extends TypeInfoExtractor[Collection_A1_Info]:
 
   def matches(clazz: Class[_]): Boolean = clazz <:< SeqClazz || clazz <:< SetClazz
 
-  def emptyInfo(clazz: Class[_]): Collection_A1_Info = ???
+  def emptyInfo(clazz: Class[_]): Collection_A1_Info = 
+    Collection_A1_Info(
+      clazz.getName, 
+      clazz, 
+      clazz.getTypeParameters.toList.head.getName.asInstanceOf[TypeSymbol])
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
@@ -22,5 +26,4 @@ case class SeqExtractor() extends TypeInfoExtractor[Collection_A1_Info]:
     Collection_A1_Info(
             className, 
             clazz,
-            clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]), 
             typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]))

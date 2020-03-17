@@ -15,7 +15,7 @@ class ScalaTasty extends munit.FunSuite {
         List(
           ScalaFieldInfo(0,"name",Scala_String,_,_,None),
           ScalaFieldInfo(1,"age",Scala_Int,_,_,None),
-          ScalaFieldInfo(2,"other",StaticUnionInfo("__union_type__",_,Scala_Int, Scala_Boolean),_,_,None)
+          ScalaFieldInfo(2,"other",StaticUnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -116,7 +116,7 @@ class ScalaTasty extends munit.FunSuite {
         "co.blocke.dotty_reflection.OpaqueUnion",
         _,
         List(
-          ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo("__union_type__",Nil,Scala_Int, Scala_String)),_,_,None)
+          ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",StaticUnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_String)),_,_,None)
         ),
         Nil,
         _,
@@ -215,7 +215,7 @@ class ScalaTasty extends munit.FunSuite {
           "co.blocke.dotty_reflection.TryMe",
           _,
           List(
-            ScalaFieldInfo(0,"maybe",TryInfo("scala.util.Try",_,List("T"),Scala_Boolean),_,_,None),
+            ScalaFieldInfo(0,"maybe",TryInfo("scala.util.Try",_,Scala_Boolean),_,_,None),
           ),
           Nil,
           _,
@@ -284,6 +284,36 @@ class ScalaTasty extends munit.FunSuite {
           _,
           false
         ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("handle intersection types") {
+    val r = Reflector.reflectOn[IntersectionHolder].asInstanceOf[ScalaClassInfo]
+    val result = r match {
+      case ScalaClassInfo(
+        "co.blocke.dotty_reflection.IntersectionHolder",
+        _,
+        List(
+          ScalaFieldInfo(0,"a",
+            StaticIntersectionInfo(
+              Reflector.INTERSECTION_CLASS,
+              StaticIntersectionInfo(
+                Reflector.INTERSECTION_CLASS,
+                TraitInfo("co.blocke.dotty_reflection.InterA",_,Nil,Nil),
+                TraitInfo("co.blocke.dotty_reflection.InterB",_,Nil,Nil)
+              ),
+              TraitInfo("co.blocke.dotty_reflection.InterC",_,Nil,Nil)
+            ),
+            _,
+            _,
+            None
+         )
+        ),
+        Nil,
+        _,
+        false) => true
       case _ => false
     }
     assert(result)

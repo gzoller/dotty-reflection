@@ -6,7 +6,7 @@ case class TupleInfo(
   infoClass: Class[_],
   tupleTypes: List[ALL_TYPE]
 ) extends ConcreteType:
-  val typeParameters = Nil
+  val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     this.copy(tupleTypes = tupleTypes.map(_ match {
       case ts: TypeSymbol if actualTypeMap.contains(ts) => actualTypeMap(ts)

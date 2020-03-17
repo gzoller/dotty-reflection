@@ -1,4 +1,4 @@
-val dottyVersion = "0.23.0-bin-20200313-ea27651-NIGHTLY" //"0.23.0-bin-SNAPSHOT"
+val dottyVersion = "0.23.1-special-SNAPSHOT" //"0.23.0-bin-20200313-ea27651-NIGHTLY"
 
 lazy val root = project
   .in(file("."))
@@ -19,7 +19,7 @@ lazy val root = project
       Seq("ch.epfl.lamp" %% "dotty-compiler" % dottyVersion,
       "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion,
       "ch.epfl.lamp" %% "tasty-core" % dottyVersion,
-      "org.scalameta" %% "munit" % "0.6.0-M1+3-c3c8be93-SNAPSHOT" % "test")
+      "org.scalameta" %% "munit" % "0.6.0-M1+3-a4a1d470-SNAPSHOT" % "test")
   )
 
   /*

@@ -5,9 +5,9 @@ package model
 case class Collection_A1_Info(
   name: String,
   infoClass: Class[_],
-  typeParameters: List[TypeSymbol],
   elementType: ALL_TYPE
 ) extends ConcreteType:
+  val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     elementType match {
       case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(elementType = actualTypeMap(ts))

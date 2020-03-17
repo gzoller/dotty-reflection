@@ -126,7 +126,7 @@ class Options extends munit.FunSuite {
         "co.blocke.dotty_reflection.OptionHavingUnion",
         _,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,StaticUnionInfo("__union_type__",Nil,Scala_Boolean,Scala_String)),_,_,None)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,StaticUnionInfo(Reflector.UNION_CLASS,Scala_Boolean,Scala_String)),_,_,None)
         ),
         Nil,
         _,

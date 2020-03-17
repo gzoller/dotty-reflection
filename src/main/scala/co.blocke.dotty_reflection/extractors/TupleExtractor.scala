@@ -13,7 +13,8 @@ case class TupleExtractor() extends TypeInfoExtractor[TupleInfo]:
 
   def matches(clazz: Class[_]): Boolean = tupleFullName.matches(clazz.getName)
 
-  def emptyInfo(clazz: Class[_]): TupleInfo = ???
+  def emptyInfo(clazz: Class[_]): TupleInfo = 
+    TupleInfo(clazz.getName, clazz, clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]))
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 

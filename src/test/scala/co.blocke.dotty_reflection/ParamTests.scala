@@ -7,7 +7,6 @@ import java.util.Optional
 
 class ParamTests extends munit.FunSuite {
 
-  // TODO: This is wrong.  Need to detect Int/Float and resolve the ConcreteType ScalaClassInfo!
   test("0-level param substitution") {
     val r = Reflector.reflectOn[DuoTypes[Int,Float]].asInstanceOf[ScalaClassInfo]
     val result = r match {
@@ -95,13 +94,127 @@ class ParamTests extends munit.FunSuite {
     assert(result)
   }
 
-  test("0-level List (Seq) substitution".ignore) {
+  test("0-level List (Seq) substitution") {
+    val r = Reflector.reflectOn[List[WithDefault]].asInstanceOf[Collection_A1_Info]
+    val result = r match {
+      case Collection_A1_Info(
+        "scala.collection.immutable.List",
+        _,
+        ScalaClassInfo(
+          "co.blocke.dotty_reflection.WithDefault",
+          _,
+          List(
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+          ),
+          Nil,
+          _,
+          false)
+      ) => true
+      case _ => false
+    }
+    assert(result)
   }
 
-  test("0-level Tuple substitution".ignore) {
+  test("0-level Try substitution") {
+    val r = Reflector.reflectOn[scala.util.Try[WithDefault]].asInstanceOf[TryInfo]
+    val result = r match {
+      case TryInfo(
+        "scala.util.Try",
+        _,
+        ScalaClassInfo(
+          "co.blocke.dotty_reflection.WithDefault",
+          _,
+          List(
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+          ),
+          Nil,
+          _,
+          false)
+      ) => true
+      case _ => false
+    }
+    assert(result)  
   }
 
-  test("0-level Union substitution".ignore) {
+  test("0-level Trait substitution") {
+    val r = Reflector.reflectOn[ParamThing[WithDefault]].asInstanceOf[TraitInfo]
+    val result = r match {
+      case TraitInfo(
+        "co.blocke.dotty_reflection.ParamThing",
+        _,
+        List("X"),
+        List(
+          ScalaClassInfo(
+            "co.blocke.dotty_reflection.WithDefault",
+            _,
+            List(
+              ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+              ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+            ),
+            Nil,
+            _,
+            false)
+        )
+      ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+  
+  test("0-level Tuple substitution") {
+    val r = Reflector.reflectOn[(Int,Boolean)].asInstanceOf[TupleInfo]
+    val result = r match {
+      case TupleInfo("scala.Tuple2",_,List(Scala_Int, Scala_Boolean)) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("0-level Union substitution") {
+    val r = Reflector.reflectOn[String | WithDefault].asInstanceOf[StaticUnionInfo]
+    val result = r match {
+      case StaticUnionInfo(
+        Reflector.UNION_CLASS,
+        Scala_String,
+        ScalaClassInfo(
+          "co.blocke.dotty_reflection.WithDefault",
+          _,
+          List(
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+          ),
+          Nil,
+          _,
+          false)
+    ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("0-level Intersection substitution") {    
+    val r = Reflector.reflectOn[Stackable[Int] & Floatable[String]].asInstanceOf[StaticIntersectionInfo]
+    val result = r match {
+      case StaticIntersectionInfo(
+        Reflector.INTERSECTION_CLASS,
+        TraitInfo(
+          "co.blocke.dotty_reflection.Stackable",
+          _,
+          List("T"),
+          List(Scala_Int)
+        ),
+        TraitInfo(
+          "co.blocke.dotty_reflection.Floatable",
+          _,
+          List("U"),
+          List(Scala_String)
+        )
+      ) => true
+      case _ => false
+    }
+    assert(result)
   }
 
   test("1st level param substitution") {
@@ -330,7 +443,6 @@ class ParamTests extends munit.FunSuite {
             Collection_A1_Info(
               "scala.collection.immutable.List",
               _,
-              List("A"),
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",
                 _,
@@ -382,7 +494,7 @@ class ParamTests extends munit.FunSuite {
         List(
           ScalaFieldInfo(0,"a",
             TryInfo(
-              "scala.util.Try",_,List("T"),
+              "scala.util.Try",_,
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",
                 _,
@@ -433,7 +545,7 @@ class ParamTests extends munit.FunSuite {
         "co.blocke.dotty_reflection.UnionHolder",
         _,
         List(
-          ScalaFieldInfo(0,"a",StaticUnionInfo("__union_type__",Nil,Scala_Int,TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_String))),_,_,None)
+          ScalaFieldInfo(0,"a",StaticUnionInfo(Reflector.UNION_CLASS,Scala_Int,TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_String))),_,_,None)
         ),
         Nil,
         _,

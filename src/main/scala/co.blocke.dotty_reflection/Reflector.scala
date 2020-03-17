@@ -10,6 +10,12 @@ object Reflector:
 
   type CacheType = HashMap[String, ConcreteType]
 
+  /** A union type is resolved to AnyRef, which isn't helpful.  This is a marker class name to differentiate a union type */
+  val UNION_CLASS = "__union_type__"
+
+  /** An intersection type is resolved to AnyRef, which isn't helpful.  This is a marker class name to differentiate a union type */
+  val INTERSECTION_CLASS = "__intersection_type__"
+
   // NOTE: Caching used only for primitive types right now.  Let's get the rest working then
   // decide how/if we should cache other types.
 
@@ -64,6 +70,12 @@ object Reflector:
     ps match {
       case ParamStructure(className, Nil) => 
         reflectOnClass(Class.forName(className))
+      case ParamStructure(className, subparams) if className == UNION_CLASS =>
+        val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
+        StaticUnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1))
+      case ParamStructure(className, subparams) if className == INTERSECTION_CLASS =>
+        val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
+        StaticIntersectionInfo(INTERSECTION_CLASS, resolvedParams(0), resolvedParams(1))
       case ParamStructure(className, subparams) =>
         val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
         reflectOnClassWithParams(Class.forName(className), resolvedParams)

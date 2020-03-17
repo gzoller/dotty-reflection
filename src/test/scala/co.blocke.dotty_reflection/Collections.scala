@@ -13,7 +13,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll1",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.List",_,List("A"),Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.List",_,Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -31,7 +31,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll2",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.HashSet",_,List("A"),Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.immutable.HashSet",_,Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -85,7 +85,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll1m",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.ListBuffer",_,List("A"),Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.ListBuffer",_,Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -103,7 +103,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll2m",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.HashSet",_,List("A"),Scala_String),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A1_Info("scala.collection.mutable.HashSet",_,Scala_String),_,_,None)
         ),
         Nil,
         _,
@@ -157,7 +157,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.NestedColl",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,Scala_String,Collection_A1_Info("scala.collection.immutable.List",_,List("A"),ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,Scala_String,Collection_A1_Info("scala.collection.immutable.List",_,ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None)
         ),
         Nil,
         _,
@@ -187,7 +187,6 @@ class Collections extends munit.FunSuite {
                 Collection_A1_Info(
                   "scala.collection.immutable.List",
                   _,
-                  List("A"),
                   Scala_String
                 ), 
                 ScalaClassInfo(

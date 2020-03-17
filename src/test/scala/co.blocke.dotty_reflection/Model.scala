@@ -157,3 +157,18 @@ case class TypeShellHolder(a: TypeShell[Int])
 
 // Union type substitution
 case class UnionHolder(a: Int | TypeShell[String])
+
+// Trait type substitution
+trait ParamThing[X]{ val id: X }
+// case class ParamItem[Y](id:Y) extends ParamThing[Y]
+
+// Intersection type substitution
+trait Stackable[T]
+trait Floatable[U]
+
+// Non-parameterized Intersection Types
+trait InterA
+trait InterB
+trait InterC
+case class IntersectionHolder( a: InterA & InterB & InterC )
+
