@@ -6,15 +6,18 @@ import impl.Clazzes._
 import model._ 
 import scala.tasty.Reflection
 
-case class TryExtractor() extends TypeInfoExtractor:
+case class TryExtractor() extends TypeInfoExtractor[TryInfo]:
+
   def matches(clazz: Class[_]): Boolean = clazz =:= TryClazz
 
+  def emptyInfo(clazz: Class[_]): TryInfo = ???
+  
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): ALL_TYPE =
+    typeInspector: ScalaClassInspector): ConcreteType =
 
       TryInfo(
         className,

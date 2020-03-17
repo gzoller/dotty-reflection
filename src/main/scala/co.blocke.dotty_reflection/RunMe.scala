@@ -17,9 +17,9 @@ case class Other()
 
 @main def runme(): Unit =
 
-  // println(Reflector.reflectOn[Foo[Double]])
+  println(Reflector.reflectOn[Option[Foo[Int]]])
 
-  println("Running...")
+  // println("Running...")
   // println(getPerson("Greg"))
 
   /*
@@ -32,7 +32,7 @@ case class Other()
   println(getInstance2("b").getClass.getName)
   */
 
-  println(impl.getParams[Foo[Boolean]])
+  // println(impl.getParams[Map[String,Option[Foo[Boolean]]]])
 
   /*
   println(readMe[Foo[Boolean]])

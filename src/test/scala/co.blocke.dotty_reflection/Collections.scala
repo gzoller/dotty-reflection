@@ -49,7 +49,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll3",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,List("K","V"),Scala_String,Scala_Float),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,Scala_String,Scala_Float),_,_,None)
         ),
         Nil,
         _,
@@ -67,7 +67,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll4",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.ListMap",_,List("K","V"),Scala_String,Scala_Boolean),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -121,7 +121,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll3m",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.Map",_,List("K","V"),Scala_String,Scala_Float),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.Map",_,Scala_String,Scala_Float),_,_,None)
         ),
         Nil,
         _,
@@ -139,7 +139,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.Coll4m",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.ListMap",_,List("K","V"),Scala_String,Scala_Boolean),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.mutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None)
         ),
         Nil,
         _,
@@ -157,7 +157,7 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.NestedColl",
         _,
         List(
-          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,List("K","V"),Scala_String,Collection_A1_Info("scala.collection.immutable.List",_,List("A"),ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None)
+          ScalaFieldInfo(0,"a",Collection_A2_Info("scala.collection.immutable.Map",_,Scala_String,Collection_A1_Info("scala.collection.immutable.List",_,List("A"),ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None)
         ),
         Nil,
         _,
@@ -175,29 +175,41 @@ class Collections extends munit.FunSuite {
         "co.blocke.dotty_reflection.TupleTurtle",
         _,
         List(
-          ScalaFieldInfo(0,"t",
+          ScalaFieldInfo(
+            0,
+            "t",
             TupleInfo(
-              "scala.Tuple4",_,List(
-                Scala_Int,
-                "Z",
-                Collection_A1_Info("scala.collection.immutable.List",_,List("A"),Scala_String),
+              "scala.Tuple4",
+              _,
+              List(
+                Scala_Int, 
+                Scala_Boolean, 
+                Collection_A1_Info(
+                  "scala.collection.immutable.List",
+                  _,
+                  List("A"),
+                  Scala_String
+                ), 
                 ScalaClassInfo(
                   "co.blocke.dotty_reflection.NormalOption",
-                   _,
-                   List(
+                  _,
+                  List(
                     ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Int),_,_,None)
-                   ),
-                   Nil,
-                   _,
-                   false
+                  ),
+                  Nil,
+                  _,
+                  false
                 )
               )
-            ),_,_,None)
+            ),
+            _,
+            _,
+            None
+          )
         ),
         List("Z"),
         _,
-        false
-        ) => true
+        false) => true
       case _ => false
     }
     assert(result)

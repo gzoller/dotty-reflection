@@ -4,12 +4,16 @@ package impl
 import model._
 import scala.tasty.Reflection
 
-trait TypeInfoExtractor:
+trait TypeInfoExtractor[T <: ConcreteType]:
+
   def matches(clazz: Class[_]): Boolean
+
+  def emptyInfo(clazz: Class[_]): T
+
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): ALL_TYPE
+    typeInspector: ScalaClassInspector): ConcreteType
 

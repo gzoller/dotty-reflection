@@ -76,13 +76,13 @@ class Options extends munit.FunSuite {
   }
 
   test("Scala optional parameterized field") {
-    val r = Reflector.reflectOn[ParamOption[_]].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[ParamOption[Char]].asInstanceOf[ScalaClassInfo]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.ParamOption",
         _,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,"T"),_,_,None)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Char),_,_,None)
         ),
         List("T"),
         _,
@@ -94,13 +94,13 @@ class Options extends munit.FunSuite {
   }
 
   test("Java optional parameterized field") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption3[_]].asInstanceOf[JavaClassInfo]
+    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption3[Char]].asInstanceOf[JavaClassInfo]
     val result = r match {
       case JavaClassInfo(
         "co.blocke.reflect.JavaOption3",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, "T"),_,_,_)
+          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _,Scala_Char),_,_,_)
         ),
         List("T"),
         _) => true

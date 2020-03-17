@@ -19,10 +19,10 @@ case class Collection_A1_Info(
 case class Collection_A2_Info(
   name: String,
   infoClass: Class[_],
-  typeParameters: List[TypeSymbol],
   elementType1: ALL_TYPE,
   elementType2: ALL_TYPE
 ) extends ConcreteType:
+  val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     val fixET1 = elementType1 match {
       case ts: TypeSymbol if actualTypeMap.contains(ts) => actualTypeMap(ts)

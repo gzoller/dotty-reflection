@@ -450,6 +450,8 @@ class Reflection(private[scala] val internal: CompilerInterface) { self =>
 
     /** Class name of the current CompilationUnit */
     def compilationUnitClassname(): String = internal.Context_compilationUnitClassname(self)
+
+    def isAlreadyLoadedCompilationUnit(): Boolean = internal.Context_isAlreadyLoadedCompilationUnit(self)
   }
 
 
@@ -2255,6 +2257,7 @@ class Reflection(private[scala] val internal: CompilerInterface) { self =>
     def showWith(syntaxHighlight: SyntaxHighlight)(using ctx: Context): String =
       new SourceCodePrinter[self.type](self)(syntaxHighlight).showSymbol(sym)
 
+    /** Case class or case object children of a sealed trait */
     def children(using ctx: Context): List[Symbol] =
       internal.Symbol_children(sym)
   }

@@ -171,6 +171,8 @@ trait CompilerInterface {
   /** Class name of the current CompilationUnit */
   def Context_compilationUnitClassname(self: Context): String
 
+  def Context_isAlreadyLoadedCompilationUnit(self: Context): Boolean
+
 
   ///////////////
   // REPORTING //
@@ -1350,6 +1352,7 @@ trait CompilerInterface {
 
   def Symbol_noSymbol(using ctx: Context): Symbol
 
+  /** Case class or case object children of a sealed trait */
   def Symbol_children(self: Symbol)(using ctx: Context): List[Symbol]
 
 
@@ -1544,5 +1547,7 @@ trait CompilerInterface {
    *  Otherwise apply the arguments to the closure.
    */
   def betaReduce(f: Term, args: List[Term])(using ctx: Context): Term
+
+  def lambdaExtractor(term: Term, paramTypes: List[Type])(using ctx: Context): Option[List[Term] => Term]
 
 }

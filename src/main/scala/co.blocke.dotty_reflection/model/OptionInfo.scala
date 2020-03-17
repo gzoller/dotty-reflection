@@ -13,7 +13,7 @@ case class ScalaOptionInfo(
   infoClass: Class[_],
   optionParamType: ALL_TYPE
 ) extends OptionInfo:
-  val typeParameters = Nil
+  val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = optionParamType match {
     case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(optionParamType = actualTypeMap(ts))
     case ts: TypeSymbol => this
@@ -26,7 +26,7 @@ case class JavaOptionInfo(
   infoClass: Class[_],
   optionParamType: ALL_TYPE
 ) extends OptionInfo:
-  val typeParameters = Nil
+  val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = optionParamType match {
     case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(optionParamType = actualTypeMap(ts))
     case ts: TypeSymbol => this

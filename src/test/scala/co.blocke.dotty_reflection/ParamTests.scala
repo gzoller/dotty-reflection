@@ -8,23 +8,100 @@ import java.util.Optional
 class ParamTests extends munit.FunSuite {
 
   // TODO: This is wrong.  Need to detect Int/Float and resolve the ConcreteType ScalaClassInfo!
-  test("0-level param substitution".ignore) {
+  test("0-level param substitution") {
     val r = Reflector.reflectOn[DuoTypes[Int,Float]].asInstanceOf[ScalaClassInfo]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.DuoTypes",
         _,
         List(
-          ScalaFieldInfo(0,"a","Q",_,_,None), 
-          ScalaFieldInfo(1,"b","U",_,_,None)
+          ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+          ScalaFieldInfo(1,"b",Scala_Float,_,_,None)
         ),
-        List("Q","U"),
+        List("Q", "U"),
         _,
-        false
-        ) => true
+        false) => true
       case _ => false
     }
     assert(result)
+  }
+
+  test("0-level Option substitution") {
+    val r = Reflector.reflectOn[Option[WithDefault]].asInstanceOf[ScalaOptionInfo]
+    val result = r match {
+      case ScalaOptionInfo(
+        "scala.Option",
+        _,
+        ScalaClassInfo(
+          "co.blocke.dotty_reflection.WithDefault",
+          _,
+          List(
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+          ),
+          Nil,
+          _,
+          false
+        )
+      ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("0-level Either substitution") {
+    val r = Reflector.reflectOn[Either[Int,WithDefault]].asInstanceOf[ScalaEitherInfo]
+    val result = r match {
+      case ScalaEitherInfo(
+        "scala.util.Either",
+        _,
+        Scala_Int,
+        ScalaClassInfo(
+          "co.blocke.dotty_reflection.WithDefault",
+          _,
+          List(
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+          ),
+          Nil,
+          _,false
+        )
+      ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("0-level Map substitution") {
+    val r = Reflector.reflectOn[Map[Int,WithDefault]].asInstanceOf[Collection_A2_Info]
+    val result = r match {
+      case Collection_A2_Info(
+        "scala.collection.immutable.Map",
+        _,
+        Scala_Int,
+        ScalaClassInfo(
+          "co.blocke.dotty_reflection.WithDefault",
+          _,
+          List(
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+          ),
+          Nil,
+          _,
+          false)
+       ) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("0-level List (Seq) substitution".ignore) {
+  }
+
+  test("0-level Tuple substitution".ignore) {
+  }
+
+  test("0-level Union substitution".ignore) {
   }
 
   test("1st level param substitution") {
@@ -132,6 +209,7 @@ class ParamTests extends munit.FunSuite {
           ScalaFieldInfo(0,"a",
             ScalaEitherInfo(
               "scala.util.Either",
+              _,
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",
                 _,
@@ -271,7 +349,6 @@ class ParamTests extends munit.FunSuite {
             Collection_A2_Info(
               "scala.collection.immutable.Map",
               _,
-              List("K", "V"),
               Scala_String,
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",

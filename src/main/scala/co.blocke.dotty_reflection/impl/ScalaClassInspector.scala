@@ -15,11 +15,20 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
   var inspected: ConcreteType = UnknownInfo(clazz)
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
-    import reflect.{given _}
+    import reflect.{_, given _}
     reflect.rootContext match {
-      case ctx if ctx.isJavaCompilationUnit() => inspected = JavaClassInspector.inspectClass(clazz)
-      // TODO: May want to handle Scala2 top-level parsing of collections--we allow them as fields after all
-      case ctx if ctx.isScala2CompilationUnit() => UnknownInfo(clazz)  // Can't do much with Scala2 classes--not Tasty
+      case ctx if ctx.isJavaCompilationUnit() => inspected = JavaClassInspector.inspectClass(clazz)      case ctx if ctx.isScala2CompilationUnit() => UnknownInfo(clazz)  // Can't do much with Scala2 classes--not Tasty
+      case ctx if ctx.isAlreadyLoadedCompilationUnit() => 
+        val clazz = Class.forName(ctx.compilationUnitClassname())
+        ExtractorRegistry.extractors.collectFirst {
+          case e if e.matches(clazz) => inspected = e.emptyInfo(clazz)
+        }
+        // foundType.getOrElse{
+        //   // Some other class we need to descend into, including a parameterized Scala class
+        //   Reflector.reflectOnClassWithParams(clazz, tob.map(typeP => 
+        //     inspectType(reflect)(typeP.asInstanceOf[reflect.TypeRef])
+        //   ))
+        // }
       case _ => inspected = inspectClass(clazz.getName, reflect)(root)
     }
     

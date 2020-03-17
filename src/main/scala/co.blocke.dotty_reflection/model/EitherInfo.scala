@@ -3,10 +3,13 @@ package model
 
 case class ScalaEitherInfo(
   name: String,
+  infoClass: Class[_],
   leftParamType: ALL_TYPE,
   rightParamType: ALL_TYPE
 ) extends ConcreteType: 
-  val typeParameters = Nil
+
+  val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     val fixedLeft = leftParamType match {
       case ts: TypeSymbol if actualTypeMap.contains(ts) => actualTypeMap(ts)
