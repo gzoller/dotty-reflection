@@ -6,7 +6,7 @@
 Dotty is the exciting new experimental language platform slated to evolve into Scala 3.  One of the big changes for Dotty is that Scala runtime reflection has been eliminated in favor of compile-time reflection, either through macros or Tasty file inspection.  
 
 This project seeks to accomplish two goals:
-* Make Dotty reflection a little more approachable by exposing a higher-level abstration for relfected things
+* Make Dotty reflection a little more approachable by exposing a higher-level abstration for reflected things
 * Allow for a runtime reflection capability (i.e. make compile-time appear to work like run-time)
 
 Full disclosure, this project is designed expressly to facilitate Dotty migration of ScalaJack, which is a heavy user of Scala runtime reflection, so the things pulled into the abstraction are driven by ScalaJack's needs.  That said, there's quite a bit there and it may be useful to others.
@@ -15,12 +15,13 @@ Full disclosure, this project is designed expressly to facilitate Dotty migratio
 * This library is highly-experimental and subject to major change/breakage
 * As stated, the reflected content is geared for ScalaJack, so your needs may be different
 
-The goal initially is to get this functionality working.  It is not beautiful!  If you have better ways to do the same thing, please submit a PR!
+The goal initially is to get this functionality working.  It is not very beautiful.  If you have better ways to do the same thing, please submit a PR!
 
 ### Usage
 For Tasty Inspection:
 ```scala
 import co.blocke.dotty_reflection
+
 case class Thing(a: String)
 
 val artifact: ConcreteType = Reflector.reflectOn[Thing]
@@ -47,3 +48,4 @@ At this point the core Tasty inspection is done, and it inspects quite a lot of 
 * Collections, incl. Java Collections
 * Tuple
 
+See unit tests for detailed examples of usage.
