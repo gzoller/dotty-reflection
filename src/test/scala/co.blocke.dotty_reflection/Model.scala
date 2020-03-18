@@ -172,3 +172,12 @@ trait InterB
 trait InterC
 case class IntersectionHolder( a: InterA & InterB & InterC )
 
+// Type member subsitution
+trait Body
+case class FancyBody(message: String) extends Body
+
+case class Envelope[T <: Body, U](id: String, body: T) {
+  type Giraffe = T
+  type Foo = Int
+}
+

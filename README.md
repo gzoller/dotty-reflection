@@ -49,3 +49,12 @@ At this point the core Tasty inspection is done, and it inspects quite a lot of 
 * Tuple
 
 See unit tests for detailed examples of usage.
+
+### Acknowledgements
+
+I wish to thank three people who have helped make this library possible, with their patient explanations and help on gitter and in code reviews.  Learning the Dotty reflection internals was a learning curve for me and these guys really helped me through it:
+```
+Guillaume Martres (@smarter)
+Paolo G. Giarrusso (@Blaisorblade)
+Nicolas Stucki (@nicolasstucki)
+```

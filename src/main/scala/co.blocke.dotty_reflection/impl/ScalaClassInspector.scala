@@ -49,15 +49,22 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
   private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
     import reflect.{_, given _}
     tree match {
+
       case vd: reflect.ValDef if(vd.symbol.flags.is(reflect.Flags.Object)) =>
         // === Object (Scala Object) ===
         Some(ObjectInfo(vd.symbol.fullName, Class.forName(vd.symbol.fullName)))
+
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
         val className = t.symbol.show
         val clazz = Class.forName(className)
         // cache.get(className).orElse{
         val constructor = t.constructor
-        val typeParams = constructor.typeParams.map(x => x.show.stripPrefix("type ")).map(_.toString.asInstanceOf[TypeSymbol])
+
+        // Get any type parameters
+        val typeParams = constructor.typeParams.map( _ match {
+          case TypeDef(tpeSym,_) => tpeSym.asInstanceOf[TypeSymbol]
+        })
+
         val inspected: ConcreteType = if(t.symbol.flags.is(reflect.Flags.Trait)) then
           // === Trait ===
           if t.symbol.flags.is(reflect.Flags.Sealed) then
@@ -75,6 +82,13 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
           val members = t.body.collect {
             case vd: reflect.ValDef => vd
           }.map(f => (f.name->f)).toMap
+
+          // Find any type members matching a class type parameter
+          val typeMembers = t.body.collect {
+            case TypeDef(typeName, dotty.tools.dotc.ast.Trees.Ident(typeSym)) if typeParams.contains(typeSym.toString.asInstanceOf[TypeSymbol]) => 
+              TypeMember(typeName, typeSym.toString.asInstanceOf[TypeSymbol], PrimitiveType.Scala_Any) // Any is a placeholder, to be replaced by sewTypeParams()
+          }
+
           val fields = paramz.head.zipWithIndex.map{ (paramValDef, i) =>
             val valDef = members(paramValDef.name) // we use the members here because match types aren't resolved in paramValDef but are resolved in members
             val fieldName = valDef.name
@@ -109,9 +123,10 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
             case Apply(Select(New(x),_),_) => x 
           }.map(_.symbol.name == "AnyVal").getOrElse(false)
 
-          ScalaClassInfo(className, clazz, fields, typeParams, annos, isValueClass)
+          ScalaClassInfo(className, clazz, typeMembers, fields, typeParams, annos, isValueClass)
+
         Some(inspected)
-        // }
+
       case _ =>
         None
     }
@@ -239,3 +254,44 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
             UnknownInfo(Class.forName(className))
         }
     }
+
+
+/*
+List
+  TypeDef(
+    T,
+    TypeTree[
+      TypeBounds(
+        TypeRef(
+          TermRef(
+            ThisType(
+              TypeRef(
+                NoPrefix,
+                module class <root>
+              )
+            ),
+            module scala
+          ),
+          Nothing
+        ),
+        TypeRef(
+          TermRef(
+            ThisType(
+              TypeRef(
+                NoPrefix,
+                module class blocke
+              )
+            ),
+            module dotty_reflection
+          ),
+          Body
+        )
+      )
+    ]
+  ), 
+  TypeDef(
+    Giraffe,
+    Ident(T)
+  )
+)
+*/

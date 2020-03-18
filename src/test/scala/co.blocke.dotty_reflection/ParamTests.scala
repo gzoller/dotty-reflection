@@ -13,6 +13,7 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.DuoTypes",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
           ScalaFieldInfo(1,"b",Scala_Float,_,_,None)
@@ -34,6 +35,7 @@ class ParamTests extends munit.FunSuite {
         ScalaClassInfo(
           "co.blocke.dotty_reflection.WithDefault",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
             ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -58,6 +60,7 @@ class ParamTests extends munit.FunSuite {
         ScalaClassInfo(
           "co.blocke.dotty_reflection.WithDefault",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
             ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -81,6 +84,7 @@ class ParamTests extends munit.FunSuite {
         ScalaClassInfo(
           "co.blocke.dotty_reflection.WithDefault",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
             ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -103,6 +107,7 @@ class ParamTests extends munit.FunSuite {
         ScalaClassInfo(
           "co.blocke.dotty_reflection.WithDefault",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
             ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -125,6 +130,7 @@ class ParamTests extends munit.FunSuite {
         ScalaClassInfo(
           "co.blocke.dotty_reflection.WithDefault",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
             ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -149,6 +155,7 @@ class ParamTests extends munit.FunSuite {
           ScalaClassInfo(
             "co.blocke.dotty_reflection.WithDefault",
             _,
+            Nil,
             List(
               ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
               ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -181,6 +188,7 @@ class ParamTests extends munit.FunSuite {
         ScalaClassInfo(
           "co.blocke.dotty_reflection.WithDefault",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
             ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -223,9 +231,12 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.DuoHolder",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
-            ScalaClassInfo("co.blocke.dotty_reflection.DuoTypes",_,
+            ScalaClassInfo("co.blocke.dotty_reflection.DuoTypes",
+              _,
+              Nil,
               List(
                 ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
                 ScalaFieldInfo(1,"b",Scala_Float,_,_,None)
@@ -250,6 +261,7 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.OptHolder",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
             ScalaOptionInfo(
@@ -258,6 +270,7 @@ class ParamTests extends munit.FunSuite {
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",
                 _,
+                Nil,
                 List(
                   ScalaFieldInfo(0,"a",Scala_String,_,_,None), 
                   ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None)
@@ -282,6 +295,7 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.OptHolder2",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
             ScalaOptionInfo(
@@ -293,6 +307,7 @@ class ParamTests extends munit.FunSuite {
                 ScalaClassInfo(
                   "co.blocke.dotty_reflection.DuoTypes",
                   _,
+                  Nil,
                   List(
                     ScalaFieldInfo(0,"a",Scala_String,_,_,None), 
                     ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None)
@@ -318,6 +333,7 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.EitherHolder",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
             EitherInfo(
@@ -326,6 +342,7 @@ class ParamTests extends munit.FunSuite {
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",
                 _,
+                Nil,
                 List(
                   ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
                   ScalaFieldInfo(1,"b",Scala_Float,_,_,None)
@@ -340,6 +357,7 @@ class ParamTests extends munit.FunSuite {
                 ScalaClassInfo(
                   "co.blocke.dotty_reflection.DuoTypes",
                   _,
+                  Nil,
                   List(
                     ScalaFieldInfo(0,"a",Scala_String,_,_,None), 
                     ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None)
@@ -366,12 +384,14 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.AliasTypeSub",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",AliasInfo(
             "co.blocke.dotty_reflection.Model$package.mystery",
             ScalaClassInfo(
               "co.blocke.dotty_reflection.DuoTypes",
               _,
+              Nil,
               List(
                 ScalaFieldInfo(0,"a",Scala_Byte,_,_,None), 
                 ScalaFieldInfo(1,"b",Scala_Short,_,_,None)
@@ -397,17 +417,20 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.DuoClass",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
             ScalaClassInfo(
               "co.blocke.dotty_reflection.DuoTypes",
               _,
+              Nil,
               List(
                 ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
                 ScalaFieldInfo(1,"b",
                 ScalaClassInfo(
                   "co.blocke.dotty_reflection.DuoTypes",
                   _,
+                  Nil,
                   List(
                     ScalaFieldInfo(0,"a",Scala_Byte,_,_,None), 
                     ScalaFieldInfo(1,"b",Scala_Short,_,_,None)
@@ -438,6 +461,7 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.ListMapSub",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
             SeqLikeInfo(
@@ -446,6 +470,7 @@ class ParamTests extends munit.FunSuite {
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",
                 _,
+                Nil,
                 List(
                   ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
                   ScalaFieldInfo(1,"b",Scala_Byte,_,_,None)
@@ -465,6 +490,7 @@ class ParamTests extends munit.FunSuite {
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",
                 _,
+                Nil,
                 List(
                   ScalaFieldInfo(0,"a",Scala_Float,_,_,None), 
                   ScalaFieldInfo(1,"b",Scala_Short,_,_,None)
@@ -491,6 +517,7 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.TryHolder",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
             TryInfo(
@@ -498,6 +525,7 @@ class ParamTests extends munit.FunSuite {
               ScalaClassInfo(
                 "co.blocke.dotty_reflection.DuoTypes",
                 _,
+                Nil,
                 List(
                   ScalaFieldInfo(0,"a",Scala_String,_,_,None), 
                   ScalaFieldInfo(1,"b",Scala_Int,_,_,None)
@@ -524,6 +552,7 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.TypeShellHolder",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
             TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_Int)
@@ -544,10 +573,63 @@ class ParamTests extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.UnionHolder",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",UnionInfo(Reflector.UNION_CLASS,Scala_Int,TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_String))),_,_,None)
         ),
         Nil,
+        _,
+        false) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("Type member substitutions") {
+    val r = Reflector.reflectOn[Envelope[FancyBody,Boolean]].asInstanceOf[ScalaClassInfo]
+    val result = r match {
+      case ScalaClassInfo(
+        "co.blocke.dotty_reflection.Envelope",
+        _,
+        List(
+          TypeMember(
+            "Giraffe",
+            "T",
+            ScalaClassInfo(
+              "co.blocke.dotty_reflection.FancyBody",
+              _,
+              Nil,
+              List(
+                ScalaFieldInfo(0,"message",Scala_String,_,_,None)
+              ),
+              Nil,
+              _,
+              false
+            )
+          )
+        ),
+        List(
+          ScalaFieldInfo(0,"id",Scala_String,_,_,None), 
+          ScalaFieldInfo(
+            1,
+            "body",
+            ScalaClassInfo(
+              "co.blocke.dotty_reflection.FancyBody",
+              _,
+              Nil,
+              List(
+                ScalaFieldInfo(0,"message",Scala_String,_,_,None)
+              ),
+              Nil,
+              _,
+              false
+            ),
+            _,
+            _,
+            None
+          )
+        ),
+        List("T", "U"),
         _,
         false) => true
       case _ => false

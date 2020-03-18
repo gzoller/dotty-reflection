@@ -12,6 +12,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Person",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"name",Scala_String,_,_,None),
           ScalaFieldInfo(1,"age",Scala_Int,_,_,None),
@@ -38,6 +39,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Definitely",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"id",Scala_Int,_,_,None),
           ScalaFieldInfo(1,"stuff",Scala_Char,_,_,None)
@@ -61,6 +63,7 @@ class ScalaTasty extends munit.FunSuite {
       case c @ ScalaClassInfo(
         "co.blocke.dotty_reflection.WithAnnotation",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"id",Scala_String,_,_,None)
         ),
@@ -79,6 +82,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.WithParam",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"one","T",_,_,None),
           ScalaFieldInfo(1,"two","U",_,_,None)
@@ -97,6 +101,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Employee",
         _,
+        Nil,
         List(
          ScalaFieldInfo(0,"eId",AliasInfo("co.blocke.dotty_reflection.Model$package.EMP_ID",Scala_Int),_,_,None),
          ScalaFieldInfo(1,"age",Scala_Int,_,_,None)
@@ -115,6 +120,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.OpaqueUnion",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",UnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_String)),_,_,None)
         ),
@@ -138,6 +144,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.WithDefault",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",Scala_Int,_,_,None),
           ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
@@ -159,6 +166,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
           "co.blocke.dotty_reflection.PlainGood",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"a",Scala_Int,_,_,None),
             ScalaFieldInfo(1,"b",Scala_String,_,_,None)
@@ -182,6 +190,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
           "co.blocke.dotty_reflection.ScalaPrimitives",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"a",Scala_Boolean,_,_,None),
             ScalaFieldInfo(1,"b",Scala_Byte,_,_,None),
@@ -214,6 +223,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
           "co.blocke.dotty_reflection.TryMe",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"maybe",TryInfo("scala.util.Try",_,Scala_Boolean),_,_,None),
           ),
@@ -232,6 +242,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
           "co.blocke.dotty_reflection.VehicleHolder",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"v",
               SealedTraitInfo(
@@ -239,12 +250,12 @@ class ScalaTasty extends munit.FunSuite {
                 _,
                 Nil,
                 List(
-                  ScalaClassInfo("co.blocke.dotty_reflection.Truck",_,List(ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None)),Nil,_,false), 
-                  ScalaClassInfo("co.blocke.dotty_reflection.Car",_,List(
+                  ScalaClassInfo("co.blocke.dotty_reflection.Truck",_,Nil,List(ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None)),Nil,_,false), 
+                  ScalaClassInfo("co.blocke.dotty_reflection.Car",_,Nil,List(
                     ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None),
                     ScalaFieldInfo(1,"color",Scala_String,_,_,None)
                   ),Nil,_,false), 
-                  ScalaClassInfo("co.blocke.dotty_reflection.Plane",_,List(ScalaFieldInfo(0,"numberOfEngines",Scala_Int,_,_,None)),Nil,_,false)
+                  ScalaClassInfo("co.blocke.dotty_reflection.Plane",_,Nil,List(ScalaFieldInfo(0,"numberOfEngines",Scala_Int,_,_,None)),Nil,_,false)
                 )
               ),
               _,_,None
@@ -265,6 +276,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
           "co.blocke.dotty_reflection.FlavorHolder",
           _,
+          Nil,
           List(
             ScalaFieldInfo(0,"f",
               SealedTraitInfo(
@@ -295,6 +307,7 @@ class ScalaTasty extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.IntersectionHolder",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",
             IntersectionInfo(
