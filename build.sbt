@@ -1,10 +1,23 @@
-val dottyVersion = "0.23.1-special-SNAPSHOT" //"0.23.0-bin-20200313-ea27651-NIGHTLY"
+val dottyVersion =  "0.23.0-bin-20200316-6948038-NIGHTLY" //"0.23.1-special-SNAPSHOT"
+
+val pubSettings = Seq(
+  publishMavenStyle := true,
+  bintrayOrganization := Some("blocke"),
+  bintrayReleaseOnPublish in ThisBuild := false,
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+  bintrayRepository := "releases",
+  bintrayPackageLabels := Seq("scala", "dotty")
+)
 
 lazy val root = project
   .in(file("."))
+  .settings(pubSettings: _*)
   .settings(
     name := "dotty_reflection",
-    version := "0.0.1",
+
+    organization := "co.blocke",
+    
+    resolvers += Resolver.jcenterRepo,
 
     scalaVersion := dottyVersion,
 
