@@ -58,3 +58,20 @@ Guillaume Martres (@smarter)
 Paolo G. Giarrusso (@Blaisorblade)
 Nicolas Stucki (@nicolasstucki)
 ```
+
+### 11 Laws Of ScalaJack Reflection
+There are 11 things ScalaJack must reflect on in order to function. These are:
+
+1. Case class vs non-case class identification
+2. Identify and retrieve primary constructor method
+3. Identify any mixins on the given/reflected object (specifically SJCapture)
+4. Build a type parameter map [Symbol -> class]
+5. Get any type members in given object (e.g. type myType = Foo)
+6. Get primary constructor parameters w/types (a.k.a. class fields)
+7. Determine if any class field is a Value Class and get details so it can be instantiated
+8. Detect any default class field values and establish way to access (i.e. accessor method)
+9. Get class and field annotations
+10. Be able to pull apart collections (Map/List) with their generic types
+11. Type equivalence (<:< and =:=)
+
+If we've done the proper inventory, with these 11 laws solved for Dotty we should have enough for ScalaJack to serialize/deserialize objects to wire formats.  dotty_reflection should account for all 11 laws needed by ScalaJack, plus a few new tricks that are Dotty-specific (i.e. not used in ScalaJack--yet)
