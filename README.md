@@ -3,19 +3,20 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=86400)](https://opensource.org/licenses/MIT)
 [![bintray](https://api.bintray.com/packages/blocke/releases/dotty_reflection/images/download.svg)](https://bintray.com/blocke/releases/dotty_reflection/_latestVersion)
 
-Dotty is the exciting new experimental language platform slated to evolve into Scala 3.  One of the big changes for Dotty is that Scala runtime reflection has been eliminated in favor of compile-time reflection, either through macros or Tasty file inspection.  
+Dotty is the exciting new experimental language slated to evolve into Scala 3.  One of the big changes for Dotty is that Scala runtime reflection has been eliminated in favor of compile-time reflection, either through macros or Tasty file inspection.  
 
 This project seeks to accomplish two goals:
 * Make Dotty reflection a little more approachable by exposing a higher-level abstration for reflected things
-* Allow for a runtime reflection capability (i.e. make compile-time appear to work like run-time)
+* Allow for a runtime reflection capability (i.e. make compile-time reflection appear to work like run-time)
 
-Full disclosure, this project is designed expressly to facilitate Dotty migration of ScalaJack, which is a heavy user of Scala runtime reflection, so the things pulled into the abstraction are driven by ScalaJack's needs.  That said, there's quite a bit there and it may be useful to others.
+#### So what does it actually do???
+This library is used to reflect on a class you provide and return high-level abstractions ("Info" classes) describing what was found by diving into the class and pulling out anything "interesting".  It does the work of combing through Dotty reflection internals, so you don't have to.
 
-### Caveats
+Full disclosure, this project is designed expressly to facilitate migration of ScalaJack, which is a heavy user of Scala runtime reflection, to Dotty so the things pulled into the abstraction are driven by ScalaJack's needs.  That said, there's quite a bit there.
+
+### Caveat
 * This library is highly-experimental and subject to major change/breakage
-* As stated, the reflected content is geared for ScalaJack, so your needs may be different
-
-The goal initially is to get this functionality working.  It is not very beautiful.  If you have better ways to do the same thing, please submit a PR!
+* The goal initially is to get this functionality working, not wind awards for beauty.  **If you have better ways to do the same thing, please submit a PR!**
 
 ### Usage
 For Tasty Inspection:
