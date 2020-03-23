@@ -1,11 +1,11 @@
-name: Greet Everyone
+name: Build it and test it
 # This workflow is triggered on pushes to the repository.
 on: [push, pull_request]
 
 jobs:
   build:
     # Job name is Greeting
-    name: Greeting
+    name: Grand Build
     # This job runs on Linux
     runs-on: ubuntu-latest
     steps:
@@ -15,4 +15,3 @@ jobs:
         uses: lokkju/github-action-sbt@master
         with:
           commands: test
-          sbt_project_directory: ./test
