@@ -5,6 +5,7 @@ on:
     branches-ignore:
       - "feature/*"  # don't run build/test against a feature branch -- no SLA there
   pull_request:
+    # types: [closed]
     branches-ignore:
       - "feature/*"
 
@@ -22,11 +23,12 @@ jobs:
         with:
           java-version: '11.0.1'
       - name: Build and Test
+        if: github.base_ref == ''
         id: sbt
         uses: lokkju/github-action-sbt@master
         with:
           commands: test
-      - name: Publish
+      - name: Build, Test, and Publish
         if: github.base_ref == 'master'
         id: release
         uses: lokkju/github-action-sbt@master
@@ -34,4 +36,4 @@ jobs:
           BINTRAY_USER: ${{ secrets.BINTRAY_UID }}
           BINTRAY_PASS: ${{ secrets.BINTRAY_PWD }}
         with:
-          commands: publish
+          commands: [test publish]
