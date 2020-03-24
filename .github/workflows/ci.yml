@@ -23,8 +23,8 @@ jobs:
         id: sbt
         uses: lokkju/github-action-sbt@master
         with:
-          commands: Build, Test, and Release
-      - name: Release
+          commands: test
+      - name: Build, Test, and Release
         if: github.ref == 'refs/heads/master'
         id: release
         uses: lokkju/github-action-sbt@master
