@@ -14,14 +14,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Echo the greeting's time
-        run: echo 'Event-> ${github.event}}'
+      - name: Show event
+        run: echo 'Event-> ${{github.event}}'
 
-      - name: Echo the greeting's time
+      - name: Show base ref
         run: echo 'base_ref-> ${{github.base_ref}}'
 
-      - name: Echo the greeting's time
+      - name: Show head ref
         run: echo 'head_ref-> ${{github.head_ref}}'
 
-      - name: Echo the greeting's time
+      - name: Show ref
         run: echo 'ref-> ${{github.ref}}'
+
+      - name: Show event name
+        run: echo 'ref-> ${{github.event_name}}'
