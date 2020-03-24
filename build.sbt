@@ -15,7 +15,7 @@ lazy val root = project
   .in(file("."))
   .settings(pubSettings: _*)
   .settings(
-    name := "dotty_reflection",
+    name := "dotty-reflection",
 
     organization := "co.blocke",
     

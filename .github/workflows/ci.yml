@@ -1,6 +1,12 @@
 name: Build it and test it
 # This workflow is triggered on pushes to the repository.
-on: [push, pull_request]
+on: 
+  push:
+    branches-ignore:
+      - "feature/*"  # don't run build/test against a feature branch -- no SLA there
+  pull_request:
+    branches-ignore:
+      - "feature/*"
 
 jobs:
   build:
@@ -20,3 +26,9 @@ jobs:
         uses: lokkju/github-action-sbt@master
         with:
           commands: test
+      - name: Publish
+        if: github.base_ref == 'master'
+        id: sbt
+        uses: lokkju/github-action-sbt@master
+        with:
+          commands: publish
