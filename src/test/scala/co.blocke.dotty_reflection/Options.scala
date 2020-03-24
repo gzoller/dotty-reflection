@@ -13,6 +13,7 @@ class Options extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.NormalOption",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Int),_,_,None)
         ),
@@ -47,6 +48,7 @@ class Options extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.NestedOption",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,ScalaOptionInfo("scala.Option",_,Scala_Int)),_,_,None)
         ),
@@ -81,6 +83,7 @@ class Options extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.ParamOption",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Char),_,_,None)
         ),
@@ -125,6 +128,7 @@ class Options extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.OptionHavingUnion",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,UnionInfo(Reflector.UNION_CLASS,Scala_Boolean,Scala_String)),_,_,None)
         ),

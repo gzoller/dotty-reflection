@@ -29,6 +29,7 @@ class Enums extends munit.FunSuite {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Birthday",
         _,
+        Nil,
         List(
           ScalaFieldInfo(0,"m",ScalaEnum("co.blocke.dotty_reflection.Month",_),_,_,None), 
           ScalaFieldInfo(1,"d",ScalaEnumeration("co.blocke.dotty_reflection.WeekDay",_),_,_,None)

@@ -6,6 +6,7 @@ reports/
 lib_managed/
 src_managed/
 project/boot/
+project/project/target/
 project/plugins/project
 java_pid*.hprof
 *.swp
@@ -15,5 +16,4 @@ tags
 .history
 *~
 wip/
-.dotty-ide-artifact
-.dotty-ide.json
+.dotty-ide*
