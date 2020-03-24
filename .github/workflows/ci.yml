@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - "feature/*"  # don't run build/test against a feature branch -- no SLA there
   pull_request:
-    # types: [closed]
+    types: [closed]
     branches-ignore:
       - "feature/*"
 
