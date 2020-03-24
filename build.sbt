@@ -35,5 +35,4 @@ lazy val root = project
       "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion,
       "ch.epfl.lamp" %% "tasty-core" % dottyVersion,
       "munit" %% "munit" % "0.6.z-2" % "test")  // special build of munit compatible with Dotty 0.24
-      // "org.scalameta" %% "munit" % "0.6.z-1" % "test")
   )
