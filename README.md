@@ -19,6 +19,8 @@ Full disclosure, this project is designed expressly to facilitate migration of S
 * The goal initially is to get this functionality working, not wind awards for beauty.  **If you have better ways to do the same thing, please submit a PR!**
 
 ### Usage
+*NOTE*: Due to a dependency on a feature not included in Dotty 0.23 your client project will need to be based off 0.24.0-bin-20200320-30f8c6f-NIGHTLY or later until 0.24 comes out.
+
 For Tasty Inspection:
 ```scala
 import co.blocke.dotty_reflection

@@ -28,7 +28,7 @@ jobs:
           commands: test
       - name: Publish
         if: github.base_ref == 'master'
-        id: sbt
+        id: release
         uses: lokkju/github-action-sbt@master
         with:
           commands: publish
