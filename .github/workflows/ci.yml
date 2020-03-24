@@ -4,10 +4,6 @@ on:
   push:
     branches-ignore:
       - "feature/*"  # don't run build/test against a feature branch -- no SLA there
-  pull_request:
-    types: [closed]
-    branches-ignore:
-      - "feature/*"
 
 jobs:
   build:
@@ -23,13 +19,13 @@ jobs:
         with:
           java-version: '11.0.1'
       - name: Build and Test
-        if: github.base_ref == ''
+        if: github.ref != 'refs/heads/master'
         id: sbt
         uses: lokkju/github-action-sbt@master
         with:
-          commands: test
-      - name: Build, Test, and Publish
-        if: github.base_ref == 'master'
+          commands: Build, Test, and Release
+      - name: Release
+        if: github.ref == 'refs/heads/master'
         id: release
         uses: lokkju/github-action-sbt@master
         env:
