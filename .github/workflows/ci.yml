@@ -30,5 +30,8 @@ jobs:
         if: github.base_ref == 'master'
         id: release
         uses: lokkju/github-action-sbt@master
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_UID }}
+          BINTRAY_PASS: ${{ secrets.BINTRAY_PWD }}
         with:
           commands: publish
