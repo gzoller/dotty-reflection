@@ -1,14 +1,12 @@
-name: Package Build
+name: Package Release
 # This workflow is triggered on pushes to the repository.
 on: 
-  push:
-    branches-ignore:
-      - "feature/*"  # don't run build/test against a feature branch -- no SLA there
-      - "master"
+  release:
+    types: [published]
 
 jobs:
   build:
-    name: Build
+    name: Release Build
     runs-on: ubuntu-latest
 
     steps:
@@ -19,9 +17,12 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: '11.0.1'
-      - name: Test
-        if: github.ref != 'refs/heads/master'
-        id: sbt
+      - name: Test and Release
+        if: github.ref == 'refs/heads/master'
+        id: release
         uses: lokkju/github-action-sbt@master
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_UID }}
+          BINTRAY_PASS: ${{ secrets.BINTRAY_PWD }}
         with:
-          commands: test
+          commands: "test; publish"
