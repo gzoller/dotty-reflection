@@ -16,5 +16,4 @@ tags
 .history
 *~
 wip/
-.dotty-ide-artifact
-.dotty-ide.json
+.dotty-ide*
