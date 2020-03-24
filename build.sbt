@@ -34,5 +34,5 @@ lazy val root = project
       Seq("ch.epfl.lamp" %% "dotty-compiler" % dottyVersion,
       "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion,
       "ch.epfl.lamp" %% "tasty-core" % dottyVersion,
-      "munit" %% "munit" % "0.6.z-2" % "test")  // special build of munit compatible with Dotty 0.24
+      "munit" %% "munit" % "0.6.z-3" % "test")  // special build of munit compatible with Dotty 0.24
   )
