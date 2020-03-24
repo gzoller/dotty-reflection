@@ -28,6 +28,8 @@ lazy val root = project
     // scalacOptions ++= Seq("-language:implicitConversions","-Xprint:typer"),
     scalacOptions ++= Seq("-language:implicitConversions"),
 
+    javacOptions ++= Seq("-source", "11", "-target", "11"),
+
     testFrameworks += new TestFramework("munit.Framework"),
 
     libraryDependencies ++= 
