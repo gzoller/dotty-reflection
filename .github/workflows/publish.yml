@@ -1,4 +1,4 @@
-name: Package Build
+name: Package Release
 # This workflow is triggered on pushes to the repository.
 on: 
   create:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,6 @@ jobs:
         with:
           java-version: '11.0.1'
       - name: Test and Release
-        if: github.ref == 'refs/heads/master'
         id: release
         uses: lokkju/github-action-sbt@master
         env:
