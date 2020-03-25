@@ -3,7 +3,7 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=86400)](https://opensource.org/licenses/MIT)
 [![bintray](https://api.bintray.com/packages/blocke/releases/dotty_reflection/images/download.svg)](https://bintray.com/blocke/releases/dotty-reflection/_latestVersion)
 
-Dotty is the exciting new experimental language slated to evolve into Scala 3.  One of the big changes for Dotty is that Scala runtime reflection has been eliminated in favor of compile-time reflection, either through macros or Tasty file inspection.  
+Dotty is the exciting new developmental language destined to evolve into Scala 3.  One of the big changes for Dotty is that Scala runtime reflection has been eliminated in favor of compile-time reflection, either through macros or Tasty file inspection.  
 
 This project seeks to accomplish two goals:
 * Make Dotty reflection a little more approachable by exposing a higher-level abstration for reflected things
