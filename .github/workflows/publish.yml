@@ -2,7 +2,7 @@ name: Package Release
 # This workflow is triggered on pushes to the repository.
 on: 
   create:
-    branches: [master]
+    if: github.event.ref_type == "tag"
 
 jobs:
   build:
