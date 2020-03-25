@@ -2,7 +2,7 @@ name: Package Release
 # This workflow is triggered on pushes to the repository.
 on: 
   release:
-    types: [published]
+    types: [created]
 
 jobs:
   build:
