@@ -1,7 +1,7 @@
 # Dotty Reflection
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=86400)](https://opensource.org/licenses/MIT)
-[![bintray](https://api.bintray.com/packages/blocke/releases/dotty_reflection/images/download.svg)](https://bintray.com/blocke/releases/dotty-reflection/_latestVersion)
+[![bintray](https://api.bintray.com/packages/blocke/releases/dotty-reflection/images/download.svg)](https://bintray.com/blocke/releases/dotty-reflection/_latestVersion)
 
 Dotty is the exciting new developmental language destined to evolve into Scala 3.  One of the big changes for Dotty is that Scala runtime reflection has been eliminated in favor of compile-time reflection, either through macros or Tasty file inspection.  
 
@@ -20,6 +20,13 @@ Full disclosure, this project is designed expressly to facilitate migration of S
 
 ### Usage
 *NOTE*: Due to a dependency on a feature not included in Dotty 0.23 your client project will need to be based off 0.24.0-bin-20200320-30f8c6f-NIGHTLY or later until 0.24 comes out.
+
+In your build.sbt file be sure you've set co.blocke's releases repo in bintray as a resolver and add the current version of the library to libraryDependences:
+```scala
+resolvers += "co.blocke ivy resolver" at "https://dl.bintray.com/blocke/releases"
+libraryDependencies += "co.blocke" %% "dotty-reflection" % CURRENT_VERSION
+```
+(CURRENT_VERSION value can be taken from the Download badge in this github repo.)
 
 For Tasty Inspection:
 ```scala
