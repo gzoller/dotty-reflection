@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # - name: Shoe more
+      #   env:
+      #     FOOM: ${{echo git rev-parse --abbrev-ref HEAD}}
       # - name: Show Me
       #   if: github.event.ref_type == 'tag' && !contains(github.event.ref, 'release')
       #   env:
@@ -24,10 +27,11 @@ jobs:
           java-version: '11.0.1'
       - name: Test and Release
         if: github.event.ref_type == 'tag' && !contains(github.event.ref, 'release')
-        id: release
-        uses: lokkju/github-action-sbt@master
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_UID }}
           BINTRAY_PASS: ${{ secrets.BINTRAY_PWD }}
+          BUILD_VERSION: ${{ github.event.ref }}
+        id: release
+        uses: lokkju/github-action-sbt@master
         with:
           commands: "test; publish"
