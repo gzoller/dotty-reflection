@@ -10,17 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
-        with:
-          java-version: '11.0.1'
-      - name: Test and Release
-        id: release
-        uses: lokkju/github-action-sbt@master
+      - name: Show Me
         env:
-          BINTRAY_USER: ${{ secrets.BINTRAY_UID }}
-          BINTRAY_PASS: ${{ secrets.BINTRAY_PWD }}
-        with:
-          commands: "test; publish"
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      # - name: Checkout repo
+      #   uses: actions/checkout@v2
+      # - name: Set up JDK 11
+      #   uses: actions/setup-java@v1
+      #   with:
+      #     java-version: '11.0.1'
+      # - name: Test and Release
+      #   id: release
+      #   uses: lokkju/github-action-sbt@master
+      #   env:
+      #     BINTRAY_USER: ${{ secrets.BINTRAY_UID }}
+      #     BINTRAY_PASS: ${{ secrets.BINTRAY_PWD }}
+      #   with:
+      #     commands: "test; publish"
