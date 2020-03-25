@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Show Me
-        if: github.event.ref_type == 'tag' && !github.event.ref.contains('release')
+        if: github.event.ref_type == 'tag' && !contains(github.event.ref, 'release')
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
