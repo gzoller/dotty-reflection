@@ -18,7 +18,6 @@ jobs:
         with:
           java-version: '11.0.1'
       - name: Test and Release
-        if: github.ref == 'refs/heads/master'
         id: release
         uses: lokkju/github-action-sbt@master
         env:
