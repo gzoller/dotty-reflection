@@ -2,7 +2,6 @@ name: Package Release
 # This workflow is triggered on pushes to the repository.
 on: 
   create:
-    if: github.event.ref_type == "tag"
 
 jobs:
   build:
@@ -11,6 +10,7 @@ jobs:
 
     steps:
       - name: Show Me
+        if: github.event.ref_type == "tag" && !github.event.ref.contains('release')
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
