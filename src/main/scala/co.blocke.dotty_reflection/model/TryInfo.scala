@@ -3,7 +3,7 @@ package model
 
 import scala.util.Try
 
-case class TryInfo(
+case class TryInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   tryType: ALL_TYPE

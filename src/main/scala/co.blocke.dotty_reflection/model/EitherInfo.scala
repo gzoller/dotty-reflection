@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 package model
 
-case class EitherInfo(
+case class EitherInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   leftParamType: ALL_TYPE,

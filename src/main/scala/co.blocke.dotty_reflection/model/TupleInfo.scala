@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 package model
 
-case class TupleInfo(
+case class TupleInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   tupleTypes: List[ALL_TYPE]

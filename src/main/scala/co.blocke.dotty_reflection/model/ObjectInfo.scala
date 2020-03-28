@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 package model
 
-case class ObjectInfo(
+case class ObjectInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_]
   ) extends ConcreteType:

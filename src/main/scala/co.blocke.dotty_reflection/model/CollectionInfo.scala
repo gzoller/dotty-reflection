@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package model
 
 /** Arity 1 Collections, e.g. List, Set, Seq */
-case class SeqLikeInfo(
+case class SeqLikeInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   elementType: ALL_TYPE
@@ -16,7 +16,7 @@ case class SeqLikeInfo(
     }
 
 /** Arity 2 Collections, Map flavors, basiclly */
-case class MapLikeInfo(
+case class MapLikeInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   elementType1: ALL_TYPE,
@@ -37,7 +37,7 @@ case class MapLikeInfo(
     this.copy(elementType1 = fixET1, elementType2 = fixET2)
 
 /** Java Set dirivative */
-case class JavaSetInfo(
+case class JavaSetInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   typeParameters: List[TypeSymbol],
@@ -51,7 +51,7 @@ case class JavaSetInfo(
     }
 
 /** Java List dirivative */
-case class JavaListInfo(
+case class JavaListInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   typeParameters: List[TypeSymbol],
@@ -65,7 +65,7 @@ case class JavaListInfo(
     }
 
 /** Java Array */
-case class JavaArrayInfo(
+case class JavaArrayInfo protected[dotty_reflection](
   elementType: ALL_TYPE
 ) extends ConcreteType:
   val name: String = "__array__"
@@ -78,7 +78,7 @@ case class JavaArrayInfo(
     }
 
 /** Java Queue dirivative */
-case class JavaQueueInfo(
+case class JavaQueueInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   typeParameters: List[TypeSymbol],
@@ -92,7 +92,7 @@ case class JavaQueueInfo(
     }
 
 /** Java Set dirivative */
-case class JavaMapInfo(
+case class JavaMapInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   typeParameters: List[TypeSymbol],

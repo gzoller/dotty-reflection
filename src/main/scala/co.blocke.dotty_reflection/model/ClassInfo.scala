@@ -20,7 +20,7 @@ case class TypeMember(
 )
 
 
-case class ScalaClassInfo protected (
+case class ScalaClassInfo protected[dotty_reflection] (
   name: String,
   infoClass: Class[_],
   typeMembers: List[TypeMember],
@@ -53,7 +53,7 @@ case class ScalaClassInfo protected (
       //   this
 
   
-case class JavaClassInfo protected (
+case class JavaClassInfo protected[dotty_reflection] (
   name: String,
   infoClass: Class[_],
   fields: List[FieldInfo],

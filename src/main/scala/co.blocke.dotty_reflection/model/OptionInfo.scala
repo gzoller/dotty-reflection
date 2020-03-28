@@ -8,7 +8,7 @@ trait OptionInfo extends ConcreteType:
   val optionParamType: ALL_TYPE
 
 
-case class ScalaOptionInfo(
+case class ScalaOptionInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   optionParamType: ALL_TYPE
@@ -21,7 +21,7 @@ case class ScalaOptionInfo(
   }
 
 
-case class JavaOptionInfo(
+case class JavaOptionInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   optionParamType: ALL_TYPE

@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 package model
 
-case class AliasInfo protected (
+case class AliasInfo protected[dotty_reflection] (
   definedType: String,
   unwrappedType: ConcreteType
   ) extends ConcreteType:

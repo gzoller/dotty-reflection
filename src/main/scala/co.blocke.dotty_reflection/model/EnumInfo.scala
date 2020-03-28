@@ -11,7 +11,7 @@ trait ScalaEnumInfo extends ConcreteType:
   def valueOf(i: Int): Any
 
 
-case class ScalaEnum(
+case class ScalaEnum protected[dotty_reflection](
   name: String,
   infoClass: Class[_]
 ) extends ScalaEnumInfo: 
@@ -33,7 +33,7 @@ case class ScalaEnum(
   def valueOf(i: Int): Any = values(i)
 
 
-case class ScalaEnumeration(
+case class ScalaEnumeration protected[dotty_reflection](
   name: String,
   infoClass: Class[_]
 ) extends ScalaEnumInfo:
@@ -52,7 +52,7 @@ case class ScalaEnumeration(
   def valueOf(s: String): Any = withNameMethod.invoke(companionInstance,s)
   def valueOf(i: Int): Any = applyMethod.invoke(companionInstance,i.asInstanceOf[Object])
 
-case class JavaEnumInfo(
+case class JavaEnumInfo protected[dotty_reflection](
   name: String,
   enumClass: Class[_]
 ) extends ConcreteType: 

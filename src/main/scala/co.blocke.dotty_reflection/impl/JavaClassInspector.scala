@@ -68,7 +68,7 @@ object JavaClassInspector:
         }
       case v: TypeVariable[_] => 
         v.getName.asInstanceOf[TypeSymbol]
-      case w: WildcardType => throw new Exception("Wildcard types not currently supported in reflection library")
+      case w: WildcardType => throw new ReflectException("Wildcard types not currently supported in reflection library")
       case other if other.isInstanceOf[Class[_]] => 
         other.asInstanceOf[Class[_]] match {
           case c if c =:= BooleanClazz || c =:= booleanClazz || c =:= JBooleanClazz => PrimitiveType.Scala_Boolean
@@ -87,5 +87,5 @@ object JavaClassInspector:
           case c => Reflector.reflectOnClass(c)
         }
       case u =>
-        throw new Exception("Unknown Java type "+u)  // This isn't a Class so we can't use UnknownInfo here
+        throw new ReflectException("Unknown Java type "+u)  // This isn't a Class so we can't use UnknownInfo here
     }

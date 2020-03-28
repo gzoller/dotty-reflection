@@ -1,16 +1,28 @@
 package co.blocke.dotty_reflection
 
+case class Person[T](name:String, age: Int, thing: List[Int], other: T)
 
-trait Body
-case class FancyBody(message: String) extends Body
+case class Foo[X](a: X)
+case class Bar[Y,Z]( c: Y, d: Z)
 
-case class Envelope[T <: Body, U](id: String, body: T) {
-  type Giraffe = T
-  type Foo = Int
-}
+object RunMe extends App:
+  println("Hello, world!")
+  val p = Person("Greg",53,List(123,45), 5)
 
-object Runme extends App:
+  val ts = impl.analyzeType[Person[Int]]
+  println(ts)
+  println(Reflector.reflectOnType(ts))
 
-  // println(Reflector.reflectOn[Plain])
+  // println(Reflector.reflectOn[scala.collection.immutable.HashSet[Boolean]])
 
-  println(Reflector.reflectOn[Envelope[FancyBody,Boolean]])
+  // val stuff = List(1,2,3)
+  // val clazz = stuff.getClass
+  // val name = clazz.getName
+
+  // val cleaned = name.takeWhile(_ != '$')
+  // println(cleaned)
+
+  // val dottyName = dotty.tools.dotc.core.Names.termName(name)
+  // val decoded = dotty.tools.dotc.util.NameTransformer.decode(dottyName.asSimpleName)
+  // println("Decoded: "+ decoded)
+  // println(Class.forName(name))
