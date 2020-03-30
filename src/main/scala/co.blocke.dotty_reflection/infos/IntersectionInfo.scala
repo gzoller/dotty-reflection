@@ -1,8 +1,8 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 
-case class IntersectionInfo protected (
+case class IntersectionInfo protected[dotty_reflection](
   val name: String,
   val leftType: ALL_TYPE,
   val rightType: ALL_TYPE

@@ -9,7 +9,7 @@ val pubSettings = Seq(
   bintrayPackageLabels := Seq("scala", "dotty", "reflection")
 )
 
-resolvers += "co.blocke ivy resolver" at "https://dl.bintray.com/blocke/provisional"
+resolvers += "co.blocke provisional resolver" at "https://dl.bintray.com/blocke/provisional"
 
 lazy val root = project
   .in(file("."))

@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 
 import munit._
-import model._
+import infos._
 import PrimitiveType._
 
 class JavaNonTasty extends munit.FunSuite {
@@ -13,9 +13,9 @@ class JavaNonTasty extends munit.FunSuite {
         "co.blocke.reflect.Person",
         _,
         List(
-          JavaFieldInfo(0,"age",Scala_Int,_,_,_),
+          JavaFieldInfo(0,"age",Java_Int,_,_,_),
           JavaFieldInfo(1,"name",Scala_String,_,_,_),
-          JavaFieldInfo(2,"other",Scala_Int,_,_,_)
+          JavaFieldInfo(2,"other",Java_Int,_,_,_)
         ),
         Nil,
         _
@@ -162,12 +162,12 @@ class JavaNonTasty extends munit.FunSuite {
           "co.blocke.reflect.JavaCollections",
           _,
           List(
-            JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",_,List("K","V"),Scala_String,Scala_Int),_,_,_),
+            JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",_,List("K","V"),Scala_String,Java_Int),_,_,_),
             JavaFieldInfo(1,"myArr",JavaArrayInfo(Scala_String),_,_,_),
             JavaFieldInfo(2,"myList",JavaListInfo("java.util.ArrayList",_,List("E"),Scala_String),_,_,_),
             JavaFieldInfo(3,"myQ",JavaQueueInfo("java.util.concurrent.BlockingQueue",_,List("E"),Scala_String),_,_,_),
             JavaFieldInfo(4,"myTree",JavaSetInfo("java.util.TreeSet",_,List("E"),Scala_String),_,_,_),
-            JavaFieldInfo(5,"nested",JavaArrayInfo(JavaListInfo("java.util.List",_,List("E"),Scala_Int)),_,_,_)
+            JavaFieldInfo(5,"nested",JavaArrayInfo(JavaListInfo("java.util.List",_,List("E"),Java_Int)),_,_,_)
           ),
           Nil,
           _

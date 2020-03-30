@@ -1,5 +1,5 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 
 trait ClassInfo extends ConcreteType with ClassOrTrait:
@@ -20,7 +20,7 @@ case class TypeMember(
 )
 
 
-case class ScalaClassInfo protected (
+case class ScalaClassInfo protected[dotty_reflection] (
   name: String,
   infoClass: Class[_],
   typeMembers: List[TypeMember],
@@ -30,7 +30,7 @@ case class ScalaClassInfo protected (
   isValueClass: Boolean
   ) extends ClassInfo:
 
-    private lazy val constructor = clazz.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
+    private lazy val constructor = infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
 
     def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
 
@@ -53,7 +53,7 @@ case class ScalaClassInfo protected (
       //   this
 
   
-case class JavaClassInfo protected (
+case class JavaClassInfo protected[dotty_reflection] (
   name: String,
   infoClass: Class[_],
   fields: List[FieldInfo],
