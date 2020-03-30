@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 package impl
 
-import model._
+import infos._
 import extractors._
 import scala.quoted._
 import scala.reflect._

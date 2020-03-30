@@ -1,8 +1,7 @@
 package co.blocke.dotty_reflection
-package impl
 
 import scala.reflect.ClassTag
-import model._
+import infos._
 import scala.quoted._
 
 

@@ -1,5 +1,5 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 import java.lang.reflect.Method
 

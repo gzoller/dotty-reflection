@@ -1,5 +1,5 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 /** Arity 1 Collections, e.g. List, Set, Seq */
 case class SeqLikeInfo protected[dotty_reflection](

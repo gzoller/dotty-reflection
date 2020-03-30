@@ -3,7 +3,7 @@ package extractors
 
 import impl._
 import impl.Clazzes._
-import model._ 
+import infos._ 
 import scala.tasty.Reflection
 import scala.util.matching.Regex
 

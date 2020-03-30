@@ -1,17 +1,11 @@
 package co.blocke.dotty_reflection
 
-case class Person[T](name:String, age: Int, thing: List[Int], other: T)
-
-case class Foo[X](a: X)
-case class Bar[Y,Z]( c: Y, d: Z)
+case class Person(name:String, age: Int)
 
 object RunMe extends App:
-  println("Hello, world!")
-  val p = Person("Greg",53,List(123,45), 5)
 
-  val ts = impl.analyzeType[Person[Int]]
-  println(ts)
-  println(Reflector.reflectOnType(ts))
+  println(analyzeType[Person])
+  println(Reflector.reflectOn[Person])
 
   // println(Reflector.reflectOn[scala.collection.immutable.HashSet[Boolean]])
 

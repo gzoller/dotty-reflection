@@ -1,13 +1,12 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 
 trait ClassOrTrait:
-  val name: String
-  protected lazy val clazz = Class.forName(name)
+  val infoClass: Class[_]
 
   // Run up the interitance tree to the top (Object) to get all the superclasses and mixin interfaces of this one
-  protected def getSuperclasses(c: Class[_] = clazz, stack:List[String] = List.empty[String]): List[String] = 
+  protected def getSuperclasses(c: Class[_] = infoClass, stack:List[String] = List.empty[String]): List[String] = 
     val ammendedStack = (stack :+ c.getName) ::: c.getInterfaces.toList.map(_.getName)
     val sc = c.getSuperclass()
     if( sc == classOf[Object] || sc == null)

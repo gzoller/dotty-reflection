@@ -1,5 +1,5 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 
 case class UnionInfo protected[dotty_reflection] (

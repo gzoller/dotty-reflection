@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 
 import munit._
-import model._
+import infos._
 import PrimitiveType._
 import java.util.Optional
 
@@ -33,7 +33,7 @@ class Options extends munit.FunSuite {
         "co.blocke.reflect.JavaOption1",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, Scala_Int),_,_,_)
+          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, Java_Int),_,_,_)
         ),
         Nil,
         _) => true
@@ -68,7 +68,7 @@ class Options extends munit.FunSuite {
         "co.blocke.reflect.JavaOption2",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, JavaOptionInfo("java.util.Optional", _, Scala_Int)),_,_,_)
+          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, JavaOptionInfo("java.util.Optional", _, Java_Int)),_,_,_)
         ),
         Nil,
         _) => true

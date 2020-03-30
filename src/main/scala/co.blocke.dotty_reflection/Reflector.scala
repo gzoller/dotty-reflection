@@ -3,7 +3,7 @@ package co.blocke.dotty_reflection
 import scala.tasty.inspector._
 import impl._
 import scala.reflect.ClassTag
-import model._
+import infos._
 import scala.jdk.CollectionConverters._
 
 object Reflector:
@@ -138,6 +138,7 @@ object Reflector:
         val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
         reflectOnClassWithParams(Class.forName(className), resolvedParams)
     }
+  
 
   protected[dotty_reflection] def reflectOnClassWithParams(clazz: Class[_], params: List[ALL_TYPE]): ConcreteType =
     val className = clazz.getName

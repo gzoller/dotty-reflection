@@ -1,5 +1,5 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 /** Something to smooth the differences between the 2.x Enumeration class and the 3.x Enum class
  */
