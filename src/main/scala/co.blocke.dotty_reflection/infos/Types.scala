@@ -1,5 +1,5 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 opaque type TypeSymbol = String // Placeholder type, e.g. T as in Foo[T](x: T)
 
@@ -29,14 +29,23 @@ enum PrimitiveType(val name: String) extends ConcreteType:
   val hasUnion = false
   val typeParameters: List[TypeSymbol] = Nil
 
-  case Scala_Boolean extends PrimitiveType("java.lang.Boolean")
-  case Scala_Byte extends PrimitiveType("java.lang.Byte")
-  case Scala_Char extends PrimitiveType("java.lang.Character")
-  case Scala_Double extends PrimitiveType("java.lang.Double")
-  case Scala_Float extends PrimitiveType("java.lang.Float")
-  case Scala_Int extends PrimitiveType("java.lang.Integer")
-  case Scala_Long extends PrimitiveType("java.lang.Long")
-  case Scala_Short extends PrimitiveType("java.lang.Short")
+  case Scala_Boolean extends PrimitiveType("scala.Boolean")
+  case Scala_Byte extends PrimitiveType("scala.Byte")
+  case Scala_Char extends PrimitiveType("scala.Char")
+  case Scala_Double extends PrimitiveType("scala.Double")
+  case Scala_Float extends PrimitiveType("scala.Float")
+  case Scala_Int extends PrimitiveType("scala.Integer")
+  case Scala_Long extends PrimitiveType("scala.Long")
+  case Scala_Short extends PrimitiveType("scala.Short")
   case Scala_String extends PrimitiveType("java.lang.String")
-  case Java_Object extends PrimitiveType("java.lang.Object")
   case Scala_Any extends PrimitiveType("scala.Any")
+
+  case Java_Boolean extends PrimitiveType("java.lang.Boolean")
+  case Java_Byte extends PrimitiveType("java.lang.Byte")
+  case Java_Char extends PrimitiveType("java.lang.Character")
+  case Java_Double extends PrimitiveType("java.lang.Double")
+  case Java_Float extends PrimitiveType("java.lang.Float")
+  case Java_Int extends PrimitiveType("java.lang.Integer")
+  case Java_Long extends PrimitiveType("java.lang.Long")
+  case Java_Short extends PrimitiveType("java.lang.Short")
+  case Java_Object extends PrimitiveType("java.lang.Object")

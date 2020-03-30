@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 package impl
 
-import model._
+import infos._
 import java.lang.reflect.{Type=>JType,_}
 import java.lang.annotation.Annotation
 import java.beans.{ Introspector, PropertyDescriptor }
@@ -68,17 +68,17 @@ object JavaClassInspector:
         }
       case v: TypeVariable[_] => 
         v.getName.asInstanceOf[TypeSymbol]
-      case w: WildcardType => throw new Exception("Wildcard types not currently supported in reflection library")
+      case w: WildcardType => throw new ReflectException("Wildcard types not currently supported in reflection library")
       case other if other.isInstanceOf[Class[_]] => 
         other.asInstanceOf[Class[_]] match {
-          case c if c =:= BooleanClazz || c =:= booleanClazz || c =:= JBooleanClazz => PrimitiveType.Scala_Boolean
-          case c if c =:= ByteClazz || c =:= byteClazz || c =:= JByteClazz          => PrimitiveType.Scala_Byte
-          case c if c =:= CharClazz || c =:= charClazz || c =:= JCharacterClazz     => PrimitiveType.Scala_Char
-          case c if c =:= DoubleClazz || c =:= doubleClazz || c =:= JDoubleClazz    => PrimitiveType.Scala_Double
-          case c if c =:= FloatClazz || c =:= floatClazz || c =:= JFloatClazz       => PrimitiveType.Scala_Float
-          case c if c =:= IntClazz || c =:= intClazz || c =:= JIntegerClazz         => PrimitiveType.Scala_Int
-          case c if c =:= LongClazz || c =:= longClazz || c =:= JLongClazz          => PrimitiveType.Scala_Long
-          case c if c =:= ShortClazz || c =:= shortClazz || c =:= JShortClazz       => PrimitiveType.Scala_Short
+          case c if c =:= BooleanClazz || c =:= booleanClazz || c =:= JBooleanClazz => PrimitiveType.Java_Boolean
+          case c if c =:= ByteClazz || c =:= byteClazz || c =:= JByteClazz          => PrimitiveType.Java_Byte
+          case c if c =:= CharClazz || c =:= charClazz || c =:= JCharacterClazz     => PrimitiveType.Java_Char
+          case c if c =:= DoubleClazz || c =:= doubleClazz || c =:= JDoubleClazz    => PrimitiveType.Java_Double
+          case c if c =:= FloatClazz || c =:= floatClazz || c =:= JFloatClazz       => PrimitiveType.Java_Float
+          case c if c =:= IntClazz || c =:= intClazz || c =:= JIntegerClazz         => PrimitiveType.Java_Int
+          case c if c =:= LongClazz || c =:= longClazz || c =:= JLongClazz          => PrimitiveType.Java_Long
+          case c if c =:= ShortClazz || c =:= shortClazz || c =:= JShortClazz       => PrimitiveType.Java_Short
           case c if c =:= StringClazz  => PrimitiveType.Scala_String
           case c if c =:= ObjectClazz  => PrimitiveType.Java_Object
           case c if c.isArray => JavaArrayInfo(inspectType(mainTypeParams, c.getComponentType))
@@ -87,5 +87,5 @@ object JavaClassInspector:
           case c => Reflector.reflectOnClass(c)
         }
       case u =>
-        throw new Exception("Unknown Java type "+u)  // This isn't a Class so we can't use UnknownInfo here
+        throw new ReflectException("Unknown Java type "+u)  // This isn't a Class so we can't use UnknownInfo here
     }

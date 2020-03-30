@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 package impl
 
-import model._
+import infos._
 import extractors._
 import scala.quoted._
 import scala.reflect._
@@ -57,7 +57,6 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
         val className = t.symbol.show
         val clazz = Class.forName(className)
-        // cache.get(className).orElse{
         val constructor = t.constructor
 
         // Get any type parameters
@@ -94,7 +93,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
             val fieldName = valDef.name
             if(!isCaseClass)
               scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
-                throw new Exception(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
+                throw new ReflectException(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
               )
             // Field annotations (stored internal 'val' definitions in class)
             val annoSymbol = members.get(fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
@@ -156,7 +155,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
 
     val clazz = Class.forName(className)
     val valueAccessor = scala.util.Try(clazz.getDeclaredMethod(valDef.name))
-      .getOrElse(throw new Exception(s"Problem with class $className, field ${valDef.name}: All non-case class constructor fields must be vals"))
+      .getOrElse(throw new ReflectException(s"Problem with class $className, field ${valDef.name}: All non-case class constructor fields must be vals"))
     ScalaFieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
 
 
@@ -174,7 +173,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
             val resolvedLeft: ALL_TYPE = inspectType(reflect)(left.asInstanceOf[reflect.TypeRef])
             val resolvedRight: ALL_TYPE = inspectType(reflect)(right.asInstanceOf[reflect.TypeRef])
             IntersectionInfo(Reflector.INTERSECTION_CLASS, resolvedLeft, resolvedRight)
-          case u => throw new Exception("Unsupported TypeRef: "+typeRef)
+          case u => throw new ReflectException("Unsupported TypeRef: "+typeRef)
         }
 
       case Some(classSymbol) =>
@@ -192,7 +191,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
           case named: dotty.tools.dotc.core.Types.NamedType if typeRef.isOpaqueAlias =>
             inspectType(reflect)(typeRef.translucentSuperType.asInstanceOf[reflect.TypeRef]) match {
               case c:ConcreteType => AliasInfo(typeRef.show, c)
-              case _ => throw new Exception("Opaque aliases for type symbols currently unsupported")
+              case _ => throw new ReflectException("Opaque aliases for type symbols currently unsupported")
             }
 
           // Scala3 Tasty-equipped type incl. primitive types

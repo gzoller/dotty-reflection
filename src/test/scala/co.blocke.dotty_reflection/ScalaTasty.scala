@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 
 import munit._
 import co.blocke.reflect.{ClassAnno,FieldAnno}
-import model._
+import infos._
 import PrimitiveType._
 
 class ScalaTasty extends munit.FunSuite {

@@ -3,12 +3,10 @@ package co.blocke.dotty_reflection
 import scala.tasty.inspector._
 import impl._
 import scala.reflect.ClassTag
-import model._
-import scala.collection.mutable.HashMap
+import infos._
+import scala.jdk.CollectionConverters._
 
 object Reflector:
-
-  type CacheType = HashMap[String, ConcreteType]
 
   /** A union type is resolved to AnyRef, which isn't helpful.  This is a marker class name to differentiate a union type */
   val UNION_CLASS = "__union_type__"
@@ -20,42 +18,42 @@ object Reflector:
   // decide how/if we should cache other types.
 
   // pre-loaded with known language primitive types
-  private val cache:CacheType = HashMap(
-    "boolean"             -> PrimitiveType.Scala_Boolean,
-    "Boolean"             -> PrimitiveType.Scala_Boolean,
-    "scala.Boolean"       -> PrimitiveType.Scala_Boolean,
-    "java.lang.Boolean"   -> PrimitiveType.Scala_Boolean,
-    "byte"                -> PrimitiveType.Scala_Byte,
-    "Byte"                -> PrimitiveType.Scala_Byte,
-    "scala.Byte"          -> PrimitiveType.Scala_Byte,
-    "java.lang.Byte"      -> PrimitiveType.Scala_Byte,
-    "char"                -> PrimitiveType.Scala_Char,
-    "Char"                -> PrimitiveType.Scala_Char,
-    "scala.Char"          -> PrimitiveType.Scala_Char,
-    "java.lang.Character" -> PrimitiveType.Scala_Char,
-    "double"              -> PrimitiveType.Scala_Double,
-    "Double"              -> PrimitiveType.Scala_Double,
-    "scala.Double"        -> PrimitiveType.Scala_Double,
-    "java.lang.Double"    -> PrimitiveType.Scala_Double,
-    "float"               -> PrimitiveType.Scala_Float,
-    "Float"               -> PrimitiveType.Scala_Float,
-    "scala.Float"         -> PrimitiveType.Scala_Float,
-    "java.lang.Float"     -> PrimitiveType.Scala_Float,
-    "int"                 -> PrimitiveType.Scala_Int,
-    "Int"                 -> PrimitiveType.Scala_Int,
-    "scala.Int"           -> PrimitiveType.Scala_Int,
-    "java.lang.Integer"   -> PrimitiveType.Scala_Int,
-    "long"                -> PrimitiveType.Scala_Long,
-    "Long"                -> PrimitiveType.Scala_Long,
-    "scala.Long"          -> PrimitiveType.Scala_Long,
-    "java.lang.Long"      -> PrimitiveType.Scala_Long,
-    "short"               -> PrimitiveType.Scala_Short,
-    "Short"               -> PrimitiveType.Scala_Short,
-    "scala.Short"         -> PrimitiveType.Scala_Short,
-    "java.lang.Short"     -> PrimitiveType.Scala_Short,
-    "java.lang.String"    -> PrimitiveType.Scala_String,
-    "java.lang.Object"    -> PrimitiveType.Java_Object
-  )
+  private val cache = new java.util.concurrent.ConcurrentHashMap[TypeStructure, ConcreteType](Map(
+    TypeStructure("boolean",Nil)              -> PrimitiveType.Scala_Boolean,
+    TypeStructure("Boolean",Nil)              -> PrimitiveType.Scala_Boolean,
+    TypeStructure("scala.Boolean",Nil)        -> PrimitiveType.Scala_Boolean,
+    TypeStructure("java.lang.Boolean",Nil)    -> PrimitiveType.Scala_Boolean,
+    TypeStructure("byte",Nil)                 -> PrimitiveType.Scala_Byte,
+    TypeStructure("Byte",Nil)                 -> PrimitiveType.Scala_Byte,
+    TypeStructure("scala.Byte",Nil)           -> PrimitiveType.Scala_Byte,
+    TypeStructure("java.lang.Byte",Nil)       -> PrimitiveType.Scala_Byte,
+    TypeStructure("char",Nil)                 -> PrimitiveType.Scala_Char,
+    TypeStructure("Char",Nil)                 -> PrimitiveType.Scala_Char,
+    TypeStructure("scala.Char",Nil)           -> PrimitiveType.Scala_Char,
+    TypeStructure("java.lang.Character",Nil)  -> PrimitiveType.Scala_Char,
+    TypeStructure("double",Nil)               -> PrimitiveType.Scala_Double,
+    TypeStructure("Double",Nil)               -> PrimitiveType.Scala_Double,
+    TypeStructure("scala.Double",Nil)         -> PrimitiveType.Scala_Double,
+    TypeStructure("java.lang.Double",Nil)     -> PrimitiveType.Scala_Double,
+    TypeStructure("float",Nil)                -> PrimitiveType.Scala_Float,
+    TypeStructure("Float",Nil)                -> PrimitiveType.Scala_Float,
+    TypeStructure("scala.Float",Nil)          -> PrimitiveType.Scala_Float,
+    TypeStructure("java.lang.Float",Nil)      -> PrimitiveType.Scala_Float,
+    TypeStructure("int",Nil)                  -> PrimitiveType.Scala_Int,
+    TypeStructure("Int",Nil)                  -> PrimitiveType.Scala_Int,
+    TypeStructure("scala.Int",Nil)            -> PrimitiveType.Scala_Int,
+    TypeStructure("java.lang.Integer",Nil)    -> PrimitiveType.Scala_Int,
+    TypeStructure("long",Nil)                 -> PrimitiveType.Scala_Long,
+    TypeStructure("Long",Nil)                 -> PrimitiveType.Scala_Long,
+    TypeStructure("scala.Long",Nil)           -> PrimitiveType.Scala_Long,
+    TypeStructure("java.lang.Long",Nil)       -> PrimitiveType.Scala_Long,
+    TypeStructure("short",Nil)                -> PrimitiveType.Scala_Short,
+    TypeStructure("Short",Nil)                -> PrimitiveType.Scala_Short,
+    TypeStructure("scala.Short",Nil)          -> PrimitiveType.Scala_Short,
+    TypeStructure("java.lang.Short",Nil)      -> PrimitiveType.Scala_Short,
+    TypeStructure("java.lang.String",Nil)     -> PrimitiveType.Scala_String,
+    TypeStructure("java.lang.Object",Nil)     -> PrimitiveType.Java_Object
+  ).asJava)
 
 
   /** Runtime callable reflection on a type T.  
@@ -63,37 +61,84 @@ object Reflector:
    * @returns ConcreteType, typically a ScalaClassInfo for a Scala class
    */
   inline def reflectOn[T](implicit ct: ClassTag[T]): ConcreteType = 
-    val paramStructure = getParams[T]
-    unpackParamStructure(paramStructure)
+    val typeStructure = analyzeType[T]
+    cache.computeIfAbsent(typeStructure, unpackTypeStructure)
 
-  private def unpackParamStructure(ps: ParamStructure): ConcreteType =
-    ps match {
-      case ParamStructure(className, Nil) => 
-        reflectOnClass(Class.forName(className))
-      case ParamStructure(className, subparams) if className == UNION_CLASS =>
-        val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
-        UnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1))
-      case ParamStructure(className, subparams) if className == INTERSECTION_CLASS =>
-        val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
-        IntersectionInfo(INTERSECTION_CLASS, resolvedParams(0), resolvedParams(1))
-      case ParamStructure(className, subparams) =>
-        val resolvedParams = subparams.map(sp => unpackParamStructure(sp))
-        reflectOnClassWithParams(Class.forName(className), resolvedParams)
-    }
 
+  def reflectOnType(typeStructure: TypeStructure): ConcreteType =
+    cache.computeIfAbsent(typeStructure, unpackTypeStructure)
+    
 
   /** Same as reflectOn, except given a Class object instead of a type, T.
+   *  NOTE: If Class is parameterized, this call can't infer the types of the parameters.
    */
   def reflectOnClass(clazz: Class[_]): ConcreteType =
     val className = clazz.getName
-    val found: Option[ConcreteType] = cache.get(className)
-    found.getOrElse({
+    Option(cache.get(TypeStructure(className,Nil))).getOrElse({ // TODO
       val tc = new ScalaClassInspector(clazz)
       tc.inspect("", List(className))
       tc.inspected
-      // cache.get(className).getOrElse(UnknownInfo(clazz))
     })
 
+
+  /** Reflect on an instance, including inference of type parameters.
+   *  NOTE: There is a strict limitation of this reflection: You can't reflect on any collection[T] or class having a field which is a collection[T].
+   *  The JVM class mechanism just throws up its hands in these situations.
+   */
+   /*
+  def reflectOnInstance(instance: Object): ConcreteType =
+    val clazz = instance.getClass
+    val params = clazz.getTypeParameters.toList.map(_.getName)
+
+    val stage1 = clazz match {
+      case c if seqExtractor.matches(c) => seqExtractor.emptyInfo(c)
+      case c if mapExtractor.matches(c) => mapExtractor.emptyInfo(c)
+      case _ => reflectOnClass(clazz) 
+    } // initial attempt at refelection
+
+    if( params.nonEmpty ) then // if parameterized, we need to go deeper--recursively
+      val paramCache = scala.collection.mutable.Map.empty[String, ConcreteType]
+      stage1 match {
+        case classInfo: ScalaClassInfo =>
+          classInfo.copy( fields = classInfo.fields.map{ f =>
+            f.fieldType match {
+              case ct: ConcreteType if ct.typeParameters != Nil => replaceScalaFieldType(f, instance, paramCache)
+              case ts: TypeSymbol if params.contains(ts.toString) => replaceScalaFieldType(f, instance, paramCache)
+              case _ => f
+              }
+          })
+        case _ => throw new ReflectException("This instance contains wrapped types (conllections, Option, etc.) and is not directly reflectable.  Please use a specific type when reflecting this (reflectOn[T]).")
+      }
+    else
+      stage1
+
+  private def replaceScalaFieldType( fieldInfo: FieldInfo, instance: Object, paramCache: scala.collection.mutable.Map[String, ConcreteType] ): FieldInfo =
+    val paramTypeName = fieldInfo.fieldType.toString
+    fieldInfo.asInstanceOf[ScalaFieldInfo].copy(fieldType = paramCache.get(paramTypeName).getOrElse{
+      val found = reflectOnInstance( fieldInfo.valueAccessor.invoke(instance) )
+      paramCache.put(paramTypeName, found)
+      found
+    })
+
+  private val seqExtractor = extractors.SeqExtractor()
+  private val mapExtractor = extractors.MapExtractor()
+      */
+
+  private def unpackTypeStructure(ps: TypeStructure): ConcreteType =
+    ps match {
+      case TypeStructure(className, Nil) => 
+        reflectOnClass(Class.forName(className))
+      case TypeStructure(className, subparams) if className == UNION_CLASS =>
+        val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
+        UnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1))
+      case TypeStructure(className, subparams) if className == INTERSECTION_CLASS =>
+        val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
+        IntersectionInfo(INTERSECTION_CLASS, resolvedParams(0), resolvedParams(1))
+      case TypeStructure(className, subparams) =>
+        val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
+        reflectOnClassWithParams(Class.forName(className), resolvedParams)
+    }
+  
 
   protected[dotty_reflection] def reflectOnClassWithParams(clazz: Class[_], params: List[ALL_TYPE]): ConcreteType =
     val className = clazz.getName
@@ -117,3 +162,5 @@ object Reflector:
         val m: Map[TypeSymbol,ALL_TYPE] = x.toMap
         c.sewTypeParams(m)
     }
+
+class ReflectException(msg: String) extends Exception(msg)

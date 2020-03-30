@@ -1,8 +1,8 @@
 package co.blocke.dotty_reflection
-package model
+package infos
 
 
-case class TraitInfo protected(
+case class TraitInfo protected[dotty_reflection](
   name: String, 
   infoClass: Class[_], 
   typeParameters: List[TypeSymbol],

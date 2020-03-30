@@ -1,7 +1,7 @@
 package co.blocke.dotty_reflection
 
 import munit._
-import model._
+import infos._
 import PrimitiveType._
 
 class Enums extends munit.FunSuite {
