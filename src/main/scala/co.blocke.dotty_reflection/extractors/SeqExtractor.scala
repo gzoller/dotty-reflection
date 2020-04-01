@@ -8,7 +8,7 @@ import scala.tasty.Reflection
 
 case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz <:< SeqClazz || clazz <:< SetClazz
+  def matches(clazz: Class[_]): Boolean = clazz <:< SeqClazz || clazz <:< SetClazz || clazz <:< ScalaArrayClazz
 
   def emptyInfo(clazz: Class[_]): SeqLikeInfo = 
     SeqLikeInfo(

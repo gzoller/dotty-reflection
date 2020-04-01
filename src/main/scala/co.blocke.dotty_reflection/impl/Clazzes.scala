@@ -18,6 +18,7 @@ object Clazzes {
   val LongClazz        = Class.forName("scala.Long")
   val ShortClazz       = Class.forName("scala.Short")
   val StringClazz      = Class.forName("java.lang.String") // shared Java/Scala
+  val ScalaArrayClazz  = Class.forName("scala.Array")
 
   // Java-specific -- lots of wrapped/primitive type stuff going on
   val booleanClazz    = java.lang.Boolean.TYPE

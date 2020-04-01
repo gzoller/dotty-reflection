@@ -14,6 +14,9 @@ object Reflector:
   /** An intersection type is resolved to AnyRef, which isn't helpful.  This is a marker class name to differentiate a union type */
   val INTERSECTION_CLASS = "__intersection_type__"
 
+  /** Java Arrays devolve into java.util.List, which isn't quite the same thing, so we created this placeholder */
+  val JAVA_ARRAY_CLASS = "__array__"
+
   // NOTE: Caching used only for primitive types right now.  Let's get the rest working then
   // decide how/if we should cache other types.
 
@@ -70,7 +73,7 @@ object Reflector:
     
 
   /** Same as reflectOn, except given a Class object instead of a type, T.
-   *  NOTE: If Class is parameterized, this call can't infer the types of the parameters.
+   *  NOTE: If Class is parameterized, this call can't infer the types of the parameters.  In that case, call reflectOnClassWithParams
    */
   def reflectOnClass(clazz: Class[_]): ConcreteType =
     val className = clazz.getName
@@ -128,10 +131,10 @@ object Reflector:
     ps match {
       case TypeStructure(className, Nil) => 
         reflectOnClass(Class.forName(className))
-      case TypeStructure(className, subparams) if className == UNION_CLASS =>
+      case TypeStructure(UNION_CLASS, subparams) =>
         val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
         UnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1))
-      case TypeStructure(className, subparams) if className == INTERSECTION_CLASS =>
+      case TypeStructure(INTERSECTION_CLASS, subparams) =>
         val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
         IntersectionInfo(INTERSECTION_CLASS, resolvedParams(0), resolvedParams(1))
       case TypeStructure(className, subparams) =>

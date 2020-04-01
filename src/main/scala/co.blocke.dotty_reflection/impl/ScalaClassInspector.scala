@@ -31,7 +31,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
     import reflect.{given _}
 
     object Descended {
-      def unapply(t: reflect.Tree): Option[ConcreteType] = descendInto(reflect)(t)
+      def unapply(t: reflect.Tree): Option[ConcreteType] = descendInto(className, reflect)(t)
     }
   
     // We expect a certain structure:  PackageClause, which contains ClassDef's for target class + companion object
@@ -46,16 +46,18 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
     foundClass.getOrElse(UnknownInfo(Class.forName(className)))
 
 
-  private def descendInto(reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
+  private def descendInto(className: String, reflect: Reflection)(tree: reflect.Tree): Option[ConcreteType] =
     import reflect.{_, given _}
     tree match {
+
+      case pkg: reflect.PackageClause => // nested packages
+        Some(inspectClass(className, reflect)(tree))
 
       case vd: reflect.ValDef if(vd.symbol.flags.is(reflect.Flags.Object)) =>
         // === Object (Scala Object) ===
         Some(ObjectInfo(vd.symbol.fullName, Class.forName(vd.symbol.fullName)))
 
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
-        val className = t.symbol.show
         val clazz = Class.forName(className)
         val constructor = t.constructor
 

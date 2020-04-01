@@ -66,9 +66,9 @@ case class JavaListInfo protected[dotty_reflection](
 
 /** Java Array */
 case class JavaArrayInfo protected[dotty_reflection](
+  name: String,
   elementType: ALL_TYPE
 ) extends ConcreteType:
-  val name: String = "__array__"
   val typeParameters: List[TypeSymbol] = Nil
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     elementType match {

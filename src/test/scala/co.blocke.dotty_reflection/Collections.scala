@@ -7,7 +7,7 @@ import PrimitiveType._
 class Collections extends munit.FunSuite {
 
   test("Scala List") {
-    val r = Reflector.reflectOn[Coll1].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[Coll1]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll1",
@@ -26,7 +26,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala Set") {
-    val r = Reflector.reflectOn[Coll2].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[Coll2]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll2",
@@ -45,7 +45,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala Map 1") {
-    val r = Reflector.reflectOn[Coll3].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[Coll3]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll3",
@@ -64,7 +64,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala Map 2") {
-    val r = Reflector.reflectOn[Coll4].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[Coll4]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll4",
@@ -83,7 +83,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala mutable List") {
-    val r = Reflector.reflectOn[Coll1m].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[Coll1m]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll1m",
@@ -102,7 +102,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala mutable Set") {
-    val r = Reflector.reflectOn[Coll2m].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[Coll2m]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll2m",
@@ -121,7 +121,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala mutable Map 1") {
-    val r = Reflector.reflectOn[Coll3m].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[Coll3m]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll3m",
@@ -140,7 +140,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Scala mutable Map 2") {
-    val r = Reflector.reflectOn[Coll4m].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[Coll4m]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.Coll4m",
@@ -159,7 +159,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Nested Collections") {
-    val r = Reflector.reflectOn[NestedColl].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[NestedColl]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.NestedColl",
@@ -178,7 +178,7 @@ class Collections extends munit.FunSuite {
   }
 
   test("Tuples") {
-    val r = Reflector.reflectOn[TupleTurtle[Boolean]].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[TupleTurtle[Boolean]]
     val result = r match {
       case ScalaClassInfo(
         "co.blocke.dotty_reflection.TupleTurtle",
@@ -218,6 +218,35 @@ class Collections extends munit.FunSuite {
           )
         ),
         List("Z"),
+        _,
+        false) => true
+      case _ => false
+    }
+    assert(result)
+  }
+
+  test("Scala Arrays") {
+    val r = Reflector.reflectOn[WithScalaArray]
+    val result = r match {
+      case ScalaClassInfo(
+        "co.blocke.dotty_reflection.WithScalaArray",
+        _,
+        Nil,
+        List(
+          ScalaFieldInfo(
+            0,
+            "list",
+            SeqLikeInfo(
+              "scala.Array",
+              _,
+              Scala_Char
+            ),
+            _,
+            _,
+            None
+          )
+        ),
+        Nil,
         _,
         false) => true
       case _ => false
