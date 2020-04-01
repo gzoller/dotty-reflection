@@ -1,11 +1,8 @@
 package co.blocke.dotty_reflection
 
-case class Person(name:String, age: Int)
 
 object RunMe extends App:
 
-  println(analyzeType[Person])
-  println(Reflector.reflectOn[Person])
 
   // println(Reflector.reflectOn[scala.collection.immutable.HashSet[Boolean]])
 

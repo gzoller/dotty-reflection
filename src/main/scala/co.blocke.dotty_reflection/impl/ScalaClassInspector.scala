@@ -200,9 +200,9 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
             val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
             val anySymbol = Symbol.classSymbol("scala.Any")
             classSymbol match {
-              case cs if cs == anySymbol && !isTypeParam => PrimitiveType.Scala_Any
-              case cs if cs == anySymbol => typeRef.name.asInstanceOf[TypeSymbol]  // TypeSymbols Foo[T] have typeRef of Any
-              case _ =>
+              case cs if isTypeParam => typeRef.name.asInstanceOf[TypeSymbol]  // TypeSymbols Foo[T] have typeRef of Any
+              case cs if cs == anySymbol => PrimitiveType.Scala_Any
+              case cs =>
                 Class.forName(className) match {
                   case c if c =:= BooleanClazz     => PrimitiveType.Scala_Boolean
                   case c if c =:= ByteClazz        => PrimitiveType.Scala_Byte
@@ -215,11 +215,11 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
                   case c if c =:= StringClazz      => PrimitiveType.Scala_String
                   case c if c <:< EnumClazz        => ScalaEnum(className, c)
                   case c if is2xEnumeration        => ScalaEnumeration(className, c)
-                  case _ =>
-                    if(!isTypeParam) 
-                      descendInto(reflect)(classSymbol.tree).get
+                  case c =>
+                    if(isTypeParam) then
+                      typeRef.name.asInstanceOf[TypeSymbol] // it's a type symbol, T
                     else
-                      typeRef.name.asInstanceOf[TypeSymbol]
+                      Reflector.reflectOnClass(c)  // it's some other class, likely a Java or 2.x Scala class
                 }
             }
 
@@ -253,44 +253,3 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
             UnknownInfo(Class.forName(className))
         }
     }
-
-
-/*
-List
-  TypeDef(
-    T,
-    TypeTree[
-      TypeBounds(
-        TypeRef(
-          TermRef(
-            ThisType(
-              TypeRef(
-                NoPrefix,
-                module class <root>
-              )
-            ),
-            module scala
-          ),
-          Nothing
-        ),
-        TypeRef(
-          TermRef(
-            ThisType(
-              TypeRef(
-                NoPrefix,
-                module class blocke
-              )
-            ),
-            module dotty_reflection
-          ),
-          Body
-        )
-      )
-    ]
-  ), 
-  TypeDef(
-    Giraffe,
-    Ident(T)
-  )
-)
-*/

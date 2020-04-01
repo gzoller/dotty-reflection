@@ -1,5 +1,4 @@
 package co.blocke.dotty_reflection
-package infos
 
 opaque type TypeSymbol = String // Placeholder type, e.g. T as in Foo[T](x: T)
 
@@ -14,12 +13,12 @@ trait ConcreteType:
   * We can make a ScalaJack TypeAdapter for UUID without needing to inspect the type.  For some
   * other application an UnknownInfo might be a serious problem.
   */
-case class UnknownInfo(clazz: Class[_]) extends ConcreteType:
-  val name = clazz.getName
+case class UnknownInfo(infoClass: Class[_]) extends ConcreteType:
+  val name = infoClass.getName
   val typeParameters = Nil
 
-case class ScalaObjectInfo(clazz: Class[_]) extends ConcreteType:
-  val name = clazz.getName
+case class ScalaObjectInfo(infoClass: Class[_]) extends ConcreteType:
+  val name = infoClass.getName
   val typeParameters = Nil
 
 type ALL_TYPE = ConcreteType | TypeSymbol
@@ -34,7 +33,7 @@ enum PrimitiveType(val name: String) extends ConcreteType:
   case Scala_Char extends PrimitiveType("scala.Char")
   case Scala_Double extends PrimitiveType("scala.Double")
   case Scala_Float extends PrimitiveType("scala.Float")
-  case Scala_Int extends PrimitiveType("scala.Integer")
+  case Scala_Int extends PrimitiveType("scala.Int")
   case Scala_Long extends PrimitiveType("scala.Long")
   case Scala_Short extends PrimitiveType("scala.Short")
   case Scala_String extends PrimitiveType("java.lang.String")
