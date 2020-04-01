@@ -1,10 +1,12 @@
 package co.blocke.dotty_reflection
 
 
+case class Thing(t:Array[Array[Int]])
+
 object RunMe extends App:
 
 
-  // println(Reflector.reflectOn[scala.collection.immutable.HashSet[Boolean]])
+  println(Reflector.reflectOn[Thing])
 
   // val stuff = List(1,2,3)
   // val clazz = stuff.getClass

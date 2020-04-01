@@ -8,6 +8,7 @@ object ExtractorRegistry:
       OptionExtractor(), 
       EitherExtractor(), 
       SeqExtractor(), 
+      ScalaArrayExtractor(),
       MapExtractor(), 
       TupleExtractor(),
       TryExtractor()

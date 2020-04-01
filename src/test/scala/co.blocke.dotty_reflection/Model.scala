@@ -181,4 +181,15 @@ case class Envelope[T <: Body, U](id: String, body: T) {
   type Foo = Int
 }
 
-case class WithScalaArray(list: Array[Char])
+case class WithScalaArray(
+  list: Array[Array[Char]],
+  x1: Array[Boolean],
+  x2: Array[Byte],
+  x3: Array[Char],
+  x4: Array[Double],
+  x5: Array[Float],
+  x6: Array[Int],
+  x7: Array[Long],
+  x8: Array[Short],
+  x9: Array[String]
+  )
