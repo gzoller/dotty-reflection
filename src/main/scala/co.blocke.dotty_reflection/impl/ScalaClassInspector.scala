@@ -17,7 +17,8 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{_, given _}
     reflect.rootContext match {
-      case ctx if ctx.isJavaCompilationUnit() => inspected = JavaClassInspector.inspectClass(clazz)      case ctx if ctx.isScala2CompilationUnit() => UnknownInfo(clazz)  // Can't do much with Scala2 classes--not Tasty
+      case ctx if ctx.isJavaCompilationUnit() => inspected = JavaClassInspector.inspectClass(clazz)      
+      case ctx if ctx.isScala2CompilationUnit() => UnknownInfo(clazz)  // Can't do much with Scala2 classes--not Tasty
       case ctx if ctx.isAlreadyLoadedCompilationUnit() => 
         val clazz = Class.forName(ctx.compilationUnitClassname())
         ExtractorRegistry.extractors.collectFirst {
@@ -180,11 +181,18 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
 
       case Some(classSymbol) =>
         // Handle gobbled non-class scala.Enumeration.Value (old 2.x Enumeration class values)
+        val ENUM_CLASSNAME = "scala.Enumeration.Value"
         val (is2xEnumeration, className) = classSymbol.fullName match { 
-          case raw if raw == "scala.Enumeration.Value" => 
-            val emerationClass = typeRef.typeSymbol.fullName
-            (true, emerationClass.dropRight(emerationClass.length - emerationClass.lastIndexOf('$')))
-          case _                                       => (false, classSymbol.fullName)
+          case raw if raw == ENUM_CLASSNAME => 
+            val enumerationClass = typeRef.typeSymbol.fullName
+            if( enumerationClass == ENUM_CLASSNAME ) then
+              // If caller did NOT defined a type member (type X = Value) inside their Enumeration class
+              val enumClassName = typeRef.qualifier.asInstanceOf[reflect.TermRef].termSymbol.moduleClass.fullName.dropRight(1) // chop the '$' off the end!
+              (true, enumClassName)
+            else
+              // If caller defined a type member (type X = Value) inside their Enumeration class
+              (true, enumerationClass.dropRight(enumerationClass.length - enumerationClass.lastIndexOf('$')))
+          case _  => (false, classSymbol.fullName)
         }
 
         typeRef match {
