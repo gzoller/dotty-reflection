@@ -7,7 +7,11 @@ case class IntersectionInfo protected[dotty_reflection](
   val leftType: ALL_TYPE,
   val rightType: ALL_TYPE
   ) extends ConcreteType:
+
     val typeParameters: List[TypeSymbol] = Nil
+
+    val infoClass: Class[_] = impl.Clazzes.AnyClazz
+
     override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
       val fixedLeft = leftType match {
         case ts: TypeSymbol if actualTypeMap.contains(ts) => actualTypeMap(ts)

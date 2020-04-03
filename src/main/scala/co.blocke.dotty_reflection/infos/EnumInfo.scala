@@ -55,6 +55,6 @@ case class ScalaEnumeration protected[dotty_reflection](
   
 case class JavaEnumInfo protected[dotty_reflection](
   name: String,
-  enumClass: Class[_]
+  infoClass: Class[_]
 ) extends ConcreteType: 
   val typeParameters = Nil

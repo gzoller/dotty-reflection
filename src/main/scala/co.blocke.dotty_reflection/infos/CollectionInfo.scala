@@ -80,6 +80,7 @@ case class JavaListInfo protected[dotty_reflection](
 
 /** Java Array */
 case class JavaArrayInfo protected[dotty_reflection](
+  infoClass: Class[_],
   elementType: ALL_TYPE
 ) extends ConcreteType:
   val name: String = Reflector.JAVA_ARRAY_CLASS

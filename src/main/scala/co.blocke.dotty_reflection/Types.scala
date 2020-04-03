@@ -1,9 +1,12 @@
 package co.blocke.dotty_reflection
 
+import impl.Clazzes._
+
 opaque type TypeSymbol = String // Placeholder type, e.g. T as in Foo[T](x: T)
 
 trait ConcreteType:
   val name: String
+  val infoClass: Class[_]
   val typeParameters: List[TypeSymbol]
   def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = this
 
@@ -23,28 +26,28 @@ case class ScalaObjectInfo(infoClass: Class[_]) extends ConcreteType:
 
 type ALL_TYPE = ConcreteType | TypeSymbol
 
-enum PrimitiveType(val name: String) extends ConcreteType:
+enum PrimitiveType(val name: String, val infoClass: Class[_]) extends ConcreteType:
   def canAssign(arg: Object): Boolean = arg.getClass.getName == name
   val hasUnion = false
   val typeParameters: List[TypeSymbol] = Nil
 
-  case Scala_Boolean extends PrimitiveType("scala.Boolean")
-  case Scala_Byte extends PrimitiveType("scala.Byte")
-  case Scala_Char extends PrimitiveType("scala.Char")
-  case Scala_Double extends PrimitiveType("scala.Double")
-  case Scala_Float extends PrimitiveType("scala.Float")
-  case Scala_Int extends PrimitiveType("scala.Int")
-  case Scala_Long extends PrimitiveType("scala.Long")
-  case Scala_Short extends PrimitiveType("scala.Short")
-  case Scala_String extends PrimitiveType("java.lang.String")
-  case Scala_Any extends PrimitiveType("scala.Any")
+  case Scala_Boolean extends PrimitiveType("scala.Boolean", BooleanClazz)
+  case Scala_Byte extends PrimitiveType("scala.Byte", ByteClazz)
+  case Scala_Char extends PrimitiveType("scala.Char", CharClazz)
+  case Scala_Double extends PrimitiveType("scala.Double", DoubleClazz)
+  case Scala_Float extends PrimitiveType("scala.Float", FloatClazz)
+  case Scala_Int extends PrimitiveType("scala.Int", IntClazz)
+  case Scala_Long extends PrimitiveType("scala.Long", LongClazz)
+  case Scala_Short extends PrimitiveType("scala.Short", ShortClazz)
+  case Scala_String extends PrimitiveType("java.lang.String", StringClazz)
+  case Scala_Any extends PrimitiveType("scala.Any", AnyClazz)
 
-  case Java_Boolean extends PrimitiveType("java.lang.Boolean")
-  case Java_Byte extends PrimitiveType("java.lang.Byte")
-  case Java_Char extends PrimitiveType("java.lang.Character")
-  case Java_Double extends PrimitiveType("java.lang.Double")
-  case Java_Float extends PrimitiveType("java.lang.Float")
-  case Java_Int extends PrimitiveType("java.lang.Integer")
-  case Java_Long extends PrimitiveType("java.lang.Long")
-  case Java_Short extends PrimitiveType("java.lang.Short")
-  case Java_Object extends PrimitiveType("java.lang.Object")
+  case Java_Boolean extends PrimitiveType("java.lang.Boolean", JBooleanClazz)
+  case Java_Byte extends PrimitiveType("java.lang.Byte", JByteClazz)
+  case Java_Char extends PrimitiveType("java.lang.Character", JCharacterClazz)
+  case Java_Double extends PrimitiveType("java.lang.Double", JDoubleClazz)
+  case Java_Float extends PrimitiveType("java.lang.Float", JFloatClazz)
+  case Java_Int extends PrimitiveType("java.lang.Integer", JIntegerClazz)
+  case Java_Long extends PrimitiveType("java.lang.Long", JLongClazz)
+  case Java_Short extends PrimitiveType("java.lang.Short", JShortClazz)
+  case Java_Object extends PrimitiveType("java.lang.Object", ObjectClazz)

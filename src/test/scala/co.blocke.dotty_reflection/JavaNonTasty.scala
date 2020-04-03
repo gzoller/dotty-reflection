@@ -163,11 +163,11 @@ class JavaNonTasty extends munit.FunSuite {
           _,
           List(
             JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",_,List("K","V"),Scala_String,Java_Int),_,_,_),
-            JavaFieldInfo(1,"myArr",JavaArrayInfo(Scala_String),_,_,_),
+            JavaFieldInfo(1,"myArr",JavaArrayInfo(_,Scala_String),_,_,_),
             JavaFieldInfo(2,"myList",JavaListInfo("java.util.ArrayList",_,List("E"),Scala_String),_,_,_),
             JavaFieldInfo(3,"myQ",JavaQueueInfo("java.util.concurrent.BlockingQueue",_,List("E"),Scala_String),_,_,_),
             JavaFieldInfo(4,"myTree",JavaSetInfo("java.util.TreeSet",_,List("E"),Scala_String),_,_,_),
-            JavaFieldInfo(5,"nested",JavaArrayInfo(JavaListInfo("java.util.List",_,List("E"),Java_Int)),_,_,_)
+            JavaFieldInfo(5,"nested",JavaArrayInfo(_,JavaListInfo("java.util.List",_,List("E"),Java_Int)),_,_,_)
           ),
           Nil,
           _

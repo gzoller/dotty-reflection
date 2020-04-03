@@ -48,7 +48,8 @@ object JavaClassInspector:
   private def inspectType(mainTypeParams: List[TypeVariable[_]], fieldType: JType): ALL_TYPE =
     fieldType match {
       case g: GenericArrayType => 
-        JavaArrayInfo(inspectType(mainTypeParams, g.getGenericComponentType))
+        // Need classOf[Array[g.getGenericComponentType]]
+        JavaArrayInfo(classOf[Array], inspectType(mainTypeParams, g.getGenericComponentType))
       case p: ParameterizedType if p.getRawType.isInstanceOf[Class[_]] => 
         p.getRawType.asInstanceOf[Class[_]] match {
           case c if c =:= OptionalClazz =>
@@ -81,7 +82,7 @@ object JavaClassInspector:
           case c if c =:= ShortClazz || c =:= shortClazz || c =:= JShortClazz       => PrimitiveType.Java_Short
           case c if c =:= StringClazz  => PrimitiveType.Scala_String
           case c if c =:= ObjectClazz  => PrimitiveType.Java_Object
-          case c if c.isArray => JavaArrayInfo(inspectType(mainTypeParams, c.getComponentType))
+          case c if c.isArray => JavaArrayInfo(c, inspectType(mainTypeParams, c.getComponentType))
           case n if(mainTypeParams contains fieldType) => n.asInstanceOf[TypeSymbol]
           case c if c.isEnum => JavaEnumInfo(c.getName, c)
           case c => Reflector.reflectOnClass(c)
