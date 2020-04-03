@@ -349,7 +349,7 @@ class Collections extends munit.FunSuite {
             9,
             "x9",
             ArrayInfo(
-              "[java.lang.String",
+              "[Ljava.lang.String;",
               _,
               Scala_String
             ),

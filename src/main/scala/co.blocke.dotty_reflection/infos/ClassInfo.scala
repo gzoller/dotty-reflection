@@ -30,7 +30,8 @@ case class ScalaClassInfo protected[dotty_reflection] (
   isValueClass: Boolean
   ) extends ClassInfo:
 
-    private lazy val constructor = infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
+    private lazy val constructor = 
+      infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
 
     def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
 

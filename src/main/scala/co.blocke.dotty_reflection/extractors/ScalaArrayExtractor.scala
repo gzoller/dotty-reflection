@@ -21,11 +21,11 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
       case PrimitiveType.Scala_Int => "I"
       case PrimitiveType.Scala_Long => "J"
       case PrimitiveType.Scala_Short => "S"
-      case c => c.name
+      case c => "L" + c.name + ";"
     }
     "[" + mangled
 
-  def emptyInfo(clazz: Class[_]): ArrayInfo = ArrayInfo("]I", clazz, PrimitiveType.Scala_Int)
+  def emptyInfo(clazz: Class[_]): ArrayInfo = ArrayInfo("[I", clazz, PrimitiveType.Scala_Int)
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
