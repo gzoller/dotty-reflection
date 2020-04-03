@@ -8,14 +8,17 @@ object RunMe extends App:
 
   println(Reflector.reflectOn[Thing])
 
-  // val stuff = List(1,2,3)
-  // val clazz = stuff.getClass
-  // val name = clazz.getName
-
-  // val cleaned = name.takeWhile(_ != '$')
-  // println(cleaned)
-
-  // val dottyName = dotty.tools.dotc.core.Names.termName(name)
-  // val decoded = dotty.tools.dotc.util.NameTransformer.decode(dottyName.asSimpleName)
-  // println("Decoded: "+ decoded)
-  // println(Class.forName(name))
+  /*
+  ScalaClassInfo(
+    co.blocke.dotty_reflection.Thing,
+    class co.blocke.dotty_reflection.Thing,
+    List(),
+    List(
+      ScalaFieldInfo(0,t,
+      ArrayInfo(
+        [[I,
+        class scala.Array,
+        ArrayInfo([I,
+        class scala.Array,
+        Scala_Int)),Map(),public int[][] co.blocke.dotty_reflection.Thing.t(),None)),List(),Map(),false)
+  */

@@ -38,7 +38,8 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
         case c: ConcreteType => c
         case c => throw new Exception("Expected concrete type for array element type but got: "+c)
       }
+      val mangled = mangleArrayClassName(elementKind)
       ArrayInfo(
-        mangleArrayClassName(elementKind),
-        clazz,
+        mangled,
+        Class.forName(mangled),
         elementKind)
