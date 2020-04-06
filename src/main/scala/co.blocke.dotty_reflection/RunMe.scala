@@ -1,12 +1,12 @@
 package co.blocke.dotty_reflection
 
 
-case class Thing(t:Array[Array[Int]])
+case class Foom(a: Map[String,Int])
 
 object RunMe extends App:
 
 
-  println(Reflector.reflectOn[Thing])
+  println(Reflector.reflectOn[Foom])
 
   /*
   ScalaClassInfo(

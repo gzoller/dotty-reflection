@@ -10,6 +10,9 @@ trait ConcreteType:
   val typeParameters: List[TypeSymbol]
   def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = this
 
+// Marker trait for all Scala/Java collection *except* Arrays, which are a special case
+trait CollectionType
+
 /** This is for all the classes we don't inspect.  These may be "invalid" or just not reflectable.
   * Rather than toss our exception cookies, we just return UnknownInfo and let the caller decide
   * how serious this is.  In the case of ScalaJack, it may be completely fine, for example UUID.

@@ -17,6 +17,9 @@ object Reflector:
   /** Java Arrays devolve into java.util.List, which isn't quite the same thing, so we created this placeholder */
   val JAVA_ARRAY_CLASS = "__array__"
 
+  /** Any is an abstract class in Scala, so Class.forName() won't work.  Need this marker. */
+  val ANY_CLASS = "scala.Any"
+
   // NOTE: Caching used only for primitive types right now.  Let's get the rest working then
   // decide how/if we should cache other types.
 
@@ -129,6 +132,8 @@ object Reflector:
 
   private def unpackTypeStructure(ps: TypeStructure): ConcreteType =
     ps match {
+      case TypeStructure(ANY_CLASS, Nil) => 
+        PrimitiveType.Scala_Any
       case TypeStructure(className, Nil) => 
         reflectOnClass(Class.forName(className))
       case TypeStructure(UNION_CLASS, subparams) =>

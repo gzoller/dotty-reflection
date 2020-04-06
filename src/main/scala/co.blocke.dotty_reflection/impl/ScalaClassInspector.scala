@@ -211,7 +211,8 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
             val anySymbol = Symbol.classSymbol("scala.Any")
             classSymbol match {
               case cs if isTypeParam => typeRef.name.asInstanceOf[TypeSymbol]  // TypeSymbols Foo[T] have typeRef of Any
-              case cs if cs == anySymbol => PrimitiveType.Scala_Any
+              case cs if cs == anySymbol => 
+                PrimitiveType.Scala_Any
               case cs =>
                 Class.forName(className) match {
                   case c if c =:= BooleanClazz     => PrimitiveType.Scala_Boolean

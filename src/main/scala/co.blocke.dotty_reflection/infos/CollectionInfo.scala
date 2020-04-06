@@ -6,7 +6,7 @@ case class SeqLikeInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   elementType: ALL_TYPE
-) extends ConcreteType:
+) extends ConcreteType with CollectionType:
   val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     elementType match {
@@ -21,7 +21,7 @@ case class MapLikeInfo protected[dotty_reflection](
   infoClass: Class[_],
   elementType1: ALL_TYPE,
   elementType2: ALL_TYPE
-) extends ConcreteType:
+) extends ConcreteType with CollectionType:
   val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     val fixET1 = elementType1 match {
@@ -56,7 +56,7 @@ case class JavaSetInfo protected[dotty_reflection](
   infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType: ALL_TYPE
-) extends ConcreteType:
+) extends ConcreteType with CollectionType:
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     elementType match {
       case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(elementType = actualTypeMap(ts))
@@ -70,7 +70,7 @@ case class JavaListInfo protected[dotty_reflection](
   infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType: ALL_TYPE
-) extends ConcreteType:
+) extends ConcreteType with CollectionType:
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     elementType match {
       case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(elementType = actualTypeMap(ts))
@@ -98,7 +98,7 @@ case class JavaQueueInfo protected[dotty_reflection](
   infoClass: Class[_],
   typeParameters: List[TypeSymbol],
   elementType: ALL_TYPE
-) extends ConcreteType:
+) extends ConcreteType with CollectionType:
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     elementType match {
       case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(elementType = actualTypeMap(ts))
@@ -113,7 +113,7 @@ case class JavaMapInfo protected[dotty_reflection](
   typeParameters: List[TypeSymbol],
   elementType1: ALL_TYPE,
   elementType2: ALL_TYPE
-) extends ConcreteType:
+) extends ConcreteType with CollectionType:
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     val fixET1 = elementType1 match {
       case ts: TypeSymbol if actualTypeMap.contains(ts) => actualTypeMap(ts)
