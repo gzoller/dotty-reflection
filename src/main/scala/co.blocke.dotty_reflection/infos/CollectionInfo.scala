@@ -106,6 +106,20 @@ case class JavaQueueInfo protected[dotty_reflection](
       case c: ConcreteType => this.copy(elementType = c.sewTypeParams(actualTypeMap))
     }
 
+/** Java Stack dirivative */
+case class JavaStackInfo protected[dotty_reflection](
+  name: String,
+  infoClass: Class[_],
+  typeParameters: List[TypeSymbol],
+  elementType: ALL_TYPE
+) extends ConcreteType with CollectionType:
+  override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
+    elementType match {
+      case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(elementType = actualTypeMap(ts))
+      case ts: TypeSymbol => this
+      case c: ConcreteType => this.copy(elementType = c.sewTypeParams(actualTypeMap))
+    }
+
 /** Java Set dirivative */
 case class JavaMapInfo protected[dotty_reflection](
   name: String,

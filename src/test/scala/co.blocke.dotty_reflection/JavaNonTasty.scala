@@ -217,7 +217,7 @@ class JavaNonTasty extends munit.FunSuite {
           "co.blocke.reflect.JavaParam",
           _,
           List(
-            JavaFieldInfo(0,"jThing",Scala_Int,_,_,_)
+            JavaFieldInfo(0,"jThing",Java_Int,_,_,_)
           ),
           List("K"),
           _
@@ -234,7 +234,7 @@ class JavaNonTasty extends munit.FunSuite {
         "co.blocke.reflect.JavaParamHolder",
         _,
         List(
-          JavaFieldInfo(0,"jFoo",JavaClassInfo("co.blocke.reflect.JavaParam",_,List(JavaFieldInfo(0,"jThing",Scala_Int,_,_,_)),List("K"),_),_,_,_)
+          JavaFieldInfo(0,"jFoo",JavaClassInfo("co.blocke.reflect.JavaParam",_,List(JavaFieldInfo(0,"jThing",Java_Int,_,_,_)),List("K"),_),_,_,_)
         ),
         Nil,
         _
