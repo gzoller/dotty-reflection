@@ -13,7 +13,7 @@ class Enums extends munit.FunSuite {
           "co.blocke.reflect.JavaEnum",
           _,
           List(
-            JavaFieldInfo(0,"color",JavaEnumInfo("co.blocke.reflect.Color",_),_,_,_)
+            JavaFieldInfo(0,"color",JavaEnumInfo("co.blocke.reflect.Color",_),_,_,_,false)
           ),
           Nil,
           _
@@ -31,8 +31,8 @@ class Enums extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"m",ScalaEnum("co.blocke.dotty_reflection.Month",_),_,_,None), 
-          ScalaFieldInfo(1,"d",ScalaEnumeration("co.blocke.dotty_reflection.WeekDay",_),_,_,None)
+          ScalaFieldInfo(0,"m",ScalaEnum("co.blocke.dotty_reflection.Month",_),_,_,None,false), 
+          ScalaFieldInfo(1,"d",ScalaEnumeration("co.blocke.dotty_reflection.WeekDay",_),_,_,None,false)
         ),
         Nil,
         _,

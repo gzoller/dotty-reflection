@@ -1,14 +1,16 @@
 package co.blocke.dotty_reflection
+import infos._
 
-
-case class JBigDecimalSeq( a1: java.util.HashMap[String,Int] )
+case class Foom[T](a:T, b:Int)
 
 
 object RunMe extends App:
 
   // val a = JBigDecimalSeq(new java.util.LinkedList(List(BigDecimal(123.456),BigDecimal(78.91)).asJava))
 
-  println(Reflector.reflectOn[JBigDecimalSeq])
+  val info = Reflector.reflectOn[Foom[String]].asInstanceOf[ScalaClassInfo]
+  val argsX: List[Object] = List("Wow", 99)
+  println(info.constructWith(argsX))
 
   /*
   ScalaClassInfo(

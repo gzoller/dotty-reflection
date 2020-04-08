@@ -10,6 +10,7 @@ trait FieldInfo:
   val annotations: Map[String,Map[String,String]]
   val valueAccessor: Method
   val defaultValueAccessor: Option[()=>Object]
+  val wasTypeParam: Boolean  // true if this field was T before sewTypeParams
   def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): FieldInfo
 
 case class ScalaFieldInfo(
@@ -18,7 +19,8 @@ case class ScalaFieldInfo(
   fieldType: ALL_TYPE,
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
-  defaultValueAccessor: Option[()=>Object]
+  defaultValueAccessor: Option[()=>Object],
+  wasTypeParam: Boolean
 ) extends FieldInfo:
   def valueOf(target: Object) = valueAccessor.invoke(target)
   def constructorClass: Class[_] = constructorClassFor(fieldType)
@@ -31,6 +33,7 @@ case class ScalaFieldInfo(
     }
 
   private def constructorClassFor(t: ALL_TYPE): Class[_] = t match 
+    case _ if wasTypeParam => classOf[Object] // Magic: Java constructors set param type to Object if it is a parameterized type
     case ci:UnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
     case ot:AliasInfo => constructorClassFor(ot.unwrappedType)
     case ci:ScalaClassInfo if ci.isValueClass => constructorClassFor(ci.fields(0).fieldType)
@@ -57,7 +60,8 @@ case class JavaFieldInfo(
   fieldType: ALL_TYPE,
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
-  valueSetter: Method
+  valueSetter: Method,
+  wasTypeParam: Boolean
 ) extends FieldInfo:
   val defaultValueAccessor = None
   def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]) = 

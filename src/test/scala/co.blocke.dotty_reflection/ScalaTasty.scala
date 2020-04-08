@@ -14,9 +14,9 @@ class ScalaTasty extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"name",Scala_String,_,_,None),
-          ScalaFieldInfo(1,"age",Scala_Int,_,_,None),
-          ScalaFieldInfo(2,"other",UnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_Boolean),_,_,None)
+          ScalaFieldInfo(0,"name",Scala_String,_,_,None,false),
+          ScalaFieldInfo(1,"age",Scala_Int,_,_,None,false),
+          ScalaFieldInfo(2,"other",UnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_Boolean),_,_,None,false)
         ),
         Nil,
         _,
@@ -41,8 +41,8 @@ class ScalaTasty extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"id",Scala_Int,_,_,None),
-          ScalaFieldInfo(1,"stuff",Scala_Char,_,_,None)
+          ScalaFieldInfo(0,"id",Scala_Int,_,_,None,false),
+          ScalaFieldInfo(1,"stuff",Scala_Char,_,_,None,false)
         ),
         Nil,
         _,
@@ -65,7 +65,7 @@ class ScalaTasty extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"id",Scala_String,_,_,None)
+          ScalaFieldInfo(0,"id",Scala_String,_,_,None,false)
         ),
         Nil,
         _,
@@ -84,8 +84,8 @@ class ScalaTasty extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"one","T",_,_,None),
-          ScalaFieldInfo(1,"two","U",_,_,None)
+          ScalaFieldInfo(0,"one","T",_,_,None,true),
+          ScalaFieldInfo(1,"two","U",_,_,None,true)
         ),
         List("T","U"),
         _,
@@ -103,8 +103,8 @@ class ScalaTasty extends munit.FunSuite {
         _,
         Nil,
         List(
-         ScalaFieldInfo(0,"eId",AliasInfo("co.blocke.dotty_reflection.Model$package.EMP_ID",Scala_Int),_,_,None),
-         ScalaFieldInfo(1,"age",Scala_Int,_,_,None)
+         ScalaFieldInfo(0,"eId",AliasInfo("co.blocke.dotty_reflection.Model$package.EMP_ID",Scala_Int),_,_,None,false),
+         ScalaFieldInfo(1,"age",Scala_Int,_,_,None,false)
         ),
         Nil,
         _,
@@ -122,7 +122,7 @@ class ScalaTasty extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",UnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_String)),_,_,None)
+          ScalaFieldInfo(0,"id",AliasInfo("co.blocke.dotty_reflection.Model$package.GEN_ID",UnionInfo(Reflector.UNION_CLASS,Scala_Int, Scala_String)),_,_,None,false)
         ),
         Nil,
         _,
@@ -146,8 +146,8 @@ class ScalaTasty extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",Scala_Int,_,_,None),
-          ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+          ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false),
+          ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_),false)
         ),
         Nil,
         _,
@@ -168,8 +168,8 @@ class ScalaTasty extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"a",Scala_Int,_,_,None),
-            ScalaFieldInfo(1,"b",Scala_String,_,_,None)
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false),
+            ScalaFieldInfo(1,"b",Scala_String,_,_,None,false)
           ),
           Nil,
           _,
@@ -192,16 +192,16 @@ class ScalaTasty extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"a",Scala_Boolean,_,_,None),
-            ScalaFieldInfo(1,"b",Scala_Byte,_,_,None),
-            ScalaFieldInfo(2,"c",Scala_Char,_,_,None),
-            ScalaFieldInfo(3,"d",Scala_Double,_,_,None),
-            ScalaFieldInfo(4,"e",Scala_Float,_,_,None),
-            ScalaFieldInfo(5,"f",Scala_Int,_,_,None),
-            ScalaFieldInfo(6,"g",Scala_Long,_,_,None),
-            ScalaFieldInfo(7,"h",Scala_Short,_,_,None),
-            ScalaFieldInfo(8,"i",Scala_String,_,_,None),
-            ScalaFieldInfo(9,"j",Scala_Any,_,_,None)
+            ScalaFieldInfo(0,"a",Scala_Boolean,_,_,None,false),
+            ScalaFieldInfo(1,"b",Scala_Byte,_,_,None,false),
+            ScalaFieldInfo(2,"c",Scala_Char,_,_,None,false),
+            ScalaFieldInfo(3,"d",Scala_Double,_,_,None,false),
+            ScalaFieldInfo(4,"e",Scala_Float,_,_,None,false),
+            ScalaFieldInfo(5,"f",Scala_Int,_,_,None,false),
+            ScalaFieldInfo(6,"g",Scala_Long,_,_,None,false),
+            ScalaFieldInfo(7,"h",Scala_Short,_,_,None,false),
+            ScalaFieldInfo(8,"i",Scala_String,_,_,None,false),
+            ScalaFieldInfo(9,"j",Scala_Any,_,_,None,false)
           ),
           Nil,
           _,
@@ -225,7 +225,7 @@ class ScalaTasty extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"maybe",TryInfo("scala.util.Try",_,Scala_Boolean),_,_,None),
+            ScalaFieldInfo(0,"maybe",TryInfo("scala.util.Try",_,Scala_Boolean),_,_,None,false),
           ),
           Nil,
           _,
@@ -250,15 +250,15 @@ class ScalaTasty extends munit.FunSuite {
                 _,
                 Nil,
                 List(
-                  ScalaClassInfo("co.blocke.dotty_reflection.Truck",_,Nil,List(ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None)),Nil,_,false), 
+                  ScalaClassInfo("co.blocke.dotty_reflection.Truck",_,Nil,List(ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None,false)),Nil,_,false), 
                   ScalaClassInfo("co.blocke.dotty_reflection.Car",_,Nil,List(
-                    ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None),
-                    ScalaFieldInfo(1,"color",Scala_String,_,_,None)
+                    ScalaFieldInfo(0,"numberOfWheels",Scala_Int,_,_,None,false),
+                    ScalaFieldInfo(1,"color",Scala_String,_,_,None,false)
                   ),Nil,_,false), 
-                  ScalaClassInfo("co.blocke.dotty_reflection.Plane",_,Nil,List(ScalaFieldInfo(0,"numberOfEngines",Scala_Int,_,_,None)),Nil,_,false)
+                  ScalaClassInfo("co.blocke.dotty_reflection.Plane",_,Nil,List(ScalaFieldInfo(0,"numberOfEngines",Scala_Int,_,_,None,false)),Nil,_,false)
                 )
               ),
-              _,_,None
+              _,_,None,false
             ),
           ),
           Nil,
@@ -289,7 +289,7 @@ class ScalaTasty extends munit.FunSuite {
                   ObjectInfo("co.blocke.dotty_reflection.Bourbon",_)
                 )
               ),
-              _,_,None
+              _,_,None,false
             ),
           ),
           Nil,
@@ -321,7 +321,8 @@ class ScalaTasty extends munit.FunSuite {
             ),
             _,
             _,
-            None
+            None,
+            false
          )
         ),
         Nil,

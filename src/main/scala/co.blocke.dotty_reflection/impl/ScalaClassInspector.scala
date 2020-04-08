@@ -159,7 +159,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
     val clazz = Class.forName(className)
     val valueAccessor = scala.util.Try(clazz.getDeclaredMethod(valDef.name))
       .getOrElse(throw new ReflectException(s"Problem with class $className, field ${valDef.name}: All non-case class constructor fields must be vals"))
-    ScalaFieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor)
+    ScalaFieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor, fieldTypeInfo.isInstanceOf[TypeSymbol])
 
 
   def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 
@@ -255,11 +255,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
                 inspectType(reflect)(typeP.asInstanceOf[reflect.TypeRef])
               ))
             }
-
-                // TODO in DottyJack: Here's how to get companion object to then find newBuilder method to construct the List-like thing
-                // val companionClazz = Class.forName(className+"$").getMethod("newBuilder")
-                // println("HERE "+companionClazz)
-          
+        
           case x => 
             UnknownInfo(Class.forName(className))
         }

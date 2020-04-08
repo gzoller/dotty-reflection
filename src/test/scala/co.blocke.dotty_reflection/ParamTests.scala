@@ -15,8 +15,8 @@ class ParamTests extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-          ScalaFieldInfo(1,"b",Scala_Float,_,_,None)
+          ScalaFieldInfo(0,"a",Scala_Int,_,_,None,true), 
+          ScalaFieldInfo(1,"b",Scala_Float,_,_,None,true)
         ),
         List("Q", "U"),
         _,
@@ -37,8 +37,8 @@ class ParamTests extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_),false)
           ),
           Nil,
           _,
@@ -62,8 +62,8 @@ class ParamTests extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_),false)
           ),
           Nil,
           _,false
@@ -86,8 +86,8 @@ class ParamTests extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_),false)
           ),
           Nil,
           _,
@@ -109,8 +109,8 @@ class ParamTests extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_),false)
           ),
           Nil,
           _,
@@ -132,8 +132,8 @@ class ParamTests extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_),false)
           ),
           Nil,
           _,
@@ -157,8 +157,8 @@ class ParamTests extends munit.FunSuite {
             _,
             Nil,
             List(
-              ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-              ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+              ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false), 
+              ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_),false)
             ),
             Nil,
             _,
@@ -190,8 +190,8 @@ class ParamTests extends munit.FunSuite {
           _,
           Nil,
           List(
-            ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_))
+            ScalaFieldInfo(0,"a",Scala_Int,_,_,None,false), 
+            ScalaFieldInfo(1,"b",Scala_String,_,_,Some(_),false)
           ),
           Nil,
           _,
@@ -238,13 +238,13 @@ class ParamTests extends munit.FunSuite {
               _,
               Nil,
               List(
-                ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-                ScalaFieldInfo(1,"b",Scala_Float,_,_,None)
+                ScalaFieldInfo(0,"a",Scala_Int,_,_,None,true), 
+                ScalaFieldInfo(1,"b",Scala_Float,_,_,None,true)
               ),
               List("Q","U"),
               _,
               false),
-            _,_,None)
+            _,_,None,false)
         ),
         Nil,
         _,
@@ -272,14 +272,14 @@ class ParamTests extends munit.FunSuite {
                 _,
                 Nil,
                 List(
-                  ScalaFieldInfo(0,"a",Scala_String,_,_,None), 
-                  ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None)
+                  ScalaFieldInfo(0,"a",Scala_String,_,_,None,true), 
+                  ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None,true)
                 ),
                 List("Q","U"),
                 _,
                 false)
             ),
-            _,_,None)
+            _,_,None,false)
         ),
         Nil,
         _,
@@ -309,15 +309,15 @@ class ParamTests extends munit.FunSuite {
                   _,
                   Nil,
                   List(
-                    ScalaFieldInfo(0,"a",Scala_String,_,_,None), 
-                    ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None)
+                    ScalaFieldInfo(0,"a",Scala_String,_,_,None,true), 
+                    ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None,true)
                   ),
                   List("Q","U"),
                   _,
                   false)
               ),
             ),
-             _,_,None)
+             _,_,None,false)
         ),
         Nil,
         _,
@@ -344,8 +344,8 @@ class ParamTests extends munit.FunSuite {
                 _,
                 Nil,
                 List(
-                  ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-                  ScalaFieldInfo(1,"b",Scala_Float,_,_,None)
+                  ScalaFieldInfo(0,"a",Scala_Int,_,_,None,true), 
+                  ScalaFieldInfo(1,"b",Scala_Float,_,_,None,true)
                 ),
                 List("Q", "U"),
                 _,
@@ -359,8 +359,8 @@ class ParamTests extends munit.FunSuite {
                   _,
                   Nil,
                   List(
-                    ScalaFieldInfo(0,"a",Scala_String,_,_,None), 
-                    ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None)
+                    ScalaFieldInfo(0,"a",Scala_String,_,_,None,true), 
+                    ScalaFieldInfo(1,"b",Scala_Boolean,_,_,None,true)
                   ),
                   List("Q", "U"),
                   _,
@@ -368,7 +368,7 @@ class ParamTests extends munit.FunSuite {
                 )
               )
             ),
-            _,_,None)
+            _,_,None,false)
         ),
         Nil,
         _,
@@ -393,15 +393,15 @@ class ParamTests extends munit.FunSuite {
               _,
               Nil,
               List(
-                ScalaFieldInfo(0,"a",Scala_Byte,_,_,None), 
-                ScalaFieldInfo(1,"b",Scala_Short,_,_,None)
+                ScalaFieldInfo(0,"a",Scala_Byte,_,_,None,true), 
+                ScalaFieldInfo(1,"b",Scala_Short,_,_,None,true)
               ),
               List("Q", "U"),
               _,
               false
             )
           ),
-          _,_,None)
+          _,_,None,false)
         ),
         Nil,
         _,
@@ -425,27 +425,27 @@ class ParamTests extends munit.FunSuite {
               _,
               Nil,
               List(
-                ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
+                ScalaFieldInfo(0,"a",Scala_Int,_,_,None,true), 
                 ScalaFieldInfo(1,"b",
                 ScalaClassInfo(
                   "co.blocke.dotty_reflection.DuoTypes",
                   _,
                   Nil,
                   List(
-                    ScalaFieldInfo(0,"a",Scala_Byte,_,_,None), 
-                    ScalaFieldInfo(1,"b",Scala_Short,_,_,None)
+                    ScalaFieldInfo(0,"a",Scala_Byte,_,_,None,true), 
+                    ScalaFieldInfo(1,"b",Scala_Short,_,_,None,true)
                   ),
                   List("Q", "U"),
                   _,
                   false
                 ),
-                _,_,None)
+                _,_,None,true)
               ),
               List("Q", "U"),
               _,
               false
             ),
-            _,_,None)
+            _,_,None,false)
         ),
         Nil,
         _,
@@ -472,15 +472,15 @@ class ParamTests extends munit.FunSuite {
                 _,
                 Nil,
                 List(
-                  ScalaFieldInfo(0,"a",Scala_Int,_,_,None), 
-                  ScalaFieldInfo(1,"b",Scala_Byte,_,_,None)
+                  ScalaFieldInfo(0,"a",Scala_Int,_,_,None,true), 
+                  ScalaFieldInfo(1,"b",Scala_Byte,_,_,None,true)
                 ),
                 List("Q", "U"),
                 _,
                 false
               ),
             ),
-            _,_,None
+            _,_,None,false
           ), 
           ScalaFieldInfo(1,"b",
             MapLikeInfo(
@@ -492,15 +492,15 @@ class ParamTests extends munit.FunSuite {
                 _,
                 Nil,
                 List(
-                  ScalaFieldInfo(0,"a",Scala_Float,_,_,None), 
-                  ScalaFieldInfo(1,"b",Scala_Short,_,_,None)
+                  ScalaFieldInfo(0,"a",Scala_Float,_,_,None,true), 
+                  ScalaFieldInfo(1,"b",Scala_Short,_,_,None,true)
                 ),
                 List("Q", "U"),
                 _,
                 false
               ),
             ),
-            _,_,None
+            _,_,None,false
           )
         ),
         Nil,
@@ -527,15 +527,15 @@ class ParamTests extends munit.FunSuite {
                 _,
                 Nil,
                 List(
-                  ScalaFieldInfo(0,"a",Scala_String,_,_,None), 
-                  ScalaFieldInfo(1,"b",Scala_Int,_,_,None)
+                  ScalaFieldInfo(0,"a",Scala_String,_,_,None,true), 
+                  ScalaFieldInfo(1,"b",Scala_Int,_,_,None,true)
                 ),
                 List("Q", "U"),
                 _,
                 false
               )
             ),
-            _,_,None
+            _,_,None,false
           )
         ),
         Nil,
@@ -557,7 +557,7 @@ class ParamTests extends munit.FunSuite {
           ScalaFieldInfo(0,"a",
             TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_Int)
           ),
-          _,_,None)
+          _,_,None,false)
         ),
         Nil,
         _,
@@ -575,7 +575,7 @@ class ParamTests extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",UnionInfo(Reflector.UNION_CLASS,Scala_Int,TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_String))),_,_,None)
+          ScalaFieldInfo(0,"a",UnionInfo(Reflector.UNION_CLASS,Scala_Int,TraitInfo("co.blocke.dotty_reflection.TypeShell",_,List("X"),List(Scala_String))),_,_,None,false)
         ),
         Nil,
         _,
@@ -600,7 +600,7 @@ class ParamTests extends munit.FunSuite {
               _,
               Nil,
               List(
-                ScalaFieldInfo(0,"message",Scala_String,_,_,None)
+                ScalaFieldInfo(0,"message",Scala_String,_,_,None,false)
               ),
               Nil,
               _,
@@ -609,7 +609,7 @@ class ParamTests extends munit.FunSuite {
           )
         ),
         List(
-          ScalaFieldInfo(0,"id",Scala_String,_,_,None), 
+          ScalaFieldInfo(0,"id",Scala_String,_,_,None,false), 
           ScalaFieldInfo(
             1,
             "body",
@@ -618,7 +618,7 @@ class ParamTests extends munit.FunSuite {
               _,
               Nil,
               List(
-                ScalaFieldInfo(0,"message",Scala_String,_,_,None)
+                ScalaFieldInfo(0,"message",Scala_String,_,_,None,false)
               ),
               Nil,
               _,
@@ -626,7 +626,8 @@ class ParamTests extends munit.FunSuite {
             ),
             _,
             _,
-            None
+            None,
+            true
           )
         ),
         List("T", "U"),
