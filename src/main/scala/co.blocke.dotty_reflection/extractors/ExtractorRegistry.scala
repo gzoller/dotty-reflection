@@ -11,5 +11,9 @@ object ExtractorRegistry:
       ScalaArrayExtractor(),
       MapExtractor(), 
       TupleExtractor(),
-      TryExtractor()
+      TryExtractor(),
+      JavaMapExtractor(),
+      JavaListExtractor(),
+      JavaSetExtractor(),
+      JavaQueueExtractor()
     )

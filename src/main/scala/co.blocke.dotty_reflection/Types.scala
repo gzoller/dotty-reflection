@@ -54,3 +54,4 @@ enum PrimitiveType(val name: String, val infoClass: Class[_]) extends ConcreteTy
   case Java_Long extends PrimitiveType("java.lang.Long", JLongClazz)
   case Java_Short extends PrimitiveType("java.lang.Short", JShortClazz)
   case Java_Object extends PrimitiveType("java.lang.Object", ObjectClazz)
+  case Java_Number extends PrimitiveType("java.lang.Number", JNumberClazz)

@@ -39,8 +39,9 @@ class JavaNonTasty extends munit.FunSuite {
 
   test("Verify Java primitives") {
     val jx = Reflector.reflectOn[co.blocke.reflect.JavaTypes].asInstanceOf[JavaClassInfo]
+    val number: java.lang.Number = java.lang.Integer.valueOf(123).asInstanceOf[java.lang.Number]
     val inst = jx.constructWith[co.blocke.reflect.JavaTypes](List(
-      true,false, 5.toByte, 3.toByte, 'x', 'y', 1.2D, 2.3D, 4.5F, 5.6F, 1, 2, 3L, 4L, "something", 5.toShort, 6.toShort, "foom"
+      true, false, 5.toByte, 3.toByte, 'x', 'y', 1.2D, 2.3D, 4.5F, 5.6F, 1, 2, 3L, 4L, number, "something", 5.toShort, 6.toShort, "foom"
     ))
 
     val _a = jx.field("jBoolean").get
@@ -115,6 +116,10 @@ class JavaNonTasty extends munit.FunSuite {
     _r.valueSetter.invoke(inst, "empty")
     val r = _r.valueAccessor.invoke(inst)
 
+    val _s = jx.field("jNumber").get 
+    _s.valueSetter.invoke(inst, java.lang.Integer.valueOf(456).asInstanceOf[java.lang.Number])
+    val s = _s.valueAccessor.invoke(inst)
+
     assert( a.asInstanceOf[java.lang.Boolean].booleanValue == false && a.getClass.getName == "java.lang.Boolean" )
     assert( b.asInstanceOf[java.lang.Boolean].booleanValue == true && b.getClass.getName == "java.lang.Boolean" )
     assert( c.asInstanceOf[java.lang.Byte].byteValue == 3.toByte && c.getClass.getName == "java.lang.Byte" )
@@ -133,6 +138,7 @@ class JavaNonTasty extends munit.FunSuite {
     assert( p.asInstanceOf[java.lang.Short].floatValue == 5.toShort && p.getClass.getName == "java.lang.Short" )
     assert( q.asInstanceOf[java.lang.String] == "blather" && q.getClass.getName == "java.lang.String" )
     assert( r.asInstanceOf[java.lang.Object] == "empty" && r.getClass.getName == "java.lang.String" )
+    assert( s.asInstanceOf[java.lang.Number].intValue == 456 && s.getClass.getName == "java.lang.Integer" )
   }
 
   test("Detect parameterized Java class") {

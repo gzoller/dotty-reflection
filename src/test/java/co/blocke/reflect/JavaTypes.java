@@ -78,4 +78,8 @@ public class JavaTypes {
   private Object jObj;
   public Object getJObj() { return jObj; }
   public void setJObj(Object n) { jObj = n; }
+
+  private Number jNumber;
+  public Number getJNumber() { return jNumber; }
+  public void setJNumber(Number n) { jNumber = n; }
 }

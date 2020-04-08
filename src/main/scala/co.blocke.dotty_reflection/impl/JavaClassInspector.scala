@@ -17,7 +17,6 @@ object JavaClassInspector:
     val allAnnos = annos.map(a => parseAnno(a)).toMap
     JavaClassInfo(c.getName, c, parseFields(c), typeParamSymbols(c), allAnnos)
 
-
   private def parseAnno( annoClass: Annotation): (String,Map[String,String]) = 
     val methods = annoClass.annotationType.getDeclaredMethods.toList.map( m => (m.getName, m.invoke(annoClass).toString)).toMap
     (annoClass.annotationType.getName, methods)
@@ -50,6 +49,8 @@ object JavaClassInspector:
       case g: GenericArrayType => 
         // Need classOf[Array[g.getGenericComponentType]]
         JavaArrayInfo(classOf[Array], inspectType(mainTypeParams, g.getGenericComponentType))
+      // All this stuff gets triggered if there are Java collections *in a Java class*.  They don't get triggered
+      // if we're inspecting a top-level collection, i.e. a Java collection that is a member of a Scala class.
       case p: ParameterizedType if p.getRawType.isInstanceOf[Class[_]] => 
         p.getRawType.asInstanceOf[Class[_]] match {
           case c if c =:= OptionalClazz =>
@@ -80,6 +81,7 @@ object JavaClassInspector:
           case c if c =:= IntClazz || c =:= intClazz || c =:= JIntegerClazz         => PrimitiveType.Java_Int
           case c if c =:= LongClazz || c =:= longClazz || c =:= JLongClazz          => PrimitiveType.Java_Long
           case c if c =:= ShortClazz || c =:= shortClazz || c =:= JShortClazz       => PrimitiveType.Java_Short
+          case c if c =:= JNumberClazz                                              => PrimitiveType.Java_Number
           case c if c =:= StringClazz  => PrimitiveType.Scala_String
           case c if c =:= ObjectClazz  => PrimitiveType.Java_Object
           case c if c.isArray => JavaArrayInfo(c, inspectType(mainTypeParams, c.getComponentType))

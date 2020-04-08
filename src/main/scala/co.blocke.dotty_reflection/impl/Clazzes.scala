@@ -46,6 +46,7 @@ object Clazzes {
   val JListClazz      = classOf[java.util.List[_]]
   val JQueueClazz     = classOf[java.util.Queue[_]]
   val JSetClazz       = classOf[java.util.Set[_]]
+  val JNumberClazz    = Class.forName("java.lang.Number")
 
   def (c: Class[_]).=:=(other: Class[_]): Boolean = c == other
   def (c: Class[_]).<:<(other: Class[_]): Boolean = other.isAssignableFrom(c)
