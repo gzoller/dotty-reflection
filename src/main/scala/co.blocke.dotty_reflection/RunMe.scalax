@@ -1,28 +1,14 @@
 package co.blocke.dotty_reflection
 import infos._
 
-case class Foom[T](a:T, b:Int)
+case class Foom(a: java.util.Optional[String], b: Int)
 
 
 object RunMe extends App:
 
   // val a = JBigDecimalSeq(new java.util.LinkedList(List(BigDecimal(123.456),BigDecimal(78.91)).asJava))
 
-  val info = Reflector.reflectOn[Foom[String]].asInstanceOf[ScalaClassInfo]
-  val argsX: List[Object] = List("Wow", 99)
-  println(info.constructWith(argsX))
+  val info = Reflector.reflectOn[Foom]
 
-  /*
-  ScalaClassInfo(
-    co.blocke.dotty_reflection.Thing,
-    class co.blocke.dotty_reflection.Thing,
-    List(),
-    List(
-      ScalaFieldInfo(0,t,
-      ArrayInfo(
-        [[I,
-        class scala.Array,
-        ArrayInfo([I,
-        class scala.Array,
-        Scala_Int)),Map(),public int[][] co.blocke.dotty_reflection.Thing.t(),None)),List(),Map(),false)
-  */
+  println(info)
+  

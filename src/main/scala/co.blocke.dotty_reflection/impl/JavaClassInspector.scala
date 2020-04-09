@@ -54,7 +54,7 @@ object JavaClassInspector:
       case p: ParameterizedType if p.getRawType.isInstanceOf[Class[_]] => 
         p.getRawType.asInstanceOf[Class[_]] match {
           case c if c =:= OptionalClazz =>
-            JavaOptionInfo(c.getName, c, inspectType(mainTypeParams, p.getActualTypeArguments.head))
+            JavaOptionalInfo(c.getName, c, inspectType(mainTypeParams, p.getActualTypeArguments.head))
           case c if c <:< JMapClazz =>
             val params = p.getActualTypeArguments.toList
             JavaMapInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, params(0)), inspectType(mainTypeParams, params(1)))

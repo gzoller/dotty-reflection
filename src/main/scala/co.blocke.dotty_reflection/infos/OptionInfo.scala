@@ -21,7 +21,7 @@ case class ScalaOptionInfo protected[dotty_reflection](
   }
 
 
-case class JavaOptionInfo protected[dotty_reflection](
+case class JavaOptionalInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
   optionParamType: ALL_TYPE

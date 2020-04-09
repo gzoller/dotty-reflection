@@ -6,11 +6,11 @@ import impl.Clazzes._
 import infos._ 
 import scala.tasty.Reflection
 
-case class OptionExtractor() extends TypeInfoExtractor[OptionInfo]:
+case class OptionExtractor() extends TypeInfoExtractor[ScalaOptionInfo]:
 
   def matches(clazz: Class[_]): Boolean = clazz =:= OptionClazz
 
-  def emptyInfo(clazz: Class[_]): OptionInfo = ScalaOptionInfo(clazz.getName, clazz, clazz.getTypeParameters.toList.head.getName.asInstanceOf[TypeSymbol])
+  def emptyInfo(clazz: Class[_]): ScalaOptionInfo = ScalaOptionInfo(clazz.getName, clazz, clazz.getTypeParameters.toList.head.getName.asInstanceOf[TypeSymbol])
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 

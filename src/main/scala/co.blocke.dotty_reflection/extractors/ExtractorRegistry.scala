@@ -16,5 +16,6 @@ object ExtractorRegistry:
       JavaStackExtractor(),  // This must come before Java List, because it is a list--but is created differently
       JavaListExtractor(),
       JavaSetExtractor(),
-      JavaQueueExtractor()
+      JavaQueueExtractor(),
+      OptionalExtractor()
     )

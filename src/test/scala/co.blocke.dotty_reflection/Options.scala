@@ -33,7 +33,7 @@ class Options extends munit.FunSuite {
         "co.blocke.reflect.JavaOption1",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, Java_Int),_,_,_,false)
+          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _, Java_Int),_,_,_,false)
         ),
         Nil,
         _) => true
@@ -68,7 +68,7 @@ class Options extends munit.FunSuite {
         "co.blocke.reflect.JavaOption2",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _, JavaOptionInfo("java.util.Optional", _, Java_Int)),_,_,_,false)
+          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _, JavaOptionalInfo("java.util.Optional", _, Java_Int)),_,_,_,false)
         ),
         Nil,
         _) => true
@@ -103,7 +103,7 @@ class Options extends munit.FunSuite {
         "co.blocke.reflect.JavaOption3",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionInfo("java.util.Optional", _,Scala_Char),_,_,_,false)
+          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _,Scala_Char),_,_,_,false)
         ),
         List("T"),
         _) => true
