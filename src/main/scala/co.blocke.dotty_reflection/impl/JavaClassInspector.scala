@@ -2,6 +2,7 @@ package co.blocke.dotty_reflection
 package impl
 
 import infos._
+import extractors._
 import java.lang.reflect.{Type=>JType,_}
 import java.lang.annotation.Annotation
 import java.beans.{ Introspector, PropertyDescriptor }
@@ -13,9 +14,19 @@ import Clazzes._
  */
 object JavaClassInspector:
   def inspectClass(c: Class[?]): ConcreteType =
-    val annos:List[Annotation] = c.getAnnotations.toList
-    val allAnnos = annos.map(a => parseAnno(a)).toMap
-    JavaClassInfo(c.getName, c, parseFields(c), typeParamSymbols(c), allAnnos)
+    // We must detect and handle any top-level Java collections or they'll be "dumbed-down" to JavaClassInfo, which isn't what we want.
+    // (Not worried about the type parameters of the collections here--they'll be populated in the sewTypeParams() method later)
+    c match {
+      case z if z =:= OptionalClazz => OptionalExtractor().emptyInfo(z)
+      case z if z <:< JListClazz => JavaListExtractor().emptyInfo(z)
+      case z if z <:< JMapClazz => JavaMapExtractor().emptyInfo(z)
+      case z if z <:< JQueueClazz => JavaQueueExtractor().emptyInfo(z)
+      case z if z <:< JSetClazz => JavaSetExtractor().emptyInfo(z)
+      case _ =>
+        val annos:List[Annotation] = c.getAnnotations.toList
+        val allAnnos = annos.map(a => parseAnno(a)).toMap
+        JavaClassInfo(c.getName, c, parseFields(c), typeParamSymbols(c), allAnnos)
+    }
 
   private def parseAnno( annoClass: Annotation): (String,Map[String,String]) = 
     val methods = annoClass.annotationType.getDeclaredMethods.toList.map( m => (m.getName, m.invoke(annoClass).toString)).toMap

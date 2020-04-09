@@ -27,8 +27,9 @@ case class JavaOptionalInfo protected[dotty_reflection](
   optionParamType: ALL_TYPE
 ) extends OptionInfo:
   val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
-  override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = optionParamType match {
-    case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(optionParamType = actualTypeMap(ts))
-    case ts: TypeSymbol => this
-    case c: ConcreteType => this.copy(optionParamType = c.sewTypeParams(actualTypeMap))
-  }
+  override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
+    optionParamType match {
+      case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(optionParamType = actualTypeMap(ts))
+      case ts: TypeSymbol => this
+      case c: ConcreteType => this.copy(optionParamType = c.sewTypeParams(actualTypeMap))
+    }

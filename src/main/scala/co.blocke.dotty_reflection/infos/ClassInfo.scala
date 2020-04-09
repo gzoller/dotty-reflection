@@ -43,14 +43,10 @@ case class ScalaClassInfo protected[dotty_reflection] (
       } match {
         case ci if ci.typeMembers != Nil =>
           val newTypeMembers = ci.typeMembers.map(tm => tm.copy(baseType = actualTypeMap(tm.typeSymbol)))
+          println("Deeper: "+newTypeMembers)
           ci.copy(typeMembers = newTypeMembers)
         case ci => ci
       }
-      // if typeParameters != Nil then // Only sew down if this class is parameterized, otherwise it's already fully resolved.
-      //   val fixedFields = fields.map( _.sewTypeParams( actualTypeMap ))
-      //   this.copy(fields = fixedFields)
-      // else 
-      //   this
 
   
 case class JavaClassInfo protected[dotty_reflection] (

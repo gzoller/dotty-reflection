@@ -152,6 +152,7 @@ object Reflector:
   protected[dotty_reflection] def reflectOnClassWithParams(clazz: Class[_], params: List[ALL_TYPE]): ConcreteType =
     val className = clazz.getName
     val tc = new ScalaClassInspector(clazz)
+
     // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
     tc.inspect("", List(className))
     // Now sew known params into fields' type symbols, if any

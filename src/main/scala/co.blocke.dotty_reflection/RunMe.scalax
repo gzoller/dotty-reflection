@@ -1,14 +1,14 @@
 package co.blocke.dotty_reflection
 import infos._
 
-case class Foom(a: java.util.Optional[String], b: Int)
 
+import java.util.LinkedList
+case class GeneralHolder[T](o: T)
 
 object RunMe extends App:
 
-  // val a = JBigDecimalSeq(new java.util.LinkedList(List(BigDecimal(123.456),BigDecimal(78.91)).asJava))
-
-  val info = Reflector.reflectOn[Foom]
-
-  println(info)
+  // val info = Reflector.reflectOn[GeneralHolder[Map[ Optional[List[String]], Int ]]]
+  // println(info)
   
+  val info = Reflector.reflectOn[GeneralHolder[Map[ LinkedList[String], Int ]]]
+  println(info)
