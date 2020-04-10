@@ -149,7 +149,7 @@ object Reflector:
     }
   
 
-  protected[dotty_reflection] def reflectOnClassWithParams(clazz: Class[_], params: List[ALL_TYPE]): ConcreteType =
+  def reflectOnClassWithParams(clazz: Class[_], params: List[ALL_TYPE]): ConcreteType =
     val className = clazz.getName
     val tc = new ScalaClassInspector(clazz)
 

@@ -31,6 +31,7 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
   def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): ConcreteType =
     import reflect.{given _}
 
+    println("TREE: "+tree)
     object Descended {
       def unapply(t: reflect.Tree): Option[ConcreteType] = descendInto(className, reflect)(t)
     }
