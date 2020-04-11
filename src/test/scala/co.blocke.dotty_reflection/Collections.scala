@@ -14,7 +14,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.immutable.List",_,Scala_String),_,_,None,false)
+          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.immutable.List",_,Scala_String),_,_,None,None)
         ),
         Nil,
         _,
@@ -33,7 +33,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.immutable.HashSet",_,Scala_String),_,_,None,false)
+          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.immutable.HashSet",_,Scala_String),_,_,None,None)
         ),
         Nil,
         _,
@@ -52,7 +52,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.Map",_,Scala_String,Scala_Float),_,_,None,false)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.Map",_,Scala_String,Scala_Float),_,_,None,None)
         ),
         Nil,
         _,
@@ -71,7 +71,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None,false)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None,None)
         ),
         Nil,
         _,
@@ -90,7 +90,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.mutable.ListBuffer",_,Scala_String),_,_,None,false)
+          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.mutable.ListBuffer",_,Scala_String),_,_,None,None)
         ),
         Nil,
         _,
@@ -109,7 +109,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.mutable.HashSet",_,Scala_String),_,_,None,false)
+          ScalaFieldInfo(0,"a",SeqLikeInfo("scala.collection.mutable.HashSet",_,Scala_String),_,_,None,None)
         ),
         Nil,
         _,
@@ -128,7 +128,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.mutable.Map",_,Scala_String,Scala_Float),_,_,None,false)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.mutable.Map",_,Scala_String,Scala_Float),_,_,None,None)
         ),
         Nil,
         _,
@@ -147,7 +147,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.mutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None,false)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.mutable.ListMap",_,Scala_String,Scala_Boolean),_,_,None,None)
         ),
         Nil,
         _,
@@ -166,7 +166,7 @@ class Collections extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.Map",_,Scala_String,SeqLikeInfo("scala.collection.immutable.List",_,ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None,false)
+          ScalaFieldInfo(0,"a",MapLikeInfo("scala.collection.immutable.Map",_,Scala_String,SeqLikeInfo("scala.collection.immutable.List",_,ScalaOptionInfo("scala.Option",_,Scala_Int))),_,_,None,None)
         ),
         Nil,
         _,
@@ -192,29 +192,43 @@ class Collections extends munit.FunSuite {
               "scala.Tuple4",
               _,
               List(
-                Scala_Int, 
-                Scala_Boolean, 
-                SeqLikeInfo(
-                  "scala.collection.immutable.List",
-                  _,
-                  Scala_String
-                ), 
                 ScalaClassInfo(
                   "co.blocke.dotty_reflection.NormalOption",
                   _,
                   Nil,
                   List(
-                    ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Int),_,_,None,false)
+                    ScalaFieldInfo(
+                      0,
+                      "a",
+                      ScalaOptionInfo(
+                        "scala.Option",
+                        _,
+                        Scala_Int
+                      ),
+                      _,
+                      _,
+                      None,
+                      None
+                    )
                   ),
                   Nil,
                   _,
                   false
-                )
-              )
+                ), 
+                SeqLikeInfo(
+                  "scala.collection.immutable.List",
+                  _,
+                  Scala_String
+                ), 
+                Scala_Boolean, 
+                Scala_Int
+              ),
+              List(None, None, Some("Z"), None)
             ),
             _,
             _,
-            None,false
+            None,
+            None
           )
         ),
         List("Z"),
@@ -247,7 +261,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             1,
@@ -259,7 +273,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             2,
@@ -271,7 +285,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             3,
@@ -283,7 +297,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             4,
@@ -295,7 +309,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             5,
@@ -307,7 +321,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             6,
@@ -319,7 +333,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             7,
@@ -331,7 +345,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             8,
@@ -343,7 +357,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           ), 
           ScalaFieldInfo(
             9,
@@ -355,7 +369,7 @@ class Collections extends munit.FunSuite {
             ),
             _,
             _,
-            None,false
+            None,None
           )
         ),
         Nil,

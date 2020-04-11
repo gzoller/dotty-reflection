@@ -43,7 +43,6 @@ case class ScalaClassInfo protected[dotty_reflection] (
       } match {
         case ci if ci.typeMembers != Nil =>
           val newTypeMembers = ci.typeMembers.map(tm => tm.copy(baseType = actualTypeMap(tm.typeSymbol)))
-          println("Deeper: "+newTypeMembers)
           ci.copy(typeMembers = newTypeMembers)
         case ci => ci
       }

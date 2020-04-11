@@ -50,7 +50,11 @@ object JavaClassInspector:
           val fieldName = s"${setter.getName.charAt(3).toLower}${setter.getName.drop(4)}"
           val fieldType = inspectType(clazz.getTypeParameters.toList, getter.getGenericReturnType)
 
-          JavaFieldInfo(0,fieldName, fieldType, fieldAnnos, getter, setter, fieldType.isInstanceOf[TypeSymbol])
+          val( finalFieldTypeInfo, foundTypeSymbol) = fieldType match {
+            case sym: TypeSymbol => (PrimitiveType.Scala_Any, Some(sym))
+            case _               => (fieldType.asInstanceOf[ConcreteType], None)
+            }
+          JavaFieldInfo(0,fieldName, finalFieldTypeInfo, fieldAnnos, getter, setter, foundTypeSymbol)
       }.toList.filterNot(_.annotations.contains("co.blocke.dotty_reflection.Ignore")).zipWithIndex.map{
         (f,i) => f.copy(index = i)
       }

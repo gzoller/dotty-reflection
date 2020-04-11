@@ -15,7 +15,7 @@ class Options extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Int),_,_,None,false)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Int),_,_,None,None)
         ),
         Nil,
         _,
@@ -33,7 +33,7 @@ class Options extends munit.FunSuite {
         "co.blocke.reflect.JavaOption1",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _, Java_Int),_,_,_,false)
+          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _, Java_Int),_,_,_,None)
         ),
         Nil,
         _) => true
@@ -50,7 +50,7 @@ class Options extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,ScalaOptionInfo("scala.Option",_,Scala_Int)),_,_,None,false)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,ScalaOptionInfo("scala.Option",_,Scala_Int)),_,_,None,None)
         ),
         Nil,
         _,
@@ -68,7 +68,7 @@ class Options extends munit.FunSuite {
         "co.blocke.reflect.JavaOption2",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _, JavaOptionalInfo("java.util.Optional", _, Java_Int)),_,_,_,false)
+          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _, JavaOptionalInfo("java.util.Optional", _, Java_Int)),_,_,_,None)
         ),
         Nil,
         _) => true
@@ -85,7 +85,7 @@ class Options extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Char),_,_,None,false)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Char),_,_,None,None)
         ),
         List("T"),
         _,
@@ -103,7 +103,7 @@ class Options extends munit.FunSuite {
         "co.blocke.reflect.JavaOption3",
         _,
         List(
-          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _,Scala_Char),_,_,_,false)
+          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _,Scala_Char),_,_,_,None)
         ),
         List("T"),
         _) => true
@@ -130,7 +130,7 @@ class Options extends munit.FunSuite {
         _,
         Nil,
         List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,UnionInfo(Reflector.UNION_CLASS,Scala_Boolean,Scala_String)),_,_,None,false)
+          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,UnionInfo(Reflector.UNION_CLASS,Scala_Boolean,Scala_String)),_,_,None,None)
         ),
         Nil,
         _,

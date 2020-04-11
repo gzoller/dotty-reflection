@@ -10,8 +10,14 @@ trait FieldInfo:
   val annotations: Map[String,Map[String,String]]
   val valueAccessor: Method
   val defaultValueAccessor: Option[()=>Object]
-  val wasTypeParam: Boolean  // true if this field was T before sewTypeParams
+  val typeParamSymbol: Option[TypeSymbol] // Set if *this* field was a type param, T
   def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): FieldInfo
+
+  /* 
+  TODO:  Do we need usesSymbols as an easy-access if this fieldType consumes a type symbole?
+  For example: foo: (Int, T, String)
+  Field foo isn't a type symbol, and never was.  But it uses T.
+  */
 
 case class ScalaFieldInfo(
   index: Int,
@@ -20,20 +26,22 @@ case class ScalaFieldInfo(
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
   defaultValueAccessor: Option[()=>Object],
-  wasTypeParam: Boolean
+  typeParamSymbol: Option[TypeSymbol]
 ) extends FieldInfo:
   def valueOf(target: Object) = valueAccessor.invoke(target)
   def constructorClass: Class[_] = constructorClassFor(fieldType)
   def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]) = 
-    fieldType match {
-      case ts: TypeSymbol if actualTypeMap.contains(ts) =>  // 1st level direct type substitution
+    typeParamSymbol match {
+      case Some(ts) if actualTypeMap.contains(ts) =>  // 1st level direct type substitution
         this.copy(fieldType = actualTypeMap(ts) )
-      case ct: ConcreteType => // nth level -- may be a substitution--or not
-        this.copy(fieldType = ct.sewTypeParams(actualTypeMap))
+      case None if fieldType.isInstanceOf[ConcreteType] => // nth level -- may be a substitution--or not
+        this.copy(fieldType = fieldType.asInstanceOf[ConcreteType].sewTypeParams(actualTypeMap))
+      case _ => 
+        this
     }
 
   private def constructorClassFor(t: ALL_TYPE): Class[_] = t match 
-    case _ if wasTypeParam => classOf[Object] // Magic: Java constructors set param type to Object if it is a parameterized type
+    case _ if typeParamSymbol.isDefined => classOf[Object] // Magic: Java constructors set param type to Object if it is a parameterized type
     case ci:UnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
     case ot:AliasInfo => constructorClassFor(ot.unwrappedType)
     case ci:ScalaClassInfo if ci.isValueClass => constructorClassFor(ci.fields(0).fieldType)
@@ -61,13 +69,15 @@ case class JavaFieldInfo(
   annotations: Map[String,Map[String,String]],
   valueAccessor: Method,
   valueSetter: Method,
-  wasTypeParam: Boolean
+  typeParamSymbol: Option[TypeSymbol]
 ) extends FieldInfo:
   val defaultValueAccessor = None
   def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]) = 
-    fieldType match {
-      case ts: TypeSymbol if actualTypeMap.contains(ts) =>  // 1st level direct type substitution
-        this.copy(fieldType = actualTypeMap(ts))
-      case ct: ConcreteType => // nth level -- may be a substitution--or not
-        this.copy(fieldType = ct.sewTypeParams(actualTypeMap))
+    typeParamSymbol match {
+      case Some(ts) if actualTypeMap.contains(ts) =>  // 1st level direct type substitution
+        this.copy(fieldType = actualTypeMap(ts) )
+      case None if fieldType.isInstanceOf[ConcreteType] => // nth level -- may be a substitution--or not
+        this.copy(fieldType = fieldType.asInstanceOf[ConcreteType].sewTypeParams(actualTypeMap))
+      case _ => 
+        this
     }

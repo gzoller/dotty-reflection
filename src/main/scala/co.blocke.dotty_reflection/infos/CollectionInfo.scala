@@ -44,10 +44,13 @@ case class ArrayInfo protected[dotty_reflection](
 ) extends ConcreteType:
   val typeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
-    elementType match {
-      case ts: TypeSymbol if actualTypeMap.contains(ts) => this.copy(elementType = actualTypeMap(ts))
-      case ts: TypeSymbol => this
-      case c: ConcreteType => this.copy(elementType = c.sewTypeParams(actualTypeMap))
+    typeParameters match {
+      case ts :: _ if actualTypeMap.contains(ts) => 
+        this.copy(elementType = actualTypeMap(ts))
+      case Nil => 
+        this.copy(elementType = elementType.asInstanceOf[ConcreteType].sewTypeParams(actualTypeMap))
+      case _ => 
+        this
     }
 
 /** Java Set dirivative */

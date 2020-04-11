@@ -31,7 +31,6 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
   def inspectClass(className: String, reflect: Reflection)(tree: reflect.Tree): ConcreteType =
     import reflect.{given _}
 
-    println("TREE: "+tree)
     object Descended {
       def unapply(t: reflect.Tree): Option[ConcreteType] = descendInto(className, reflect)(t)
     }
@@ -160,7 +159,12 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
     val clazz = Class.forName(className)
     val valueAccessor = scala.util.Try(clazz.getDeclaredMethod(valDef.name))
       .getOrElse(throw new ReflectException(s"Problem with class $className, field ${valDef.name}: All non-case class constructor fields must be vals"))
-    ScalaFieldInfo(index, valDef.name, fieldTypeInfo, annos, valueAccessor, defaultAccessor, fieldTypeInfo.isInstanceOf[TypeSymbol])
+
+    val( finalFieldTypeInfo, foundTypeSymbol) = fieldTypeInfo match {
+      case sym: TypeSymbol => (PrimitiveType.Scala_Any, Some(sym))
+      case _               => (fieldTypeInfo.asInstanceOf[ConcreteType], None)
+    }
+    ScalaFieldInfo(index, valDef.name, finalFieldTypeInfo, annos, valueAccessor, defaultAccessor, foundTypeSymbol)
 
 
   def inspectType(reflect: Reflection)(typeRef: reflect.TypeRef): ALL_TYPE = 

@@ -21,11 +21,12 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
       case PrimitiveType.Scala_Int => "I"
       case PrimitiveType.Scala_Long => "J"
       case PrimitiveType.Scala_Short => "S"
+      case PrimitiveType.Scala_Any => "Ljava.lang.Object;"
       case c => "L" + c.name + ";"
     }
     "[" + mangled
 
-  def emptyInfo(clazz: Class[_]): ArrayInfo = ArrayInfo("[I", clazz, PrimitiveType.Scala_Int)
+  def emptyInfo(clazz: Class[_]): ArrayInfo = ArrayInfo("[java.lang.Object;", clazz, PrimitiveType.Scala_Any)
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
@@ -36,7 +37,7 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
 
       val elementKind = typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]) match {
         case c: ConcreteType => c
-        case c => throw new Exception("Expected concrete type for array element type but got: "+c)
+        case ts: TypeSymbol => PrimitiveType.Scala_Any
       }
       val mangled = mangleArrayClassName(elementKind)
       ArrayInfo(

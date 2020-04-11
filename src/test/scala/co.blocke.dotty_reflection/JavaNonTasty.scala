@@ -13,9 +13,9 @@ class JavaNonTasty extends munit.FunSuite {
         "co.blocke.reflect.Person",
         _,
         List(
-          JavaFieldInfo(0,"age",Java_Int,_,_,_,false),
-          JavaFieldInfo(1,"name",Scala_String,_,_,_,false),
-          JavaFieldInfo(2,"other",Java_Int,_,_,_,false)
+          JavaFieldInfo(0,"age",Java_Int,_,_,_,None),
+          JavaFieldInfo(1,"name",Scala_String,_,_,_,None),
+          JavaFieldInfo(2,"other",Java_Int,_,_,_,None)
         ),
         Nil,
         _
@@ -148,8 +148,8 @@ class JavaNonTasty extends munit.FunSuite {
         "co.blocke.reflect.ParamAnno",
         _,
         List(
-          JavaFieldInfo(0,"age","T",_,_,_,true),
-          JavaFieldInfo(1,"name",Scala_String,_,_,_,false)
+          JavaFieldInfo(0,"age",Scala_Any,_,_,_,Some("T")),
+          JavaFieldInfo(1,"name",Scala_String,_,_,_,None)
         ),
         List("T"),
         _
@@ -168,12 +168,12 @@ class JavaNonTasty extends munit.FunSuite {
           "co.blocke.reflect.JavaCollections",
           _,
           List(
-            JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",_,List("K","V"),Scala_String,Java_Int),_,_,_,false),
-            JavaFieldInfo(1,"myArr",JavaArrayInfo(_,Scala_String),_,_,_,false),
-            JavaFieldInfo(2,"myList",JavaListInfo("java.util.ArrayList",_,List("E"),Scala_String),_,_,_,false),
-            JavaFieldInfo(3,"myQ",JavaQueueInfo("java.util.concurrent.BlockingQueue",_,List("E"),Scala_String),_,_,_,false),
-            JavaFieldInfo(4,"myTree",JavaSetInfo("java.util.TreeSet",_,List("E"),Scala_String),_,_,_,false),
-            JavaFieldInfo(5,"nested",JavaArrayInfo(_,JavaListInfo("java.util.List",_,List("E"),Java_Int)),_,_,_,false)
+            JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",_,List("K","V"),Scala_String,Java_Int),_,_,_,None),
+            JavaFieldInfo(1,"myArr",JavaArrayInfo(_,Scala_String),_,_,_,None),
+            JavaFieldInfo(2,"myList",JavaListInfo("java.util.ArrayList",_,List("E"),Scala_String),_,_,_,None),
+            JavaFieldInfo(3,"myQ",JavaQueueInfo("java.util.concurrent.BlockingQueue",_,List("E"),Scala_String),_,_,_,None),
+            JavaFieldInfo(4,"myTree",JavaSetInfo("java.util.TreeSet",_,List("E"),Scala_String),_,_,_,None),
+            JavaFieldInfo(5,"nested",JavaArrayInfo(_,JavaListInfo("java.util.List",_,List("E"),Java_Int)),_,_,_,None)
           ),
           Nil,
           _
@@ -195,12 +195,12 @@ class JavaNonTasty extends munit.FunSuite {
                 "co.blocke.reflect.Hey",
                 _,
                 List(
-                  JavaFieldInfo(0,"jString",Scala_String,_,_,_,false)
+                  JavaFieldInfo(0,"jString",Scala_String,_,_,_,None)
                 ),
                 Nil,
                 _
               ),
-              _,_,_,false)
+              _,_,_,None)
           ),
           Nil,
           _
@@ -217,7 +217,7 @@ class JavaNonTasty extends munit.FunSuite {
           "co.blocke.reflect.JavaParam",
           _,
           List(
-            JavaFieldInfo(0,"jThing",Java_Int,_,_,_,true)
+            JavaFieldInfo(0,"jThing",Java_Int,_,_,_,Some("K"))
           ),
           List("K"),
           _
@@ -234,7 +234,7 @@ class JavaNonTasty extends munit.FunSuite {
         "co.blocke.reflect.JavaParamHolder",
         _,
         List(
-          JavaFieldInfo(0,"jFoo",JavaClassInfo("co.blocke.reflect.JavaParam",_,List(JavaFieldInfo(0,"jThing",Java_Int,_,_,_,true)),List("K"),_),_,_,_,false)
+          JavaFieldInfo(0,"jFoo",JavaClassInfo("co.blocke.reflect.JavaParam",_,List(JavaFieldInfo(0,"jThing",Java_Int,_,_,_,Some("K"))),List("K"),_),_,_,_,None)
         ),
         Nil,
         _
