@@ -2,8 +2,8 @@ package co.blocke.dotty_reflection
 package extractors
 
 import impl._
-import impl.Clazzes._
-import infos._ 
+import Clazzes._
+import info._ 
 import scala.tasty.Reflection
 
 case class JavaMapExtractor() extends TypeInfoExtractor[JavaMapInfo]:
@@ -16,16 +16,17 @@ case class JavaMapExtractor() extends TypeInfoExtractor[JavaMapInfo]:
       clazz.getName, 
       clazz, 
       clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-      params(0).getName.asInstanceOf[TypeSymbol],
-      params(1).getName.asInstanceOf[TypeSymbol]
+      RType(params(0).getName.asInstanceOf[TypeSymbol]),
+      RType(params(1).getName.asInstanceOf[TypeSymbol])
       )
 
   def extractInfo(reflect: Reflection)(
-    t: reflect.Type, 
-    tob: List[reflect.TypeOrBounds], 
-    className: String, 
-    clazz: Class[_], 
-    typeInspector: ScalaClassInspector): ConcreteType =
+      t: reflect.Type, 
+      tob: List[reflect.TypeOrBounds], 
+      className: String, 
+      clazz: Class[_], 
+      typeInspector: ScalaClassInspector
+    ): ConcreteType =
 
     JavaMapInfo(
       className, 

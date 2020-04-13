@@ -2,8 +2,8 @@ package co.blocke.dotty_reflection
 package extractors
 
 import impl._
-import impl.Clazzes._
-import infos._ 
+import Clazzes._
+import info._ 
 import scala.tasty.Reflection
 
 case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
@@ -14,7 +14,8 @@ case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
     SeqLikeInfo(
       clazz.getName, 
       clazz, 
-      clazz.getTypeParameters.toList.head.getName.asInstanceOf[TypeSymbol])
+      RType(clazz.getTypeParameters.toList.head.getName.asInstanceOf[TypeSymbol])
+      )
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 

@@ -2,8 +2,8 @@ package co.blocke.dotty_reflection
 package extractors
 
 import impl._
-import impl.Clazzes._
-import infos._ 
+import Clazzes._
+import info._ 
 import scala.tasty.Reflection
 
 case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
@@ -26,21 +26,22 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
     }
     "[" + mangled
 
-  def emptyInfo(clazz: Class[_]): ArrayInfo = ArrayInfo("[java.lang.Object;", clazz, PrimitiveType.Scala_Any)
+  def emptyInfo(clazz: Class[_]): ArrayInfo = ArrayInfo("[java.lang.Object;", clazz, RType(PrimitiveType.Scala_Any))
 
   def extractInfo(reflect: Reflection)(
-    t: reflect.Type, 
-    tob: List[reflect.TypeOrBounds], 
-    className: String, 
-    clazz: Class[_], 
-    typeInspector: ScalaClassInspector): ConcreteType =
+      t: reflect.Type, 
+      tob: List[reflect.TypeOrBounds], 
+      className: String, 
+      clazz: Class[_], 
+      typeInspector: ScalaClassInspector
+    ): ConcreteType =
 
-      val elementKind = typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]) match {
-        case c: ConcreteType => c
-        case ts: TypeSymbol => PrimitiveType.Scala_Any
-      }
-      val mangled = mangleArrayClassName(elementKind)
-      ArrayInfo(
-        mangled,
-        Class.forName(mangled),
-        elementKind)
+    val elementKind = typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]) match {
+      case t if t.typeParam.isEmpty => t.concreteType
+      case _ => PrimitiveType.Scala_Any
+    }
+    val mangled = mangleArrayClassName(elementKind)
+    ArrayInfo(
+      mangled,
+      Class.forName(mangled),
+      typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]))

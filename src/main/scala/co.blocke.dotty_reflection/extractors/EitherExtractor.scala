@@ -2,8 +2,8 @@ package co.blocke.dotty_reflection
 package extractors
 
 import impl._
-import impl.Clazzes._
-import infos._ 
+import Clazzes._
+import info._ 
 import scala.tasty.Reflection
 
 case class EitherExtractor() extends TypeInfoExtractor[EitherInfo]:
@@ -12,8 +12,8 @@ case class EitherExtractor() extends TypeInfoExtractor[EitherInfo]:
 
   def emptyInfo(clazz: Class[_]): EitherInfo = 
     val params = clazz.getTypeParameters.toList
-    val left = params(0).getName.asInstanceOf[TypeSymbol]
-    val right = params(1).getName.asInstanceOf[TypeSymbol]
+    val left = RType(params(0).getName.asInstanceOf[TypeSymbol])
+    val right = RType(params(1).getName.asInstanceOf[TypeSymbol])
     EitherInfo(clazz.getName, clazz, left, right)
 
   def extractInfo(reflect: Reflection)(
