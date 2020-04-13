@@ -18,10 +18,10 @@ object JavaClassInspector:
     // (Not worried about the type parameters of the collections here--they'll be populated in the sewTypeParams() method later)
     c match {
       case z if z =:= OptionalClazz => RType(OptionalExtractor().emptyInfo(z))
-      // case z if z <:< JListClazz    => RType(JavaListExtractor().emptyInfo(z))
-      // case z if z <:< JMapClazz     => RType(JavaMapExtractor().emptyInfo(z))
-      // case z if z <:< JQueueClazz   => RType(JavaQueueExtractor().emptyInfo(z))
-      // case z if z <:< JSetClazz     => RType(JavaSetExtractor().emptyInfo(z))
+      case z if z <:< JListClazz    => RType(JavaListExtractor().emptyInfo(z))
+      case z if z <:< JMapClazz     => RType(JavaMapExtractor().emptyInfo(z))
+      case z if z <:< JQueueClazz   => RType(JavaQueueExtractor().emptyInfo(z))
+      case z if z <:< JSetClazz     => RType(JavaSetExtractor().emptyInfo(z))
       case _ =>
         val annos:List[Annotation] = c.getAnnotations.toList
         val allAnnos = annos.map(a => parseAnno(a)).toMap
@@ -57,27 +57,24 @@ object JavaClassInspector:
 
   private def inspectType(mainTypeParams: List[TypeVariable[_]], fieldType: JType): RType =
     fieldType match {
-      /*
       case g: GenericArrayType => 
-        JavaArrayInfo(classOf[Array], inspectType(mainTypeParams, g.getGenericComponentType))
-        */
-      // All this stuff gets triggered if there are Java collections *in a Java class*.  They don't get triggered
+        RType(JavaArrayInfo(classOf[Array], inspectType(mainTypeParams, g.getGenericComponentType)))
+
+        // All this stuff gets triggered if there are Java collections *in a Java class*.  They don't get triggered
       // if we're inspecting a top-level collection, i.e. a Java collection that is a member of a Scala class.
       case p: ParameterizedType if p.getRawType.isInstanceOf[Class[_]] => 
         p.getRawType.asInstanceOf[Class[_]] match {
           case c if c =:= OptionalClazz =>
             RType(JavaOptionalInfo(c.getName, c, inspectType(mainTypeParams, p.getActualTypeArguments.head)))
-            /*
           case c if c <:< JMapClazz =>
             val params = p.getActualTypeArguments.toList
-            JavaMapInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, params(0)), inspectType(mainTypeParams, params(1)))
+            RType(JavaMapInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, params(0)), inspectType(mainTypeParams, params(1))))
           case c if c <:< JListClazz =>
-            JavaListInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, p.getActualTypeArguments.head))
+            RType(JavaListInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, p.getActualTypeArguments.head)))
           case c if c <:< JQueueClazz =>
-            JavaQueueInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, p.getActualTypeArguments.head))
+            RType(JavaQueueInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, p.getActualTypeArguments.head)))
           case c if c <:< JSetClazz =>
-            JavaSetInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, p.getActualTypeArguments.head))
-            */
+            RType(JavaSetInfo(c.getName, c, typeParamSymbols(c), inspectType(mainTypeParams, p.getActualTypeArguments.head)))
           case c =>
             val params = p.getActualTypeArguments.toList
             Reflector.reflectOnClassWithParams(c, params.map(pt => Reflector.reflectOnClass(pt.asInstanceOf[Class[_]])))
@@ -87,27 +84,10 @@ object JavaClassInspector:
       case w: WildcardType => throw new ReflectException("Wildcard types not currently supported in reflection library")
       case other if other.isInstanceOf[Class[_]] => 
         other.asInstanceOf[Class[_]] match {
-          // case c if c.isArray => RType(JavaArrayInfo(c, inspectType(mainTypeParams, c.getComponentType)))
+          case c if c.isArray => RType(JavaArrayInfo(c, inspectType(mainTypeParams, c.getComponentType)))
           case n if(mainTypeParams contains fieldType) => RType(n.asInstanceOf[TypeSymbol])
           case c if c.isEnum => RType(JavaEnumInfo(c.getName, c))
           case c => Reflector.reflectOnClass(c)
-
-
-          // case c if c =:= BooleanClazz || c =:= booleanClazz || c =:= JBooleanClazz => PrimitiveType.Java_Boolean
-          // case c if c =:= ByteClazz || c =:= byteClazz || c =:= JByteClazz          => PrimitiveType.Java_Byte
-          // case c if c =:= CharClazz || c =:= charClazz || c =:= JCharacterClazz     => PrimitiveType.Java_Char
-          // case c if c =:= DoubleClazz || c =:= doubleClazz || c =:= JDoubleClazz    => PrimitiveType.Java_Double
-          // case c if c =:= FloatClazz || c =:= floatClazz || c =:= JFloatClazz       => PrimitiveType.Java_Float
-          // case c if c =:= IntClazz || c =:= intClazz || c =:= JIntegerClazz         => PrimitiveType.Java_Int
-          // case c if c =:= LongClazz || c =:= longClazz || c =:= JLongClazz          => PrimitiveType.Java_Long
-          // case c if c =:= ShortClazz || c =:= shortClazz || c =:= JShortClazz       => PrimitiveType.Java_Short
-          // case c if c =:= JNumberClazz                                              => PrimitiveType.Java_Number
-          // case c if c =:= StringClazz  => PrimitiveType.Scala_String
-          // case c if c =:= ObjectClazz  => PrimitiveType.Java_Object
-          // case c if c.isArray => JavaArrayInfo(c, inspectType(mainTypeParams, c.getComponentType))
-          // case n if(mainTypeParams contains fieldType) => n.asInstanceOf[TypeSymbol]
-          // case c if c.isEnum => JavaEnumInfo(c.getName, c)
-          // case c => Reflector.reflectOnClass(c)
         }
       case u =>
         throw new ReflectException("Unknown Java type "+u)  // This isn't a Class so we can't use UnknownInfo here

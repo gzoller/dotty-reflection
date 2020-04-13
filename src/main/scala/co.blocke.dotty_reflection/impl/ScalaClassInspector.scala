@@ -221,20 +221,9 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
               case cs if cs == anySymbol => RType(PrimitiveType.Scala_Any)
               case cs =>
                 Class.forName(className) match {
-                  case c if c <:< EnumClazz        => RType(ScalaEnumInfo(className, c))
-                  case c if is2xEnumeration        => RType(ScalaEnumerationInfo(className, c))
-                  /*
-                  case c if c =:= BooleanClazz => RType(PrimitiveType.Scala_Boolean)
-                  case c if c =:= ByteClazz    => RType(PrimitiveType.Scala_Byte)
-                  case c if c =:= CharClazz    => RType(PrimitiveType.Scala_Char)
-                  case c if c =:= DoubleClazz  => RType(PrimitiveType.Scala_Double)
-                  case c if c =:= FloatClazz   => RType(PrimitiveType.Scala_Float)
-                  case c if c =:= IntClazz     => RType(PrimitiveType.Scala_Int)
-                  case c if c =:= LongClazz    => RType(PrimitiveType.Scala_Long)
-                  case c if c =:= ShortClazz   => RType(PrimitiveType.Scala_Short)
-                  case c if c =:= StringClazz  => RType(PrimitiveType.Scala_String)
-                  */
-                  case c                       => Reflector.reflectOnClass(c)  // it's some other class, likely a Java or 2.x Scala class
+                  case c if c <:< EnumClazz => RType(ScalaEnumInfo(className, c))
+                  case c if is2xEnumeration => RType(ScalaEnumerationInfo(className, c))
+                  case c                    => Reflector.reflectOnClass(c)  // it's some other class, likely a Java or 2.x Scala class
                 }
             }
 

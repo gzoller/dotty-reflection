@@ -12,7 +12,7 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
 
   private def mangleArrayClassName(tpe: ConcreteType): String =
     val mangled = tpe match {
-      case c: ArrayInfo => mangleArrayClassName(c.elementType.asInstanceOf[ConcreteType])
+      case c: ArrayInfo => mangleArrayClassName(c.elementType.concreteType.asInstanceOf[ConcreteType])
       case PrimitiveType.Scala_Boolean => "Z"
       case PrimitiveType.Scala_Byte => "B"
       case PrimitiveType.Scala_Char => "C"

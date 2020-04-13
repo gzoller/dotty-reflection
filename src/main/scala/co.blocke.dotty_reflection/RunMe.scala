@@ -8,7 +8,7 @@ case class AThing[Y, X](a: X, b: Y) extends Thing[X, Y] with Foom
 
 case class Hey[T](a: Array[T])
 
-case class Person(name: String, age: Int, pet: Pet)
+case class Person(name: String, age: Map[String,Int])
 case class Pet(callsign: String, isOk: Boolean)
 
 object RunMe extends App:
@@ -19,4 +19,3 @@ object RunMe extends App:
   // println("------------")
   val info = Reflector.reflectOn[Person]
   println(info)
-  print("done")

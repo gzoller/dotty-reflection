@@ -28,6 +28,14 @@ case class MapLikeInfo protected[dotty_reflection](
   elementType2: RType
 ) extends ConcreteType with CollectionType:
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+
+  override def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+    val newTab = {if supressIndent then tab else tab+1}
+    {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
+    + s"($name)" + {if orderedTypeParameters.nonEmpty then s"""[${orderedTypeParameters.mkString(",")}]:\n""" else ":\n"}
+    + elementType.show(newTab)
+    + elementType2.show(newTab)
+
   /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
     val fixET1 = elementType1 match {
@@ -159,7 +167,14 @@ case class JavaMapInfo protected[dotty_reflection](
   orderedTypeParameters: List[TypeSymbol],
   elementType: RType,
   elementType2: RType
-) extends ConcreteType with CollectionType
+) extends ConcreteType with CollectionType:
+
+  override def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+    val newTab = {if supressIndent then tab else tab+1}
+    {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
+    + s"($name)" + {if orderedTypeParameters.nonEmpty then s"""[${orderedTypeParameters.mkString(",")}]:\n""" else ":\n"}
+    + elementType.show(newTab)
+    + elementType2.show(newTab)
 /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
     val fixET1 = elementType1 match {

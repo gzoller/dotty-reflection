@@ -15,7 +15,7 @@ trait FieldInfo:
     {if(!supressIndent) tabs(tab) else ""} 
       + s"($index) $name: " 
       + fieldType.show(newTab,true) 
-      + { if annotations.nonEmpty then tabs(newTab) + "annotations: " + annotations.toString else "" }
+      + { if annotations.nonEmpty then tabs(newTab) + "annotations: " + annotations.toString + "\n" else "" }
 
 //  def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): FieldInfo
 
