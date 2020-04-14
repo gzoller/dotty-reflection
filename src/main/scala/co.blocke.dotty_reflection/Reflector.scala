@@ -61,6 +61,7 @@ object Reflector:
         c.setActualTypeParameters( params )
         */
       case c => 
+        println("FIX: "+c)
         c.resolveTypeParams(c.concreteType.orderedTypeParameters.zip(params).toMap)
       }
     // tc.inspected

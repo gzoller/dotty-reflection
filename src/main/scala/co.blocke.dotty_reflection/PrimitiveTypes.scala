@@ -27,4 +27,5 @@ enum PrimitiveType(val name: String, val infoClass: Class[_]) extends ConcreteTy
   case Java_Object extends PrimitiveType("java.lang.Object", ObjectClazz)
   case Java_Number extends PrimitiveType("java.lang.Number", JNumberClazz)
 
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this
   def show(tab: Int = 0, supressIndent: Boolean = false): String = this.name + "\n"

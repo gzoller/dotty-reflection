@@ -9,6 +9,8 @@ case class SeqLikeInfo protected[dotty_reflection](
 ) extends ConcreteType with CollectionType:
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
+
 
 
   /*
@@ -28,6 +30,8 @@ case class MapLikeInfo protected[dotty_reflection](
   elementType2: RType
 ) extends ConcreteType with CollectionType:
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
 
   override def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -59,6 +63,10 @@ case class ArrayInfo protected[dotty_reflection](
 ) extends ConcreteType:
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
+    this.copy(elementType = elementType.resolveTypeParams(actualTypeMap))
+    //this /* TODO */
+
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"array of " + elementType.show(newTab,true)
@@ -81,7 +89,10 @@ case class JavaSetInfo protected[dotty_reflection](
   infoClass: Class[_],
   orderedTypeParameters: List[TypeSymbol],
   elementType: RType
-) extends ConcreteType with CollectionType
+) extends ConcreteType with CollectionType:
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
+
 /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
     elementType match {
@@ -97,7 +108,10 @@ case class JavaListInfo protected[dotty_reflection](
   infoClass: Class[_],
   orderedTypeParameters: List[TypeSymbol],
   elementType: RType
-) extends ConcreteType with CollectionType
+) extends ConcreteType with CollectionType:
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
+
 /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
     elementType match {
@@ -114,6 +128,8 @@ case class JavaArrayInfo protected[dotty_reflection](
 ) extends ConcreteType:
   val name: String = Reflector.JAVA_ARRAY_CLASS
   val orderedTypeParameters: List[TypeSymbol] = Nil
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -134,7 +150,10 @@ case class JavaQueueInfo protected[dotty_reflection](
   infoClass: Class[_],
   orderedTypeParameters: List[TypeSymbol],
   elementType: RType
-) extends ConcreteType with CollectionType
+) extends ConcreteType with CollectionType:
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
+
 /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
     elementType match {
@@ -150,7 +169,10 @@ case class JavaStackInfo protected[dotty_reflection](
   infoClass: Class[_],
   orderedTypeParameters: List[TypeSymbol],
   elementType: RType
-) extends ConcreteType with CollectionType
+) extends ConcreteType with CollectionType:
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
+
 /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
     elementType match {
@@ -168,6 +190,8 @@ case class JavaMapInfo protected[dotty_reflection](
   elementType: RType,
   elementType2: RType
 ) extends ConcreteType with CollectionType:
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
 
   override def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

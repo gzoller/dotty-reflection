@@ -12,20 +12,11 @@ case class UnionInfo protected[dotty_reflection] (
 
   val infoClass: Class[_] = Clazzes.AnyClazz
 
-  /*
-  override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
-    val fixedLeft = leftType match {
-      case ts: TypeSymbol if actualTypeMap.contains(ts) => actualTypeMap(ts)
-      case ts: TypeSymbol => this
-      case c: ConcreteType => c.sewTypeParams(actualTypeMap)
-    }
-    val fixedRight = rightType match {
-      case ts: TypeSymbol if actualTypeMap.contains(ts) => actualTypeMap(ts)
-      case ts: TypeSymbol => this
-      case c: ConcreteType => c.sewTypeParams(actualTypeMap)
-    }
-    this.copy( leftType = fixedLeft, rightType = fixedRight )
-  */
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType =
+    this.copy( 
+      leftType = leftType.resolveTypeParams(actualTypeMap), 
+      rightType = rightType.resolveTypeParams(actualTypeMap)
+      )
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

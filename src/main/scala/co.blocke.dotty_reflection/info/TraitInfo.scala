@@ -11,6 +11,7 @@ case class TraitInfo protected[dotty_reflection](
   ) extends ConcreteType with ClassOrTrait:
 
   def setActualTypeParameters( params: List[RType] ) = this.copy(actualParameterTypes = params)
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -24,6 +25,8 @@ case class SealedTraitInfo protected(
   infoClass: Class[_], 
   orderedTypeParameters: List[TypeSymbol],
   children: List[RType]) extends ConcreteType with ClassOrTrait:
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

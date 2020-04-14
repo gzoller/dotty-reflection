@@ -12,7 +12,7 @@ trait ConcreteType:
   val orderedTypeParameters: List[TypeSymbol]  /** if this is a parameterized type,  list of type symbols in order of declaration */
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String
-  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType
 
 
 /** Marker trait for all Scala/Java collection *except* Arrays, which are a special case */
@@ -74,6 +74,7 @@ case class RType(
 case class UnknownInfo(infoClass: Class[_]) extends ConcreteType:
   val name = infoClass.getName
   val orderedTypeParameters = Nil
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name)\n"
 

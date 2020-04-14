@@ -12,6 +12,8 @@ case class IntersectionInfo protected[dotty_reflection](
 
     val infoClass: Class[_] = Clazzes.AnyClazz
 
+    def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
+
     def show(tab: Int = 0, supressIndent: Boolean = false): String = 
       val newTab = {if supressIndent then tab else tab+1}
       {if(!supressIndent) tabs(tab) else ""} + "Intersection:\n"

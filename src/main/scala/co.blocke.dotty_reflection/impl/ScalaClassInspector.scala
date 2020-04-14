@@ -243,13 +243,28 @@ class ScalaClassInspector(clazz: Class[_]) extends TastyInspector:
               case e if e.matches(clazz) => e.extractInfo(reflect)(t, tob, className, clazz, this)   
             }
             foundType.map(ft => RType(ft)).getOrElse{
+              println("ORELSE: "+t)  // Put the 2 symbols here when we figure out where to store them in RType
+              println("ORELSE: "+tob)
               // Some other class we need to descend into, including a parameterized Scala class
-              Reflector.reflectOnClassWithParams(clazz, tob.map(typeP => 
+              val z = Reflector.reflectOnClassWithParams(clazz, tob.map(typeP => 
                 inspectType(reflect)(typeP.asInstanceOf[reflect.TypeRef])
               ))
+              println("ZZZ: "+z)
+              z
             }
         
           case x => 
             RType(UnknownInfo(Class.forName(className)))
         }
     }
+
+
+    /*
+
+    PROBLEM:
+
+            Hey[T,U]( foo: T, boo: U )
+      
+      A field foo is given type T in Hey, but when defined it can be assigned type Z in its outer/consuming class.  We need both symbols!
+
+    */

@@ -35,6 +35,9 @@ case class ScalaEnumInfo protected[dotty_reflection](
   def valueOf(s: String): Any = valueOfMethod.invoke(companionInstance,s)
   def valueOf(i: Int): Any = values(i)
 
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
+
+
 
 case class ScalaEnumerationInfo protected[dotty_reflection](
   name: String,
@@ -55,12 +58,17 @@ case class ScalaEnumerationInfo protected[dotty_reflection](
   def valueOf(s: String): Any = withNameMethod.invoke(companionInstance,s)
   def valueOf(i: Int): Any = applyMethod.invoke(companionInstance,i.asInstanceOf[Object])
 
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
+
+
   
 case class JavaEnumInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_]
 ) extends ConcreteType: 
   val orderedTypeParameters = Nil
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

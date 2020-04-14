@@ -16,6 +16,9 @@ case class ScalaOptionInfo protected[dotty_reflection](
 
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
+    this.copy(optionParamType = optionParamType.resolveTypeParams(actualTypeMap)) /* TODO */
+
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + "Option of " + optionParamType.show(newTab,true)
@@ -36,6 +39,8 @@ case class JavaOptionalInfo protected[dotty_reflection](
 ) extends OptionInfo:
 
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

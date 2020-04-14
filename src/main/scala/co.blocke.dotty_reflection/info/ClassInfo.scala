@@ -33,15 +33,15 @@ case class ScalaClassInfo protected[dotty_reflection] (
 
   def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
 
-  override def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
-    if orderedTypeParameters == Nil then this else this.copy(fields = fields.map(_.resolveTypeParams(actualTypeMap)))
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
+    this.copy(fields = fields.map(_.resolveTypeParams(actualTypeMap)))
+    // if orderedTypeParameters == Nil then this else this.copy(fields = fields.map(_.resolveTypeParams(actualTypeMap)))
 
   override def show(tab:Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     super.show(tab, supressIndent) 
     + {if( typeMembers.nonEmpty ) tabs(newTab) + "type members: \n" + typeMembers.map(_.show(newTab+1)) + "\n" else ""}
     + tabs(newTab) + "value class: "+isValueClass+"\n"
-
 
   /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
@@ -75,6 +75,8 @@ case class JavaClassInfo protected[dotty_reflection] (
     val c = Class.forName(name).getConstructors.head.newInstance()
     fields.zipWithIndex.foreach((f,a) => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(c,args(a)))
     c.asInstanceOf[T]
+
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this /* TODO */
 
     /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]) = 
