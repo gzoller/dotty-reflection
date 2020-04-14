@@ -44,7 +44,8 @@ class ScalaTasty extends munit.FunSuite:
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.WithAnnotation):
     |   fields:
     |      (0) id: java.lang.String
-    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))   annotations: Map(co.blocke.reflect.ClassAnno -> Map(name -> Foom))
+    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))
+    |   annotations: Map(co.blocke.reflect.ClassAnno -> Map(name -> Foom))
     |   value class: false""".stripMargin)
   }
 

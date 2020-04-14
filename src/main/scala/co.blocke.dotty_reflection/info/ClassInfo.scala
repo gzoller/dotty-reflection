@@ -33,6 +33,9 @@ case class ScalaClassInfo protected[dotty_reflection] (
 
   def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
 
+  override def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
+    if orderedTypeParameters == Nil then this else this.copy(fields = fields.map(_.resolveTypeParams(actualTypeMap)))
+
   override def show(tab:Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     super.show(tab, supressIndent) 

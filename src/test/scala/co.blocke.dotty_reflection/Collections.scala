@@ -90,13 +90,11 @@ class Collections extends munit.FunSuite:
 
   test("Tuples") {
     val result = Reflector.reflectOn[TupleTurtle[Boolean]]
-    println("<< pending >>")
-    /*
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.TupleTurtle)[Z]:
     |   fields:
     |      (0) t: (
     |         scala.Int
-    |         [Z]java.lang.Object
+    |         [Z]scala.Boolean
     |         SeqLikeInfo(scala.collection.immutable.List)[A]: java.lang.String
     |         ScalaClassInfo(co.blocke.dotty_reflection.NormalOption):
     |            fields:
@@ -104,7 +102,6 @@ class Collections extends munit.FunSuite:
     |            value class: false
     |         )
     |   value class: false""".stripMargin)
-    */
   }
 
   test("Scala Arrays") {

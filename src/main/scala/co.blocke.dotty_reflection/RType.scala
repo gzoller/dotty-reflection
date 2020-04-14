@@ -10,7 +10,9 @@ trait ConcreteType:
   val name: String         /** typically the fully-qualified class name */
   val infoClass: Class[_]  /** the JVM class of this type */
   val orderedTypeParameters: List[TypeSymbol]  /** if this is a parameterized type,  list of type symbols in order of declaration */
+
   def show(tab: Int = 0, supressIndent: Boolean = false): String
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = this
 
 
 /** Marker trait for all Scala/Java collection *except* Arrays, which are a special case */
@@ -32,14 +34,14 @@ object RType:
 
 /** Highest level reflected type */
 case class RType(
-  concreteType: ConcreteType,
+    concreteType: ConcreteType,
 
-  /** Set if this RType was originally a parameterized type.  Note that when a type is a parameterized value, the concreteType
-   *  is set to Scala_Any.  If the parameter type symbol is later resolved via resolveTypeParams(), the concreteType may be reset
-   *  to the actual resolved type, but typeParam remains the type symbol. */
-  typeParam: Option[TypeSymbol] = None,
+    /** Set if this RType was originally a parameterized type.  Note that when a type is a parameterized value, the concreteType
+    *  is set to Scala_Any.  If the parameter type symbol is later resolved via resolveTypeParams(), the concreteType may be reset
+    *  to the actual resolved type, but typeParam remains the type symbol. */
+    typeParam: Option[TypeSymbol] = None,
 
-  typeMemberName: Option[String] = None  // used only with thie RType is a class type member (typeMemberName is the synthetic field name of the type)
+    typeMemberName: Option[String] = None  // used only with thie RType is a class type member (typeMemberName is the synthetic field name of the type)
   ):
 
 
@@ -47,7 +49,12 @@ case class RType(
    *  that T should be an Int, resolveTypeParams (recursively) resolves the T parameter to be Scala_Int, but leaves typeParam as
    *  Some("T").
    */
-  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, ConcreteType]): RType = this
+  def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): RType = 
+    typeParam match {
+      case Some(s) if actualTypeMap.contains(s) => actualTypeMap(s).copy(typeParam = Some(s))
+      case None => this.copy(concreteType = concreteType.resolveTypeParams(actualTypeMap))
+      case _ => this
+    }
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String =
     val newTab = {if supressIndent then tab else tab+1}

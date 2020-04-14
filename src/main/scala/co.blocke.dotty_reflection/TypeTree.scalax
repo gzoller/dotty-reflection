@@ -1,0 +1,10 @@
+package co.blocke.dotty_reflection
+
+object ParamTypeTree:
+
+  private val cache = new java.util.concurrent.ConcurrentHashMap[Class[_], List[RType]]
+
+//  cache.computeIfAbsent(typeStructure, classRegistrar)
+
+  private def classRegistrar(clazz: Class[_]): List[RType] =
+    

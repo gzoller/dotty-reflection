@@ -13,9 +13,5 @@ case class Pet(callsign: String, isOk: Boolean)
 
 object RunMe extends App:
 
-  // val info = Reflector.reflectOn[GeneralHolder[Map[ Optional[List[String]], Int ]]]
-  // println(info)
-  
-  // println("------------")
-  val info = Reflector.reflectOn[Person]
-  println(info)
+  val i = Reflector.reflectOn[AThing[String,Int]]
+  println(i)

@@ -3,7 +3,7 @@ package info
 
 case class AliasInfo protected[dotty_reflection] (
     definedType: String,
-    unwrappedType: ConcreteType
+    unwrappedType: ConcreteType // Aliases with a typed wrapped type are not currently supported, so ConcreteType here.
   ) extends ConcreteType:
 
     val name: String = definedType.drop(definedType.lastIndexOf('.')+1)

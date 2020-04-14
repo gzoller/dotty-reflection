@@ -13,6 +13,17 @@ case class TupleInfo protected[dotty_reflection](
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"""(\n${tupleTypes.map(_.show(newTab)).mkString}""" + tabs(tab) + ")\n"
 
+  override def resolveTypeParams(actualTypeMap: Map[TypeSymbol, RType]): ConcreteType = 
+    val resolvedTupleTypes: List[RType] = tupleTypes.map( _ match {
+      case tt if tt.typeParam.isEmpty => tt.resolveTypeParams(actualTypeMap)
+      case tt if tt.typeParam.isDefined && actualTypeMap.contains(tt.typeParam.get) =>
+        RType(actualTypeMap(tt.typeParam.get).concreteType, tt.typeParam)
+      case tt => tt
+    })
+    this.copy(tupleTypes = resolvedTupleTypes)
+
+
+
   /*
   override def sewTypeParams(actualTypeMap: Map[TypeSymbol, ALL_TYPE]): ConcreteType = 
     val together = tupleTypes.zip(typeParamSymbols)
