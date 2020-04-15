@@ -1,115 +1,52 @@
 package co.blocke.dotty_reflection
 
 import munit._
-import infos._
+import info._
 import PrimitiveType._
 import java.util.Optional
 
-class Options extends munit.FunSuite {
+class Options extends munit.FunSuite:
 
   test("Scala optional field") {
-    val r = Reflector.reflectOn[NormalOption].asInstanceOf[ScalaClassInfo]
-    val result = r match {
-      case ScalaClassInfo(
-        "co.blocke.dotty_reflection.NormalOption",
-        _,
-        Nil,
-        List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Int),_,_,None,None)
-        ),
-        Nil,
-        _,
-        flase
-        ) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[NormalOption]
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.NormalOption):
+    |   fields:
+    |      (0) a: Option of scala.Int""".stripMargin)
   }
 
   test("Java optional field") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption1].asInstanceOf[JavaClassInfo]
-    val result = r match {
-      case JavaClassInfo(
-        "co.blocke.reflect.JavaOption1",
-        _,
-        List(
-          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _, Java_Int),_,_,_,None)
-        ),
-        Nil,
-        _) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[co.blocke.reflect.JavaOption1]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaOption1):
+    |   fields:
+    |      (0) fld: Optional of java.lang.Integer""".stripMargin)
   }
 
   test("Scala nested optional field") {
-    val r = Reflector.reflectOn[NestedOption].asInstanceOf[ScalaClassInfo]
-    val result = r match {
-      case ScalaClassInfo(
-        "co.blocke.dotty_reflection.NestedOption",
-        _,
-        Nil,
-        List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,ScalaOptionInfo("scala.Option",_,Scala_Int)),_,_,None,None)
-        ),
-        Nil,
-        _,
-        flase
-        ) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[NestedOption]
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.NestedOption):
+    |   fields:
+    |      (0) a: Option of Option of scala.Int""".stripMargin)
   }
 
   test("Java nested optional field") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption2].asInstanceOf[JavaClassInfo]
-    val result = r match {
-      case JavaClassInfo(
-        "co.blocke.reflect.JavaOption2",
-        _,
-        List(
-          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _, JavaOptionalInfo("java.util.Optional", _, Java_Int)),_,_,_,None)
-        ),
-        Nil,
-        _) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[co.blocke.reflect.JavaOption2]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaOption2):
+    |   fields:
+    |      (0) fld: Optional of Optional of java.lang.Integer""".stripMargin)
   }
 
   test("Scala optional parameterized field") {
-    val r = Reflector.reflectOn[ParamOption[Char]].asInstanceOf[ScalaClassInfo]
-    val result = r match {
-      case ScalaClassInfo(
-        "co.blocke.dotty_reflection.ParamOption",
-        _,
-        Nil,
-        List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Char),_,_,None,None)
-        ),
-        List("T"),
-        _,
-        flase
-        ) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[ParamOption[Char]]
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.ParamOption[T]):
+    |   fields:
+    |      (0) a: Option of scala.Char""".stripMargin)
   }
 
   test("Java optional parameterized field") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaOption3[Char]].asInstanceOf[JavaClassInfo]
-    val result = r match {
-      case JavaClassInfo(
-        "co.blocke.reflect.JavaOption3",
-        _,
-        List(
-          JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _,Scala_Char),_,_,_,None)
-        ),
-        List("T"),
-        _) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[co.blocke.reflect.JavaOption3[Char]]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaOption3[T]):
+    |   fields:
+    |      (0) fld: Optional of scala.Char""".stripMargin)
   }
 
   test("Option assignments in union type") {
@@ -123,22 +60,12 @@ class Options extends munit.FunSuite {
   }
 
   test("Option of a union") {    
-    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[ScalaClassInfo]
-    val result = r match {
-      case ScalaClassInfo(
-        "co.blocke.dotty_reflection.OptionHavingUnion",
-        _,
-        Nil,
-        List(
-          ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,UnionInfo(Reflector.UNION_CLASS,Scala_Boolean,Scala_String)),_,_,None,None)
-        ),
-        Nil,
-        _,
-        flase
-        ) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[OptionHavingUnion]
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.OptionHavingUnion):
+    |   fields:
+    |      (0) a: Option of Union:
+    |         left--scala.Boolean
+    |         right--java.lang.String""".stripMargin)
   }
 
   test("Option of a union assignment") {    
@@ -153,4 +80,3 @@ class Options extends munit.FunSuite {
       r.constructWith[OptionHavingUnion](List(Some("wow"))) == OptionHavingUnion(Some("wow"))
     )
   }
-}

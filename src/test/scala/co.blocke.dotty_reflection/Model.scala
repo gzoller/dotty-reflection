@@ -61,6 +61,7 @@ case class WithDefault(a: Int, b: String = "wow")
 case class BothSides(a: scala.util.Either[Int,String])
 case class BothSidesWithOption(a: scala.util.Either[Int, Option[String]])
 case class BothSidesWithUnion(a: scala.util.Either[Int, String|Boolean])
+case class BothSidesParam[Z](a: scala.util.Either[Int, Option[ParamOption[Z]]])
 
 // Options
 case class NormalOption(a: Option[Int])

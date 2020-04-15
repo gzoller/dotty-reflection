@@ -1,29 +1,19 @@
 package co.blocke.dotty_reflection
 
 import munit._
-import infos._
+import info._
 import PrimitiveType._
 
-class JavaNonTasty extends munit.FunSuite {
+class JavaNonTasty extends munit.FunSuite:
 
   test("reflect basic with capture") {
-    val r = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[JavaClassInfo]
-    val result = r match {
-      case JavaClassInfo(
-        "co.blocke.reflect.Person",
-        _,
-        List(
-          JavaFieldInfo(0,"age",Java_Int,_,_,_,None),
-          JavaFieldInfo(1,"name",Scala_String,_,_,_,None),
-          JavaFieldInfo(2,"other",Java_Int,_,_,_,None)
-        ),
-        Nil,
-        _
-        ) => true
-      case _ => false
-    }
-    assert(result)
-    assert(r.hasMixin("co.blocke.dotty_reflection.SJCaptureJava"))
+    val result = Reflector.reflectOn[co.blocke.reflect.Person]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.Person):
+    |   fields:
+    |      (0) age: scala.Int
+    |      (1) name: java.lang.String
+    |      (2) other: scala.Int""".stripMargin)
+    assert(result.asInstanceOf[JavaClassInfo].hasMixin("co.blocke.dotty_reflection.SJCaptureJava"))
   }
 
   test("create Java object") {
@@ -143,104 +133,51 @@ class JavaNonTasty extends munit.FunSuite {
 
   test("Detect parameterized Java class") {
     val wp = Class.forName("co.blocke.reflect.ParamAnno")
-    val result = Reflector.reflectOnClass(wp) match {
-      case a @ JavaClassInfo(
-        "co.blocke.reflect.ParamAnno",
-        _,
-        List(
-          JavaFieldInfo(0,"age",Scala_Any,_,_,_,Some("T")),
-          JavaFieldInfo(1,"name",Scala_String,_,_,_,None)
-        ),
-        List("T"),
-        _
-      ) if a.annotations == Map("co.blocke.reflect.ClassAnno"->Map("name"->"Foom")) && 
-        a.field("age").get.annotations == Map("co.blocke.reflect.FieldAnno"->Map("idx"->"2")) && 
-        a.field("name").get.annotations == Map("co.blocke.reflect.FieldAnno"->Map("idx"->"1")) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOnClass(wp) 
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.ParamAnno[T]):
+    |   fields:
+    |      (0) age: T
+    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))
+    |      (1) name: java.lang.String
+    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 1))
+    |   annotations: Map(co.blocke.reflect.ClassAnno -> Map(name -> Foom))""".stripMargin)
   }
 
   test("Java collection types") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaCollections].asInstanceOf[JavaClassInfo]
-    val result = r match {
-      case JavaClassInfo(
-          "co.blocke.reflect.JavaCollections",
-          _,
-          List(
-            JavaFieldInfo(0,"hMap",JavaMapInfo("java.util.HashMap",_,List("K","V"),Scala_String,Java_Int),_,_,_,None),
-            JavaFieldInfo(1,"myArr",JavaArrayInfo(_,Scala_String),_,_,_,None),
-            JavaFieldInfo(2,"myList",JavaListInfo("java.util.ArrayList",_,List("E"),Scala_String),_,_,_,None),
-            JavaFieldInfo(3,"myQ",JavaQueueInfo("java.util.concurrent.BlockingQueue",_,List("E"),Scala_String),_,_,_,None),
-            JavaFieldInfo(4,"myTree",JavaSetInfo("java.util.TreeSet",_,List("E"),Scala_String),_,_,_,None),
-            JavaFieldInfo(5,"nested",JavaArrayInfo(_,JavaListInfo("java.util.List",_,List("E"),Java_Int)),_,_,_,None)
-          ),
-          Nil,
-          _
-        ) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[co.blocke.reflect.JavaCollections]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaCollections):
+    |   fields:
+    |      (0) hMap: JavaMapInfo(java.util.HashMap[K,V]):
+    |         java.lang.String
+    |         java.lang.Integer
+    |      (1) myArr: array of java.lang.String
+    |      (2) myList: JavaListInfo(java.util.ArrayList[E]): java.lang.String
+    |      (3) myQ: JavaQueueInfo(java.util.concurrent.BlockingQueue[E]): java.lang.String
+    |      (4) myTree: JavaSetInfo(java.util.TreeSet[E]): java.lang.String
+    |      (5) nested: array of JavaListInfo(java.util.List[E]): java.lang.Integer""".stripMargin)
   }
 
   test("Nested Java classes") {
-    val r = Reflector.reflectOn[co.blocke.reflect.You].asInstanceOf[JavaClassInfo]
-    val result = r match {
-      case JavaClassInfo(
-          "co.blocke.reflect.You",
-          _,
-          List(
-            JavaFieldInfo(0,"sayHey",
-              JavaClassInfo(
-                "co.blocke.reflect.Hey",
-                _,
-                List(
-                  JavaFieldInfo(0,"jString",Scala_String,_,_,_,None)
-                ),
-                Nil,
-                _
-              ),
-              _,_,_,None)
-          ),
-          Nil,
-          _
-        ) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[co.blocke.reflect.You]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.You):
+    |   fields:
+    |      (0) sayHey: JavaClassInfo(co.blocke.reflect.Hey):
+    |         fields:
+    |            (0) jString: java.lang.String""".stripMargin)
   }
 
   test("Java parameterized class top level") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaParam[Integer]].asInstanceOf[JavaClassInfo]
-    val result = r match {
-      case JavaClassInfo(
-          "co.blocke.reflect.JavaParam",
-          _,
-          List(
-            JavaFieldInfo(0,"jThing",Java_Int,_,_,_,Some("K"))
-          ),
-          List("K"),
-          _
-        ) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[co.blocke.reflect.JavaParam[Integer]]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaParam[K]):
+    |   fields:
+    |      (0) jThing: java.lang.Integer""".stripMargin)
   }
 
   test("Java parameterized class field member") {
-    val r = Reflector.reflectOn[co.blocke.reflect.JavaParamHolder].asInstanceOf[JavaClassInfo]
-    val result = r match {
-      case JavaClassInfo(
-        "co.blocke.reflect.JavaParamHolder",
-        _,
-        List(
-          JavaFieldInfo(0,"jFoo",JavaClassInfo("co.blocke.reflect.JavaParam",_,List(JavaFieldInfo(0,"jThing",Java_Int,_,_,_,Some("K"))),List("K"),_),_,_,_,None)
-        ),
-        Nil,
-        _
-      ) => true
-      case _ => false
-    }
-    assert(result)
+    val result = Reflector.reflectOn[co.blocke.reflect.JavaParamHolder]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaParamHolder):
+    |   fields:
+    |      (0) jFoo: JavaClassInfo(co.blocke.reflect.JavaParam[K]):
+    |         fields:
+    |            (0) jThing: java.lang.Integer""".stripMargin)
   }
-}
