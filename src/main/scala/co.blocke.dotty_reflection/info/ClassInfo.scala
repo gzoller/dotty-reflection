@@ -33,7 +33,7 @@ case class ScalaClassInfo protected[dotty_reflection] (
     + s"($name" + {if orderedTypeParameters.nonEmpty then s"""[${orderedTypeParameters.mkString(",")}]):\n""" else "):\n"}
     + tabs(newTab) + "fields:\n" + fields.map(_.show(newTab+1)).mkString
     + {if annotations.nonEmpty then tabs(newTab) + "annotations: "+annotations.toString + "\n" else ""}
-    + {if( typeMembers.nonEmpty ) tabs(newTab) + "type members: \n" + typeMembers.map(_.show(newTab+1)) + "\n" else ""}
+    + {if( typeMembers.nonEmpty ) tabs(newTab) + "type members:\n" + typeMembers.map(_.show(newTab+1)).mkString else ""}
 
   
 case class JavaClassInfo protected[dotty_reflection] (

@@ -14,9 +14,13 @@ case class TraitInfo protected[dotty_reflection](
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
+    val both = orderedTypeParameters.zip(actualParameterTypes)
+
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
     + s"($name" + {if orderedTypeParameters.nonEmpty then s"""[${orderedTypeParameters.mkString(",")}])""" else ")"}
-    + {if actualParameterTypes == Nil then "\n" else ":\n"+ tabs(newTab) + "actualParamTypes:\n" + actualParameterTypes.map(_.show(newTab+1)).mkString+"\n"}
+    + {if actualParameterTypes == Nil then "\n" else ":\n"+ tabs(newTab) + "actualParamTypes:\n" 
+    + both.map( (p,a) => tabs(newTab+1) + s"[$p] "+a.show(newTab+2,true)).mkString}
+    // + actualParameterTypes.map(_.show(newTab+1)).mkString+"\n"}
 
 
 case class SealedTraitInfo protected(

@@ -77,7 +77,11 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
               typeParams, 
               t.symbol.children.map(c => Reflector.reflectOnClass(Class.forName(c.fullName))))
           else
-            TraitInfo(className, clazz, typeParams, Nil)
+            val actualTypeParams = typeParams.map(_ match {
+              case p if paramMap.contains(p) => paramMap(p)
+              case p => TypeSymbolInfo(p.asInstanceOf[String])
+            })
+            TraitInfo(className, clazz, typeParams, actualTypeParams)
         else
           // === Scala Class (case or non-case) ===
           val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
@@ -87,13 +91,15 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
             }.map(f => (f.name->f)).toMap
 
           // Find any type members matching a class type parameter
-          val typeMembers = List.empty[RType]
-          /*
           val typeMembers = t.body.collect {
             case TypeDef(typeName, dotty.tools.dotc.ast.Trees.Ident(typeSym)) if typeParams.contains(typeSym.toString.asInstanceOf[TypeSymbol]) => 
-              RType(typeSym.toString.asInstanceOf[TypeSymbol], typeName)
+              TypeMemberInfo(
+                typeName,
+                paramMap.getOrElse(typeSym.toString.asInstanceOf[TypeSymbol],
+                  TypeSymbolInfo(typeSym.toString)
+                )
+              )
           }
-          */
 
           val fields = paramz.head.zipWithIndex.map{ (paramValDef, i) =>
             val valDef = members(paramValDef.name) // we use the members here because match types aren't resolved in paramValDef but are resolved in members

@@ -48,24 +48,6 @@ object Reflector:
 
     // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
     tc.inspect("", List(className))
-    // Now sew known params into fields' type symbols, if any (type parameter resolution)
-    // tc.inspected match {
-        /*
-      case c: ScalaClassInfo => 
-        val x: List[(TypeSymbol,RType)] = c.typeParameters.zip(params)
-        val m: Map[TypeSymbol,RType] = x.toMap
-        c.resolveTypeParams(m)
-      case c: JavaClassInfo => 
-        val x: List[(TypeSymbol,RType)] = c.typeParameters.zip(params)
-        val m: Map[TypeSymbol,RType] = x.toMap
-        c.resolveTypeParams(m)
-      case c: TraitInfo =>
-        c.setActualTypeParameters( params )
-        */
-      // case c => 
-      //   println("FIX: "+c)
-      //   c.resolveTypeParams(c.concreteType.orderedTypeParameters.zip(params).toMap)
-      // }
     tc.inspected
 
 

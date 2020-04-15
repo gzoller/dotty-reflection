@@ -9,10 +9,19 @@ trait RType:
   override def toString(): String = show()
 
 
+case class TypeMemberInfo(name: String, memberType: RType) extends RType {
+  val orderedTypeParameters: List[TypeSymbol] = Nil
+  val infoClass = Clazzes.ObjectClazz
+  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+    {if(!supressIndent) tabs(tab) else ""} + name + ": "+ memberType.show(tab+1, true)
+}
+
+
 case class TypeSymbolInfo(name: String) extends RType:
   val orderedTypeParameters: List[TypeSymbol] = Nil
   val infoClass = Clazzes.ObjectClazz
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = name + "\n"
+  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+    {if(!supressIndent) tabs(tab) else ""} + name + "\n"
 
 
 // Poked this here for now.  Used for show()
