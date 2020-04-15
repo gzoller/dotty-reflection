@@ -10,24 +10,29 @@ case class JavaQueueExtractor() extends TypeInfoExtractor[JavaQueueInfo]:
 
   def matches(clazz: Class[_]): Boolean = clazz <:< JQueueClazz
 
-  def emptyInfo(clazz: Class[_]): JavaQueueInfo = 
+  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): JavaQueueInfo = 
+    val elemParamSymName = clazz.getTypeParameters.toList.head.getName 
+    val elemParamType = paramMap.getOrElse(
+      elemParamSymName.asInstanceOf[TypeSymbol], 
+      TypeSymbolInfo(elemParamSymName)
+      )
     JavaQueueInfo(
       clazz.getName, 
       clazz, 
       clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-      RType(PrimitiveType.Java_Int)
+      elemParamType
     )
 
-  def extractInfo(reflect: Reflection)(
+  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
       t: reflect.Type, 
       tob: List[reflect.TypeOrBounds], 
       className: String, 
       clazz: Class[_], 
       typeInspector: ScalaClassInspector
-    ): ConcreteType =
+    ): RType =
 
     JavaQueueInfo(
           className, 
           clazz,
           clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-          typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]))
+          typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))

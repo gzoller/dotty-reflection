@@ -13,11 +13,11 @@ class JavaNonTasty extends munit.FunSuite:
     |      (0) age: scala.Int
     |      (1) name: java.lang.String
     |      (2) other: scala.Int""".stripMargin)
-    assert(result.concreteType.asInstanceOf[JavaClassInfo].hasMixin("co.blocke.dotty_reflection.SJCaptureJava"))
+    assert(result.asInstanceOf[JavaClassInfo].hasMixin("co.blocke.dotty_reflection.SJCaptureJava"))
   }
 
   test("create Java object") {
-    val p = Reflector.reflectOn[co.blocke.reflect.Person].concreteType.asInstanceOf[JavaClassInfo]
+    val p = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[JavaClassInfo]
     val person = p.constructWith[co.blocke.reflect.Person](List(35, "Frank", 5))
     assertEquals(person.getName,"Frank")
     assertEquals(person.getAge,35)
@@ -28,7 +28,7 @@ class JavaNonTasty extends munit.FunSuite:
   }
 
   test("Verify Java primitives") {
-    val jx = Reflector.reflectOn[co.blocke.reflect.JavaTypes].concreteType.asInstanceOf[JavaClassInfo]
+    val jx = Reflector.reflectOn[co.blocke.reflect.JavaTypes].asInstanceOf[JavaClassInfo]
     val number: java.lang.Number = java.lang.Integer.valueOf(123).asInstanceOf[java.lang.Number]
     val inst = jx.constructWith[co.blocke.reflect.JavaTypes](List(
       true, false, 5.toByte, 3.toByte, 'x', 'y', 1.2D, 2.3D, 4.5F, 5.6F, 1, 2, 3L, 4L, number, "something", 5.toShort, 6.toShort, "foom"
@@ -134,9 +134,9 @@ class JavaNonTasty extends munit.FunSuite:
   test("Detect parameterized Java class") {
     val wp = Class.forName("co.blocke.reflect.ParamAnno")
     val result = Reflector.reflectOnClass(wp) 
-    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.ParamAnno)[T]:
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.ParamAnno[T]):
     |   fields:
-    |      (0) age: [T]java.lang.Object
+    |      (0) age: T
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))
     |      (1) name: java.lang.String
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 1))
@@ -147,14 +147,14 @@ class JavaNonTasty extends munit.FunSuite:
     val result = Reflector.reflectOn[co.blocke.reflect.JavaCollections]
     assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaCollections):
     |   fields:
-    |      (0) hMap: JavaMapInfo(java.util.HashMap)[K,V]:
+    |      (0) hMap: JavaMapInfo(java.util.HashMap[K,V]):
     |         java.lang.String
     |         java.lang.Integer
     |      (1) myArr: array of java.lang.String
-    |      (2) myList: JavaListInfo(java.util.ArrayList)[E]: java.lang.String
-    |      (3) myQ: JavaQueueInfo(java.util.concurrent.BlockingQueue)[E]: java.lang.String
-    |      (4) myTree: JavaSetInfo(java.util.TreeSet)[E]: java.lang.String
-    |      (5) nested: array of JavaListInfo(java.util.List)[E]: java.lang.Integer""".stripMargin)
+    |      (2) myList: JavaListInfo(java.util.ArrayList[E]): java.lang.String
+    |      (3) myQ: JavaQueueInfo(java.util.concurrent.BlockingQueue[E]): java.lang.String
+    |      (4) myTree: JavaSetInfo(java.util.TreeSet[E]): java.lang.String
+    |      (5) nested: array of JavaListInfo(java.util.List[E]): java.lang.Integer""".stripMargin)
   }
 
   test("Nested Java classes") {
@@ -168,38 +168,16 @@ class JavaNonTasty extends munit.FunSuite:
 
   test("Java parameterized class top level") {
     val result = Reflector.reflectOn[co.blocke.reflect.JavaParam[Integer]]
-    println("<< pending >>")
-    /*
-    val result = r match {
-      case JavaClassInfo(
-          "co.blocke.reflect.JavaParam",
-          _,
-          List(
-            JavaFieldInfo(0,"jThing",Java_Int,_,_,_,Some("K"))
-          ),
-          List("K"),
-          _
-        ) => true
-      case _ => false
-    }
-    assert(result)
-    */
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaParam[K]):
+    |   fields:
+    |      (0) jThing: java.lang.Integer""".stripMargin)
   }
 
   test("Java parameterized class field member") {
     val result = Reflector.reflectOn[co.blocke.reflect.JavaParamHolder]
-    println("<< pending >>")
-    // val result = r match {
-    //   case JavaClassInfo(
-    //     "co.blocke.reflect.JavaParamHolder",
-    //     _,
-    //     List(
-    //       JavaFieldInfo(0,"jFoo",JavaClassInfo("co.blocke.reflect.JavaParam",_,List(JavaFieldInfo(0,"jThing",Java_Int,_,_,_,Some("K"))),List("K"),_),_,_,_,None)
-    //     ),
-    //     Nil,
-    //     _
-    //   ) => true
-    //   case _ => false
-    // }
-    // assert(result)
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaParamHolder):
+    |   fields:
+    |      (0) jFoo: JavaClassInfo(co.blocke.reflect.JavaParam[K]):
+    |         fields:
+    |            (0) jThing: java.lang.Integer""".stripMargin)
   }

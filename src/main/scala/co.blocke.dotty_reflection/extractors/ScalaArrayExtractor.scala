@@ -10,9 +10,10 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
 
   def matches(clazz: Class[_]): Boolean = clazz <:< ScalaArrayClazz
 
-  private def mangleArrayClassName(tpe: ConcreteType): String =
+  private def mangleArrayClassName(tpe: RType): String =
     val mangled = tpe match {
-      case c: ArrayInfo => mangleArrayClassName(c.elementType.concreteType.asInstanceOf[ConcreteType])
+      case _: TypeSymbolInfo => "Ljava.lang.Object;"
+      case c: ArrayInfo => mangleArrayClassName(c.elementType)
       case PrimitiveType.Scala_Boolean => "Z"
       case PrimitiveType.Scala_Byte => "B"
       case PrimitiveType.Scala_Char => "C"
@@ -26,22 +27,25 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
     }
     "[" + mangled
 
-  def emptyInfo(clazz: Class[_]): ArrayInfo = ArrayInfo("[java.lang.Object;", clazz, RType(PrimitiveType.Scala_Any))
+  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): ArrayInfo = 
+    val elemParamSymName = clazz.getTypeParameters.toList.head.getName 
+    val elemParamType = paramMap.getOrElse(
+      elemParamSymName.asInstanceOf[TypeSymbol], 
+      TypeSymbolInfo(elemParamSymName)
+      )
+    ArrayInfo("[java.lang.Object;", clazz, elemParamType)
 
-  def extractInfo(reflect: Reflection)(
+  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
       t: reflect.Type, 
       tob: List[reflect.TypeOrBounds], 
       className: String, 
       clazz: Class[_], 
       typeInspector: ScalaClassInspector
-    ): ConcreteType =
+    ): RType =
 
-    val elementKind = typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]) match {
-      case t if t.typeParam.isEmpty => t.concreteType
-      case _ => PrimitiveType.Scala_Any
-    }
-    val mangled = mangleArrayClassName(elementKind)
+    val elementType = typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef])
+    val mangled = mangleArrayClassName(elementType)
     ArrayInfo(
       mangled,
       Class.forName(mangled),
-      typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]))
+      elementType)

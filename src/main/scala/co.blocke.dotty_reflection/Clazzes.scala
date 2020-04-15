@@ -49,6 +49,8 @@ object Clazzes {
   val JStackClazz     = classOf[java.util.Stack[_]]
   val JNumberClazz    = Class.forName("java.lang.Number")
 
+  // Class Ops
   def (c: Class[_]).=:=(other: Class[_]): Boolean = c == other
   def (c: Class[_]).<:<(other: Class[_]): Boolean = other.isAssignableFrom(c)
+  def (c: Class[_]).params: List[TypeSymbol] = c.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 }

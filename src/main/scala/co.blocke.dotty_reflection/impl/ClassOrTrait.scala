@@ -3,7 +3,7 @@ package impl
 
 
 trait ClassOrTrait:
-  self: ConcreteType =>
+  self: RType =>
 
   // Run up the interitance tree to the top (Object) to get all the superclasses and mixin interfaces of this one
   private def getSuperclasses(c: Class[_] = infoClass, stack:List[String] = List.empty[String]): List[String] = 

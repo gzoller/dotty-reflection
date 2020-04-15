@@ -6,6 +6,7 @@ import info._
 import scala.tasty.inspector._
 import scala.reflect.ClassTag
 import scala.jdk.CollectionConverters._
+import Clazzes._
 
 object Reflector:
 
@@ -33,7 +34,7 @@ object Reflector:
   def reflectOnClass(clazz: Class[_]): RType =
     val className = clazz.getName
     Option(cache.get(TypeStructure(className,Nil))).getOrElse{ 
-      val tc = new ScalaClassInspector(clazz)
+      val tc = new ScalaClassInspector(clazz, Map.empty[TypeSymbol,RType])
       tc.inspect("", List(className))
       tc.inspected
     }
@@ -42,12 +43,13 @@ object Reflector:
   /** Construct a fully-parameterized RType if the class' type params are known */
   def reflectOnClassWithParams(clazz: Class[_], params: List[RType]): RType =
     val className = clazz.getName
-    val tc = new ScalaClassInspector(clazz)
+    val classParams = clazz.params.zip(params).toMap
+    val tc = new ScalaClassInspector(clazz, classParams)
 
     // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
     tc.inspect("", List(className))
     // Now sew known params into fields' type symbols, if any (type parameter resolution)
-    tc.inspected match {
+    // tc.inspected match {
         /*
       case c: ScalaClassInfo => 
         val x: List[(TypeSymbol,RType)] = c.typeParameters.zip(params)
@@ -60,80 +62,66 @@ object Reflector:
       case c: TraitInfo =>
         c.setActualTypeParameters( params )
         */
-      case c => 
-        println("FIX: "+c)
-        c.resolveTypeParams(c.concreteType.orderedTypeParameters.zip(params).toMap)
-      }
-    // tc.inspected
+      // case c => 
+      //   println("FIX: "+c)
+      //   c.resolveTypeParams(c.concreteType.orderedTypeParameters.zip(params).toMap)
+      // }
+    tc.inspected
 
 
   // pre-loaded with known language primitive types
   private val cache = new java.util.concurrent.ConcurrentHashMap[TypeStructure, RType](Map(
-      TypeStructure("boolean",Nil)              -> RType(PrimitiveType.Scala_Boolean),
-      TypeStructure("Boolean",Nil)              -> RType(PrimitiveType.Scala_Boolean),
-      TypeStructure("scala.Boolean",Nil)        -> RType(PrimitiveType.Scala_Boolean),
-      TypeStructure("java.lang.Boolean",Nil)    -> RType(PrimitiveType.Java_Boolean),
-      TypeStructure("byte",Nil)                 -> RType(PrimitiveType.Scala_Byte),
-      TypeStructure("Byte",Nil)                 -> RType(PrimitiveType.Scala_Byte),
-      TypeStructure("scala.Byte",Nil)           -> RType(PrimitiveType.Scala_Byte),
-      TypeStructure("java.lang.Byte",Nil)       -> RType(PrimitiveType.Java_Byte),
-      TypeStructure("char",Nil)                 -> RType(PrimitiveType.Scala_Char),
-      TypeStructure("Char",Nil)                 -> RType(PrimitiveType.Scala_Char),
-      TypeStructure("scala.Char",Nil)           -> RType(PrimitiveType.Scala_Char),
-      TypeStructure("java.lang.Character",Nil)  -> RType(PrimitiveType.Java_Char),
-      TypeStructure("double",Nil)               -> RType(PrimitiveType.Scala_Double),
-      TypeStructure("Double",Nil)               -> RType(PrimitiveType.Scala_Double),
-      TypeStructure("scala.Double",Nil)         -> RType(PrimitiveType.Scala_Double),
-      TypeStructure("java.lang.Double",Nil)     -> RType(PrimitiveType.Java_Double),
-      TypeStructure("float",Nil)                -> RType(PrimitiveType.Scala_Float),
-      TypeStructure("Float",Nil)                -> RType(PrimitiveType.Scala_Float),
-      TypeStructure("scala.Float",Nil)          -> RType(PrimitiveType.Scala_Float),
-      TypeStructure("java.lang.Float",Nil)      -> RType(PrimitiveType.Java_Float),
-      TypeStructure("int",Nil)                  -> RType(PrimitiveType.Scala_Int),
-      TypeStructure("Int",Nil)                  -> RType(PrimitiveType.Scala_Int),
-      TypeStructure("scala.Int",Nil)            -> RType(PrimitiveType.Scala_Int),
-      TypeStructure("java.lang.Integer",Nil)    -> RType(PrimitiveType.Java_Int),
-      TypeStructure("long",Nil)                 -> RType(PrimitiveType.Scala_Long),
-      TypeStructure("Long",Nil)                 -> RType(PrimitiveType.Scala_Long),
-      TypeStructure("scala.Long",Nil)           -> RType(PrimitiveType.Scala_Long),
-      TypeStructure("java.lang.Long",Nil)       -> RType(PrimitiveType.Java_Long),
-      TypeStructure("short",Nil)                -> RType(PrimitiveType.Scala_Short),
-      TypeStructure("Short",Nil)                -> RType(PrimitiveType.Scala_Short),
-      TypeStructure("scala.Short",Nil)          -> RType(PrimitiveType.Scala_Short),
-      TypeStructure("java.lang.Short",Nil)      -> RType(PrimitiveType.Java_Short),
-      TypeStructure("java.lang.String",Nil)     -> RType(PrimitiveType.Scala_String),
-      TypeStructure("java.lang.Object",Nil)     -> RType(PrimitiveType.Java_Object),
-      TypeStructure("java.lang.Number",Nil)     -> RType(PrimitiveType.Java_Number)
+      TypeStructure("boolean",Nil)              -> PrimitiveType.Scala_Boolean,
+      TypeStructure("Boolean",Nil)              -> PrimitiveType.Scala_Boolean,
+      TypeStructure("scala.Boolean",Nil)        -> PrimitiveType.Scala_Boolean,
+      TypeStructure("java.lang.Boolean",Nil)    -> PrimitiveType.Java_Boolean,
+      TypeStructure("byte",Nil)                 -> PrimitiveType.Scala_Byte,
+      TypeStructure("Byte",Nil)                 -> PrimitiveType.Scala_Byte,
+      TypeStructure("scala.Byte",Nil)           -> PrimitiveType.Scala_Byte,
+      TypeStructure("java.lang.Byte",Nil)       -> PrimitiveType.Java_Byte,
+      TypeStructure("char",Nil)                 -> PrimitiveType.Scala_Char,
+      TypeStructure("Char",Nil)                 -> PrimitiveType.Scala_Char,
+      TypeStructure("scala.Char",Nil)           -> PrimitiveType.Scala_Char,
+      TypeStructure("java.lang.Character",Nil)  -> PrimitiveType.Java_Char,
+      TypeStructure("double",Nil)               -> PrimitiveType.Scala_Double,
+      TypeStructure("Double",Nil)               -> PrimitiveType.Scala_Double,
+      TypeStructure("scala.Double",Nil)         -> PrimitiveType.Scala_Double,
+      TypeStructure("java.lang.Double",Nil)     -> PrimitiveType.Java_Double,
+      TypeStructure("float",Nil)                -> PrimitiveType.Scala_Float,
+      TypeStructure("Float",Nil)                -> PrimitiveType.Scala_Float,
+      TypeStructure("scala.Float",Nil)          -> PrimitiveType.Scala_Float,
+      TypeStructure("java.lang.Float",Nil)      -> PrimitiveType.Java_Float,
+      TypeStructure("int",Nil)                  -> PrimitiveType.Scala_Int,
+      TypeStructure("Int",Nil)                  -> PrimitiveType.Scala_Int,
+      TypeStructure("scala.Int",Nil)            -> PrimitiveType.Scala_Int,
+      TypeStructure("java.lang.Integer",Nil)    -> PrimitiveType.Java_Int,
+      TypeStructure("long",Nil)                 -> PrimitiveType.Scala_Long,
+      TypeStructure("Long",Nil)                 -> PrimitiveType.Scala_Long,
+      TypeStructure("scala.Long",Nil)           -> PrimitiveType.Scala_Long,
+      TypeStructure("java.lang.Long",Nil)       -> PrimitiveType.Java_Long,
+      TypeStructure("short",Nil)                -> PrimitiveType.Scala_Short,
+      TypeStructure("Short",Nil)                -> PrimitiveType.Scala_Short,
+      TypeStructure("scala.Short",Nil)          -> PrimitiveType.Scala_Short,
+      TypeStructure("java.lang.Short",Nil)      -> PrimitiveType.Java_Short,
+      TypeStructure("java.lang.String",Nil)     -> PrimitiveType.Scala_String,
+      TypeStructure("java.lang.Object",Nil)     -> PrimitiveType.Java_Object,
+      TypeStructure("java.lang.Number",Nil)     -> PrimitiveType.Java_Number
     ).asJava)
 
-  /** A union type is resolved to AnyRef, which isn't helpful.  This is a marker class name to differentiate a union type */
-  val UNION_CLASS = "__union_type__"
-
-  /** An intersection type is resolved to AnyRef, which isn't helpful.  This is a marker class name to differentiate a union type */
-  val INTERSECTION_CLASS = "__intersection_type__"
-
-  /** Java Arrays devolve into java.util.List, which isn't quite the same thing, so we created this placeholder */
-  val JAVA_ARRAY_CLASS = "__array__"
-
-  /** Any is an abstract class in Scala, so Class.forName() won't work.  Need this marker. */
-  val ANY_CLASS = "scala.Any"
 
   private def unpackTypeStructure(ps: TypeStructure): RType =
     ps match {
       case TypeStructure(ANY_CLASS, Nil) => 
-        RType(PrimitiveType.Scala_Any)
+        PrimitiveType.Scala_Any
       case TypeStructure(className, Nil) => 
         reflectOnClass(Class.forName(className))
       case TypeStructure(UNION_CLASS, subparams) =>
         val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
-        RType(UnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1)))
+        UnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1))
       case TypeStructure(INTERSECTION_CLASS, subparams) =>
         val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
-        RType(IntersectionInfo(INTERSECTION_CLASS, resolvedParams(0), resolvedParams(1)))
+        IntersectionInfo(INTERSECTION_CLASS, resolvedParams(0), resolvedParams(1))
       case TypeStructure(className, subparams) =>
         val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
         reflectOnClassWithParams(Class.forName(className), resolvedParams)
     }
-
-
-class ReflectException(msg: String) extends Exception(msg)

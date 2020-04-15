@@ -11,8 +11,7 @@ class Options extends munit.FunSuite:
     val result = Reflector.reflectOn[NormalOption]
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.NormalOption):
     |   fields:
-    |      (0) a: Option of scala.Int
-    |   value class: false""".stripMargin)
+    |      (0) a: Option of scala.Int""".stripMargin)
   }
 
   test("Java optional field") {
@@ -26,8 +25,7 @@ class Options extends munit.FunSuite:
     val result = Reflector.reflectOn[NestedOption]
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.NestedOption):
     |   fields:
-    |      (0) a: Option of Option of scala.Int
-    |   value class: false""".stripMargin)
+    |      (0) a: Option of Option of scala.Int""".stripMargin)
   }
 
   test("Java nested optional field") {
@@ -39,43 +37,20 @@ class Options extends munit.FunSuite:
 
   test("Scala optional parameterized field") {
     val result = Reflector.reflectOn[ParamOption[Char]]
-    println("<< pending >>")
-    // val result = r match {
-    //   case ScalaClassInfo(
-    //     "co.blocke.dotty_reflection.ParamOption",
-    //     _,
-    //     Nil,
-    //     List(
-    //       ScalaFieldInfo(0,"a",ScalaOptionInfo("scala.Option",_,Scala_Char),_,_,None,None)
-    //     ),
-    //     List("T"),
-    //     _,
-    //     flase
-    //     ) => true
-    //   case _ => false
-    // }
-    // assert(result)
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.ParamOption[T]):
+    |   fields:
+    |      (0) a: Option of scala.Char""".stripMargin)
   }
 
   test("Java optional parameterized field") {
     val result = Reflector.reflectOn[co.blocke.reflect.JavaOption3[Char]]
-    println("<< pending >>")
-    // val result = r match {
-    //   case JavaClassInfo(
-    //     "co.blocke.reflect.JavaOption3",
-    //     _,
-    //     List(
-    //       JavaFieldInfo(0, "fld", JavaOptionalInfo("java.util.Optional", _,Scala_Char),_,_,_,None)
-    //     ),
-    //     List("T"),
-    //     _) => true
-    //   case _ => false
-    // }
-    // assert(result)
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaOption3[T]):
+    |   fields:
+    |      (0) fld: Optional of scala.Char""".stripMargin)
   }
 
   test("Option assignments in union type") {
-    val r = Reflector.reflectOn[UnionHavingOption].concreteType.asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[ScalaClassInfo]
     assert(
       r.constructWith[UnionHavingOption](List(None,Optional.empty())) == UnionHavingOption(None,Optional.empty())
     )
@@ -90,12 +65,11 @@ class Options extends munit.FunSuite:
     |   fields:
     |      (0) a: Option of Union:
     |         left--scala.Boolean
-    |         right--java.lang.String
-    |   value class: false""".stripMargin)
+    |         right--java.lang.String""".stripMargin)
   }
 
   test("Option of a union assignment") {    
-    val r = Reflector.reflectOn[OptionHavingUnion].concreteType.asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[ScalaClassInfo]
     assert(
       r.constructWith[OptionHavingUnion](List(None)) == OptionHavingUnion(None)
     )

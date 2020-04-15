@@ -13,12 +13,11 @@ class Eithers extends munit.FunSuite:
     |   fields:
     |      (0) a: Either:
     |         left--scala.Int
-    |         right--java.lang.String
-    |   value class: false""".stripMargin)
+    |         right--java.lang.String""".stripMargin)
   }
 
   test("Scala simple Either field assignment") {
-    val r = Reflector.reflectOn[BothSides].concreteType.asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[BothSides].asInstanceOf[ScalaClassInfo]
     assert(
       r.constructWith[BothSides](List(Right("Foom"))) == BothSides(Right("Foom"))
     )
@@ -33,12 +32,11 @@ class Eithers extends munit.FunSuite:
     |   fields:
     |      (0) a: Either:
     |         left--scala.Int
-    |         right--Option of java.lang.String
-    |   value class: false""".stripMargin)
+    |         right--Option of java.lang.String""".stripMargin)
   }
 
   test("Scala Either with Option assignment") {
-    val r = Reflector.reflectOn[BothSidesWithOption].concreteType.asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[BothSidesWithOption].asInstanceOf[ScalaClassInfo]
     assert(
       r.constructWith[BothSidesWithOption](List(Right(None))) == BothSidesWithOption(Right(None))
     )
@@ -55,16 +53,26 @@ class Eithers extends munit.FunSuite:
     |         left--scala.Int
     |         right--Union:
     |            left--java.lang.String
-    |            right--scala.Boolean
-    |   value class: false""".stripMargin)
+    |            right--scala.Boolean""".stripMargin)
   }
 
   test("Scala Either with Union type assignment") {
-    val r = Reflector.reflectOn[BothSidesWithUnion].concreteType.asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[BothSidesWithUnion].asInstanceOf[ScalaClassInfo]
     assert(
       r.constructWith[BothSidesWithUnion](List(Right("foo"))) == BothSidesWithUnion(Right("foo"))
     )
     assert(
       r.constructWith[BothSidesWithUnion](List(Right(true))) == BothSidesWithUnion(Right(true))
     )
+  }
+
+  test("Scala Either having a parameterized type") {
+    val result = Reflector.reflectOn[BothSidesParam[Double]]
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.BothSidesParam[Z]):
+    |   fields:
+    |      (0) a: Either:
+    |         left--scala.Int
+    |         right--Option of ScalaClassInfo(co.blocke.dotty_reflection.ParamOption[T]):
+    |            fields:
+    |               (0) a: Option of scala.Double""".stripMargin)
   }

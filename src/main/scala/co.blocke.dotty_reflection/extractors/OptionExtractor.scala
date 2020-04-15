@@ -10,18 +10,23 @@ case class OptionExtractor() extends TypeInfoExtractor[ScalaOptionInfo]:
 
   def matches(clazz: Class[_]): Boolean = clazz =:= OptionClazz
 
-  def emptyInfo(clazz: Class[_]): ScalaOptionInfo = 
+  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): ScalaOptionInfo =
+    val optionParamSymName = clazz.getTypeParameters.toList.head.getName 
+    val optionParamType = paramMap.getOrElse(
+      optionParamSymName.asInstanceOf[TypeSymbol], 
+      TypeSymbolInfo(optionParamSymName)
+      )
     ScalaOptionInfo(
       clazz.getName, 
-      clazz, 
-      RType(clazz.getTypeParameters.toList.head.getName.asInstanceOf[TypeSymbol])
+      clazz,
+      optionParamType
       )
 
-  def extractInfo(reflect: Reflection)(
+  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): ConcreteType =
+    typeInspector: ScalaClassInspector): RType =
 
-    ScalaOptionInfo(className, clazz, typeInspector.inspectType(reflect)(tob.head.asInstanceOf[reflect.TypeRef]))
+    ScalaOptionInfo(className, clazz, typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))

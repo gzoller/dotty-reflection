@@ -18,6 +18,5 @@ class Enums extends munit.FunSuite:
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.Birthday):
     |   fields:
     |      (0) m: ScalaEnumInfo with values [Jan,Feb,Mar]
-    |      (1) d: ScalaEnumerationInfo with values [Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday]
-    |   value class: false""".stripMargin)
+    |      (1) d: ScalaEnumerationInfo with values [Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday]""".stripMargin)
   }
