@@ -11,8 +11,8 @@ class Parameters extends munit.FunSuite:
     val result = Reflector.reflectOn[DuoTypes[Int,Float]].asInstanceOf[ScalaClassInfo]
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |   fields:
-    |      (0) a: scala.Int
-    |      (1) b: scala.Float""".stripMargin)
+    |      (0)[Q] a: scala.Int
+    |      (1)[U] b: scala.Float""".stripMargin)
   }
 
   test("0-level Option substitution") {
@@ -104,8 +104,8 @@ class Parameters extends munit.FunSuite:
     |   fields:
     |      (0) a: ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |         fields:
-    |            (0) a: scala.Int
-    |            (1) b: scala.Float""".stripMargin)
+    |            (0)[Q] a: scala.Int
+    |            (1)[U] b: scala.Float""".stripMargin)
   }
 
   test("2nd level param substitution - Option") {
@@ -114,8 +114,8 @@ class Parameters extends munit.FunSuite:
     |   fields:
     |      (0) a: Option of ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |         fields:
-    |            (0) a: java.lang.String
-    |            (1) b: scala.Boolean""".stripMargin)
+    |            (0)[Q] a: java.lang.String
+    |            (1)[U] b: scala.Boolean""".stripMargin)
   }
 
   test("3rd level param substitution - Option") {
@@ -124,8 +124,8 @@ class Parameters extends munit.FunSuite:
     |   fields:
     |      (0) a: Option of Option of ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |         fields:
-    |            (0) a: java.lang.String
-    |            (1) b: scala.Boolean""".stripMargin)
+    |            (0)[Q] a: java.lang.String
+    |            (1)[U] b: scala.Boolean""".stripMargin)
   }
 
   test("2nd and 3rd level param substitution - Either") {
@@ -135,12 +135,12 @@ class Parameters extends munit.FunSuite:
     |      (0) a: Either:
     |         left--ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |            fields:
-    |               (0) a: scala.Int
-    |               (1) b: scala.Float
+    |               (0)[Q] a: scala.Int
+    |               (1)[U] b: scala.Float
     |         right--Option of ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |            fields:
-    |               (0) a: java.lang.String
-    |               (1) b: scala.Boolean""".stripMargin)
+    |               (0)[Q] a: java.lang.String
+    |               (1)[U] b: scala.Boolean""".stripMargin)
   }
 
   test("Opaque type alias type substitution (rare)") {
@@ -149,8 +149,8 @@ class Parameters extends munit.FunSuite:
     |   fields:
     |      (0) a: alias mystery defined as ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |         fields:
-    |            (0) a: scala.Byte
-    |            (1) b: scala.Short""".stripMargin)
+    |            (0)[Q] a: scala.Byte
+    |            (1)[U] b: scala.Short""".stripMargin)
   }
 
   test("2nd level subsitution in a class field") {
@@ -159,11 +159,11 @@ class Parameters extends munit.FunSuite:
     |   fields:
     |      (0) a: ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |         fields:
-    |            (0) a: scala.Int
-    |            (1) b: ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
+    |            (0)[Q] a: scala.Int
+    |            (1)[U] b: ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |               fields:
-    |                  (0) a: scala.Byte
-    |                  (1) b: scala.Short""".stripMargin)
+    |                  (0)[Q] a: scala.Byte
+    |                  (1)[U] b: scala.Short""".stripMargin)
   }
 
   test("List and Map subsitituion") {
@@ -172,14 +172,14 @@ class Parameters extends munit.FunSuite:
     |   fields:
     |      (0) a: SeqLikeInfo(scala.collection.immutable.List[A]): ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |         fields:
-    |            (0) a: scala.Int
-    |            (1) b: scala.Byte
+    |            (0)[Q] a: scala.Int
+    |            (1)[U] b: scala.Byte
     |      (1) b: MapLikeInfo(scala.collection.immutable.Map[K,V]):
     |         java.lang.String
     |         ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |            fields:
-    |               (0) a: scala.Float
-    |               (1) b: scala.Short""".stripMargin)
+    |               (0)[Q] a: scala.Float
+    |               (1)[U] b: scala.Short""".stripMargin)
   }
 
   test("Try type substitution") {
@@ -188,8 +188,8 @@ class Parameters extends munit.FunSuite:
     |   fields:
     |      (0) a: Try of ScalaClassInfo(co.blocke.dotty_reflection.DuoTypes[Q,U]):
     |         fields:
-    |            (0) a: java.lang.String
-    |            (1) b: scala.Int""".stripMargin)
+    |            (0)[Q] a: java.lang.String
+    |            (1)[U] b: scala.Int""".stripMargin)
   }
 
   test("Trait type substitution") {
@@ -217,7 +217,7 @@ class Parameters extends munit.FunSuite:
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.Envelope[T,U]):
     |   fields:
     |      (0) id: java.lang.String
-    |      (1) body: ScalaClassInfo(co.blocke.dotty_reflection.FancyBody):
+    |      (1)[T] body: ScalaClassInfo(co.blocke.dotty_reflection.FancyBody):
     |         fields:
     |            (0) message: java.lang.String
     |   type members:

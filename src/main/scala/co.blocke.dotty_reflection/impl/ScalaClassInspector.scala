@@ -9,7 +9,7 @@ import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
 
 
-class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RType]) extends TastyInspector:
+class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RType]) extends TastyInspector with ParamGraph:
   import Clazzes._
 
   var inspected: RType = UnknownInfo(clazz)
@@ -59,6 +59,7 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
         Some( ObjectInfo(vd.symbol.fullName, Class.forName(vd.symbol.fullName)) )
 
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
+
         val clazz = Class.forName(className)
         val constructor = t.constructor
 
@@ -67,50 +68,63 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
           case TypeDef(tpeSym,_) => tpeSym.asInstanceOf[TypeSymbol]
         })
 
-        val inspected: RType = {
-        if(t.symbol.flags.is(reflect.Flags.Trait)) then
-          // === Trait ===
-          if t.symbol.flags.is(reflect.Flags.Sealed) then
-            SealedTraitInfo(
-              className, 
-              clazz, 
-              typeParams, 
-              t.symbol.children.map(c => Reflector.reflectOnClass(Class.forName(c.fullName))))
+        val inspected: RType =
+          if(t.symbol.flags.is(reflect.Flags.Trait)) then
+            // === Trait ===
+            if t.symbol.flags.is(reflect.Flags.Sealed) then
+              SealedTraitInfo(
+                className, 
+                clazz, 
+                typeParams, 
+                t.symbol.children.map(c => Reflector.reflectOnClass(Class.forName(c.fullName))))
+            else
+              val actualTypeParams = typeParams.map(_ match {
+                case p if paramMap.contains(p) => paramMap(p)
+                case p => TypeSymbolInfo(p.asInstanceOf[String])
+              })
+              TraitInfo(className, clazz, typeParams, actualTypeParams)
           else
-            val actualTypeParams = typeParams.map(_ match {
-              case p if paramMap.contains(p) => paramMap(p)
-              case p => TypeSymbolInfo(p.asInstanceOf[String])
-            })
-            TraitInfo(className, clazz, typeParams, actualTypeParams)
-        else
-          // === Scala Class (case or non-case) ===
-          val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
-          val paramz = constructor.paramss
-          val members = t.body.collect {
-              case vd: reflect.ValDef => vd
-            }.map(f => (f.name->f)).toMap
+            // === Scala Class (case or non-case) ===
+            val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
+            val paramz = constructor.paramss
+            val members = t.body.collect {
+                case vd: reflect.ValDef => vd
+              }.map(f => (f.name->f)).toMap
 
-          // Find any type members matching a class type parameter
-          val typeMembers = t.body.collect {
-            case TypeDef(typeName, dotty.tools.dotc.ast.Trees.Ident(typeSym)) if typeParams.contains(typeSym.toString.asInstanceOf[TypeSymbol]) => 
-              TypeMemberInfo(
-                typeName,
-                paramMap.getOrElse(typeSym.toString.asInstanceOf[TypeSymbol],
-                  TypeSymbolInfo(typeSym.toString)
+            // Find any type members matching a class type parameter
+            val typeMembers = t.body.collect {
+              case TypeDef(typeName, dotty.tools.dotc.ast.Trees.Ident(typeSym)) if typeParams.contains(typeSym.toString.asInstanceOf[TypeSymbol]) => 
+                TypeMemberInfo(
+                  typeName,
+                  paramMap.getOrElse(typeSym.toString.asInstanceOf[TypeSymbol],
+                    TypeSymbolInfo(typeSym.toString)
+                  )
                 )
-              )
-          }
+            }
 
-          val fields = paramz.head.zipWithIndex.map{ (paramValDef, i) =>
-            val valDef = members(paramValDef.name) // we use the members here because match types aren't resolved in paramValDef but are resolved in members
-            val fieldName = valDef.name
-            if(!isCaseClass)
-              scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
-                throw new ReflectException(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
-              )
-            // Field annotations (stored internal 'val' definitions in class)
-            val annoSymbol = members.get(fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
-            val fieldAnnos = annoSymbol.map{ a => 
+            val fields = paramz.head.zipWithIndex.map{ (paramValDef, i) =>
+              val valDef = members(paramValDef.name) // we use the members here because match types aren't resolved in paramValDef but are resolved in members
+              val fieldName = valDef.name
+              if(!isCaseClass)
+                scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
+                  throw new ReflectException(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
+                )
+              // Field annotations (stored internal 'val' definitions in class)
+              val annoSymbol = members.get(fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
+              val fieldAnnos = annoSymbol.map{ a => 
+                val reflect.Apply(_, params) = a
+                val annoName = a.symbol.signature.resultSig
+                (annoName,(params collect {
+                  case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
+                }).toMap)
+              }.toMap
+
+              inspectField(reflect, paramMap)(valDef, i, fieldAnnos, className) 
+            }
+
+            // Class annotations
+            val annoSymbol = t.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
+            val annos = annoSymbol.map{ a => 
               val reflect.Apply(_, params) = a
               val annoName = a.symbol.signature.resultSig
               (annoName,(params collect {
@@ -118,25 +132,24 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
               }).toMap)
             }.toMap
 
-            inspectField(reflect, paramMap)(valDef, i, fieldAnnos, className) 
-          }
+            val isValueClass = t.parents.collectFirst {
+              case Apply(Select(New(x),_),_) => x 
+            }.map(_.symbol.name == "AnyVal").getOrElse(false)
 
-          // Class annotations
-          val annoSymbol = t.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
-          val annos = annoSymbol.map{ a => 
-            val reflect.Apply(_, params) = a
-            val annoName = a.symbol.signature.resultSig
-            (annoName,(params collect {
-              case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
-            }).toMap)
-          }.toMap
+            val classInfo = ScalaClassInfo(className, clazz, typeParams, typeMembers, fields, annos, isValueClass)
 
-          val isValueClass = t.parents.collectFirst {
-            case Apply(Select(New(x),_),_) => x 
-          }.map(_.symbol.name == "AnyVal").getOrElse(false)
+            // Now figure out type parameter graph
+            val parents = t.parents.map {
+              case r: Tree => r match {
+                case a: Apply => 
+                  retister(reflect, paramMap)(classInfo, a.tpe.asInstanceOf[reflect.TypeRef])
+                case a: dotty.tools.dotc.ast.Trees.AppliedTypeTree[_] => 
+                  retister(reflect, paramMap)(classInfo, a.tpe.asInstanceOf[reflect.TypeRef])
+                case _ => // don't care about others
+              } 
+            }
+            classInfo
 
-          ScalaClassInfo(className, clazz, typeParams, typeMembers, fields, annos, isValueClass)
-        }
         
         Some(inspected)
 
@@ -174,7 +187,13 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
     val valueAccessor = scala.util.Try(clazz.getDeclaredMethod(valDef.name))
       .getOrElse(throw new ReflectException(s"Problem with class $className, field ${valDef.name}: All non-case class constructor fields must be vals"))
 
-    ScalaFieldInfo(index, valDef.name, fieldType, annos, valueAccessor, defaultAccessor)
+
+    // Figure out the original type symbols, i.e. T, (if any)
+    val valTypeRef = valDef.tpt.tpe.asInstanceOf[reflect.TypeRef]
+    val isTypeParam = valTypeRef.typeSymbol.flags.is(Flags.Param)
+    val originalTypeSymbol = if isTypeParam then Some(valTypeRef.name.asInstanceOf[TypeSymbol]) else None
+  
+    ScalaFieldInfo(index, valDef.name, fieldType, annos, valueAccessor, defaultAccessor, originalTypeSymbol)
 
 
   def inspectType(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(typeRef: reflect.TypeRef): RType = 

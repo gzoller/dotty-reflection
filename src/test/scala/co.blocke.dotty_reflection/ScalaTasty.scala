@@ -51,8 +51,8 @@ class ScalaTasty extends munit.FunSuite:
     val result = Reflector.reflectOnClass(wp.getClass) 
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.WithParam[T,U]):
     |   fields:
-    |      (0) one: T
-    |      (1) two: U""".stripMargin)
+    |      (0)[T] one: T
+    |      (1)[U] two: U""".stripMargin)
   }
 
   test("handle opaque type alias") {

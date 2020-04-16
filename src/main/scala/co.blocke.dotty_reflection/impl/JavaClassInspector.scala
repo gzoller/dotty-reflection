@@ -50,7 +50,7 @@ object JavaClassInspector:
           val fieldName = s"${setter.getName.charAt(3).toLower}${setter.getName.drop(4)}"
           val fieldType = inspectType(clazz.getTypeParameters.toList, getter.getGenericReturnType, paramMap)
 
-          JavaFieldInfo(0,fieldName, fieldType, fieldAnnos, getter, setter)
+          JavaFieldInfo(0,fieldName, fieldType, fieldAnnos, getter, setter, None)
       }.toList.filterNot(_.annotations.contains("co.blocke.dotty_reflection.Ignore")).zipWithIndex.map{
         (f,i) => f.copy(index = i)
       }
