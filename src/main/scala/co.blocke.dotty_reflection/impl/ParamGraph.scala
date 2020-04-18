@@ -46,8 +46,14 @@ object ParamGraphRegistry:
           val wired = x.map { grandparent =>
             val grandpa2parentMap = graph(grandparent)(p)
             val parent2childMap = graph(p)(child)
-            (grandparent, grandpa2parentMap.keySet.collect {
-              case s if parent2childMap.contains(grandpa2parentMap(s)) => s -> parent2childMap(grandpa2parentMap(s))
+            // println(s">> Register ${child.getSimpleName} with parent ${p.getSimpleName} having grandpa ${grandparent.getSimpleName}")
+            // println(s"grandpa2parentMap = $grandpa2parentMap")
+            // println(s"parent2childMap   = $parent2childMap")
+            // println("---")
+            (grandparent, parent2childMap.keySet.collect {
+              case s if grandpa2parentMap.contains(parent2childMap(s)) => s -> grandpa2parentMap(parent2childMap(s))
+              // (grandparent, grandpa2parentMap.keySet.collect {
+              //   case s if parent2childMap.contains(grandpa2parentMap(s)) => s -> parent2childMap(grandpa2parentMap(s))
             }.toMap)
           }
           add(wired.toList, child)
@@ -55,10 +61,17 @@ object ParamGraphRegistry:
       }
     }
 
-  // def resolveTypesFor(parent: RType, child: RType): Option[List[RType]] =
-  //   graph.get(parent).map( _.get(child).map{ parmMap =>
-  //     child.orderedTypeParameters
-  //   })
+  def resolveTypesFor(parent: TraitInfo, child: RType): Option[List[RType]] =
+    graph.get(parent.infoClass) match { 
+      case Some(children) if children.contains(child.infoClass) =>
+        Some(child.orderedTypeParameters.map( param => children(child.infoClass).get(param) match {
+          case Some(dadParam) => 
+            parent.actualParameterTypes( parent.orderedTypeParameters.indexOf(dadParam) )
+          case None => 
+            TypeSymbolInfo(param.toString) // mapping not found--take your best guess!
+        }))
+      case _ => None
+    }
 
 
   def show: String = 
@@ -90,7 +103,8 @@ trait ParamGraph:
   private def registerTypeMap(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(child: RType, parents: List[RType]) =
     val candidates = parents.collect {
       case parent: TraitInfo if parent.orderedTypeParameters.nonEmpty => 
-        val traitParamMap = parent.orderedTypeParameters.zip(parent.actualParameterTypes).collect{case (sym,v:TypeSymbolInfo) => (sym, v.name.asInstanceOf[TypeSymbol]) }.toMap
+        val traitParamMap = parent.orderedTypeParameters.zip(parent.actualParameterTypes).collect{case (sym,v:TypeSymbolInfo) => (v.name.asInstanceOf[TypeSymbol], sym) }.toMap
+        // val traitParamMap = parent.orderedTypeParameters.zip(parent.actualParameterTypes).collect{case (sym,v:TypeSymbolInfo) => (sym, v.name.asInstanceOf[TypeSymbol]) }.toMap
         (parent.infoClass, traitParamMap)
       }.toList
     ParamGraphRegistry.add( candidates, child.infoClass )

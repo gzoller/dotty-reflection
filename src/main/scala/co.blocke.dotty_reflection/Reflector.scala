@@ -3,6 +3,7 @@ package co.blocke.dotty_reflection
 import impl.ScalaClassInspector
 import info._ 
 
+import impl._
 import scala.tasty.inspector._
 import scala.reflect.ClassTag
 import scala.jdk.CollectionConverters._
@@ -40,7 +41,13 @@ object Reflector:
     }
 
 
-  def reflectOnClassInTermsOf(class: Class[_], inTermsOf: RType) = ???
+  def reflectOnClassInTermsOf(clazz: Class[_], inTermsOf: RType) = 
+    inTermsOf match {
+      case traitInfo: TraitInfo =>
+        ParamGraphRegistry.resolveTypesFor(traitInfo, reflectOnClass(clazz)).map( paramList => reflectOnClassWithParams(clazz, paramList) )
+          .orElse(throw new ReflectException(s"Can't resolve parentage relationship between ${inTermsOf.name} and ${clazz}"))
+      case _ => throw new ReflectException("Currently, in-terms-of reflection works only for trait parents of a class. (inTermsOf is not TraitInfo)")
+    }
   
 
   /** Construct a fully-parameterized RType if the class' type params are known */

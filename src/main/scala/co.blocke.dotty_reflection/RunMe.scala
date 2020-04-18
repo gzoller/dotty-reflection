@@ -14,8 +14,16 @@ object RunMe extends App:
 
   // println(Reflector.reflectOn[Person[Int]])
 
-  println(Reflector.reflectOn[C[Int,Boolean]])
+  // println(Reflector.reflectOn[C[Int,Boolean]])
 
-  // println(impl.ParamGraphRegistry.show)
-  // println("----")
-  // println(impl.ParamGraphRegistry.child2dadAssoc)
+  val t = Reflector.reflectOn[B[Boolean]].asInstanceOf[info.TraitInfo]
+  println(t)
+
+  val c = Reflector.reflectOnClass(Class.forName("co.blocke.dotty_reflection.C"))
+
+  println(impl.ParamGraphRegistry.show)
+  println("-----")
+  println(impl.ParamGraphRegistry.resolveTypesFor(t,c))
+  println("\n\n================================\n\n")
+
+  println(Reflector.reflectOnClassInTermsOf(Class.forName("co.blocke.dotty_reflection.C"), t))
