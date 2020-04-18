@@ -38,6 +38,9 @@ object Reflector:
       tc.inspect("", List(className))
       tc.inspected
     }
+
+
+  def reflectOnClassInTermsOf(class: Class[_], inTermsOf: RType) = ???
   
 
   /** Construct a fully-parameterized RType if the class' type params are known */

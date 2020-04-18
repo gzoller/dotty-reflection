@@ -16,5 +16,4 @@ val JAVA_ARRAY_CLASS = "__array__"
 /** Any is an abstract class in Scala, so Class.forName() won't work.  Need this marker. */
 val ANY_CLASS = "scala.Any"
 
-
 class ReflectException(msg: String) extends Exception(msg)

@@ -82,7 +82,13 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
                 case p if paramMap.contains(p) => paramMap(p)
                 case p => TypeSymbolInfo(p.asInstanceOf[String])
               })
-              TraitInfo(className, clazz, typeParams, actualTypeParams)
+              val traitInfo = TraitInfo(className, clazz, typeParams, actualTypeParams)
+
+              // Now figure out type parameter graph
+              registerParents(reflect, paramMap)(t, traitInfo)
+
+              traitInfo
+
           else
             // === Scala Class (case or non-case) ===
             val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
@@ -139,15 +145,8 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
             val classInfo = ScalaClassInfo(className, clazz, typeParams, typeMembers, fields, annos, isValueClass)
 
             // Now figure out type parameter graph
-            val parents = t.parents.map {
-              case r: Tree => r match {
-                case a: Apply => 
-                  retister(reflect, paramMap)(classInfo, a.tpe.asInstanceOf[reflect.TypeRef])
-                case a: dotty.tools.dotc.ast.Trees.AppliedTypeTree[_] => 
-                  retister(reflect, paramMap)(classInfo, a.tpe.asInstanceOf[reflect.TypeRef])
-                case _ => // don't care about others
-              } 
-            }
+            registerParents(reflect, paramMap)(t, classInfo)
+
             classInfo
 
         
