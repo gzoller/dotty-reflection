@@ -27,7 +27,7 @@ case class TryExtractor() extends TypeInfoExtractor[TryInfo]:
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): RType =
+    typeInspector: ScalaClassInspectorLike): RType =
 
       TryInfo(
         className,

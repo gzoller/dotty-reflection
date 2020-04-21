@@ -23,7 +23,7 @@ case class EitherExtractor() extends TypeInfoExtractor[EitherInfo]:
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): RType =
+    typeInspector: ScalaClassInspectorLike): RType =
       
       EitherInfo(
         className,

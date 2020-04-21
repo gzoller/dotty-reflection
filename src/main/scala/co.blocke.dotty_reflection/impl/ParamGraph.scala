@@ -16,7 +16,6 @@ object ParamCache:
   private val child2dadAssoc = MMap.empty[Class[_], MSet[Class[_]]]
 
   def add( parent: Class[_], child: Class[_], maps: Map[TypeSymbol, SymPath]): Unit =
-    println("Add: "+parent+" :: "+child)
     if( !pcache.contains(parent) )
       pcache.put(parent, MMap(child -> maps))
     else
@@ -39,9 +38,7 @@ object ParamCache:
           val grandMap = parent2childMap.keySet.collect {
             case s if grandpa2parentMap.contains(parent2childMap(s).parentSym) => s -> { grandpa2parentMap(parent2childMap(s).parentSym) match {
               case n: PathNode => n.copy( childSym = s )
-              case n: PathBranch => 
-                println("HERE!")
-                fixBranch(n, s)
+              case n: PathBranch => fixBranch(n, s)
             }}
           }.toMap
           if grandMap.nonEmpty then
@@ -60,21 +57,17 @@ object ParamCache:
 
 
   def resolveTypesFor(parent: TraitInfo, child: RType): Option[List[RType]] =
-    println(pcache)
-    pcache.get(parent.infoClass) match { 
-      case Some(children) if children.contains(child.infoClass) =>
-        Some(child.orderedTypeParameters.map( param => children(child.infoClass).get(param) match {
-          case Some(path) => 
-            path.resolve(parent)
-          case None => 
-            TypeSymbolInfo(param.toString) // mapping not found--take your best guess!
-        }))
-      case _ => None
-    }
+    val foundChild: Option[Map[TypeSymbol, SymPath]] = pcache.get(parent.infoClass).flatMap(_.get(child.infoClass))
+    foundChild.map( mappings => 
+      child.orderedTypeParameters.map( param => mappings.get(param).match {
+        case Some(path) => path.resolve(parent)
+        case _ => TypeSymbolInfo(param.toString) // mapping not found--take your best guess!
+      })
+    )
 
 
 trait ParamGraph:
-  self: ScalaClassInspector =>
+  self: ScalaClassInspectorLike =>
 
   protected def registerParents(reflect: Reflection)(t: reflect.ClassDef, classInfo: RType): Unit = //ScalaClassInfo) =
     import reflect.{_, given _}

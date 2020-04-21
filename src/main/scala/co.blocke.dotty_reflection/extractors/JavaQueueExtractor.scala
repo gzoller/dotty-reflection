@@ -28,7 +28,7 @@ case class JavaQueueExtractor() extends TypeInfoExtractor[JavaQueueInfo]:
       tob: List[reflect.TypeOrBounds], 
       className: String, 
       clazz: Class[_], 
-      typeInspector: ScalaClassInspector
+      typeInspector: ScalaClassInspectorLike
     ): RType =
 
     JavaQueueInfo(

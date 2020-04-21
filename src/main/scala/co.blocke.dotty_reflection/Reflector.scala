@@ -44,7 +44,13 @@ object Reflector:
   def reflectOnClassInTermsOf(clazz: Class[_], inTermsOf: RType): RType = 
     inTermsOf match {
       case traitInfo: TraitInfo =>
-        ParamCache.resolveTypesFor(traitInfo, reflectOnClass(clazz)).map( paramList => reflectOnClassWithParams(clazz, paramList) )
+        val className = clazz.getName
+        val inspectedClazz = Option(cache.get(TypeStructure(className,Nil))).getOrElse{ 
+          val tc = new ScalaClassInspectorLite(clazz)
+          tc.inspect("", List(className))
+          tc.inspected
+        }
+        ParamCache.resolveTypesFor(traitInfo, inspectedClazz).map( paramList => reflectOnClassWithParams(clazz, paramList) )
           .getOrElse(throw new ReflectException(s"Can't resolve parentage relationship between ${inTermsOf.name} and ${clazz}"))
       case _ => throw new ReflectException("Currently, in-terms-of reflection works only for trait parents of a class. (inTermsOf is not TraitInfo)")
     }

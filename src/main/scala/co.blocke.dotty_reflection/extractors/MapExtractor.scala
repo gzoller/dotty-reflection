@@ -33,7 +33,7 @@ case class MapExtractor() extends TypeInfoExtractor[MapLikeInfo]:
       tob: List[reflect.TypeOrBounds], 
       className: String, 
       clazz: Class[_], 
-      typeInspector: ScalaClassInspector
+      typeInspector: ScalaClassInspectorLike
     ): RType =
 
     MapLikeInfo(

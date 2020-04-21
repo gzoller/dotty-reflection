@@ -27,7 +27,7 @@ case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): RType =
+    typeInspector: ScalaClassInspectorLike): RType =
 
     SeqLikeInfo(
             className, 
