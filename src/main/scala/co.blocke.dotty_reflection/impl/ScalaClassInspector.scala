@@ -85,7 +85,7 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
               val traitInfo = TraitInfo(className, clazz, typeParams, actualTypeParams)
 
               // Now figure out type parameter graph
-              registerParents(reflect, paramMap)(t, traitInfo)
+              registerParents(reflect)(t, traitInfo)
 
               traitInfo
 
@@ -145,7 +145,7 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
             val classInfo = ScalaClassInfo(className, clazz, typeParams, typeMembers, fields, annos, isValueClass)
 
             // Now figure out type parameter graph
-            registerParents(reflect, paramMap)(t, classInfo)
+            registerParents(reflect)(t, classInfo)
 
             classInfo
 

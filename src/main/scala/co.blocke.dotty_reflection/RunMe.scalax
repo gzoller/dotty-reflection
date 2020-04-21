@@ -1,29 +1,44 @@
 package co.blocke.dotty_reflection
 
+import impl._ 
+import info._
 
-case class Person[Z](name: String, age: Int, other: Foo[Boolean,Z])
-case class Foo[A,B](it: B, other: A)
 
-trait G[S,T]
-trait X[I] extends G[Boolean,I]
-trait A[P] extends X[P]{ val x: P }
-trait B[K]{ val y: List[K] }
-case class C[Q,W](x:Q, y:List[W]) extends A[Q] with B[W]
+trait Level0[P]
+trait Level1[L]{ val m: Level0[L] }
+trait Level2[T,U] extends Level1[U] { val x: Int; val m: Level0[U]; val n: T }
+
+
+trait T10[X] { val x: X }
+trait T11[W,T] extends T12[W,T] { val w: W; val t: T }
+trait T12[Z,F] { val w: Z; val t: F }
+case class TBlah1[A,B](w: A, t: B) extends T11[A,B]
+case class TFoo6[C,D](x: T11[C,D]) extends T10[T11[C,D]]
+
+
+case class Foom[X,Y](val x: Int, m: Level0[Y], n: X) extends Level2[X,Y]
 
 object RunMe extends App:
 
-  // println(Reflector.reflectOn[Person[Int]])
+  // val c = Class.forName("co.blocke.dotty_reflection.Foom")
 
-  // println(Reflector.reflectOn[C[Int,Boolean]])
+  // val r = Reflector.reflectOn[Level2[Boolean,Long]]
+  // val r2 = Reflector.reflectOn[Level1[Int]]
 
-  val t = Reflector.reflectOn[B[Boolean]].asInstanceOf[info.TraitInfo]
-  println(t)
+  // println(Reflector.reflectOnClassInTermsOf(c, r))
 
-  val c = Reflector.reflectOnClass(Class.forName("co.blocke.dotty_reflection.C"))
+  val r = Reflector.reflectOn[T10[T12[Int,Boolean]]]
+  val inst = TFoo6(TBlah1(5,true))
+  val result = Reflector.reflectOnClassInTermsOf( inst.getClass, r )
 
-  println(impl.ParamGraphRegistry.show)
-  println("-----")
-  println(impl.ParamGraphRegistry.resolveTypesFor(t,c))
-  println("\n\n================================\n\n")
+  /*
+  HashMap(
+    T12 -> 
+      HashMap(T11 -> Map(W -> T12[Z -> W], T -> T12[F -> T])), 
+    T10 -> 
+      HashMap(TFoo6 -> Map(C -> T10[X -> T11[W -> C]], D -> T10[X -> T11[T -> D]])))
 
-  println(Reflector.reflectOnClassInTermsOf(Class.forName("co.blocke.dotty_reflection.C"), t))
+    should be:
+    T10 -> 
+      HashMap(TFoo6 -> Map(C -> T10[X -> T11[W -> C]], D -> T10[X -> T11[T -> D]])))
+  */

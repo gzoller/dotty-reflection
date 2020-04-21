@@ -202,7 +202,7 @@ class Parameters extends munit.FunSuite:
   }
 
   test("Union type substitution") {
-    val result = Reflector.reflectOn[UnionHolder].asInstanceOf[ScalaClassInfo]
+    val result = Reflector.reflectOn[UnionHolder]
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.UnionHolder):
     |   fields:
     |      (0) a: Union:
@@ -213,7 +213,7 @@ class Parameters extends munit.FunSuite:
   }
 
   test("Type member substitutions") {
-    val result = Reflector.reflectOn[Envelope[FancyBody,Boolean]].asInstanceOf[ScalaClassInfo]
+    val result = Reflector.reflectOn[Envelope[FancyBody,Boolean]]
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.Envelope[T,U]):
     |   fields:
     |      (0) id: java.lang.String
@@ -224,4 +224,16 @@ class Parameters extends munit.FunSuite:
     |      Giraffe: ScalaClassInfo(co.blocke.dotty_reflection.FancyBody):
     |         fields:
     |            (0) message: java.lang.String""".stripMargin)
+  }
+
+  test("Nested trait substitutions") {
+    val r = Reflector.reflectOn[T10[T11[Int,Boolean]]]
+    val inst = TFoo6(TBlah1(5,true))
+    val result = Reflector.reflectOnClassInTermsOf( inst.getClass, r )
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.TFoo6[C,D]):
+    |   fields:
+    |      (0) x: TraitInfo(co.blocke.dotty_reflection.T11[W,T]):
+    |         actualParamTypes:
+    |            [W] scala.Int
+    |            [T] scala.Boolean""".stripMargin)
   }

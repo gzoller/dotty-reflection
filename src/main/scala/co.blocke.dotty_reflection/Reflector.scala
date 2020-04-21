@@ -41,11 +41,11 @@ object Reflector:
     }
 
 
-  def reflectOnClassInTermsOf(clazz: Class[_], inTermsOf: RType) = 
+  def reflectOnClassInTermsOf(clazz: Class[_], inTermsOf: RType): RType = 
     inTermsOf match {
       case traitInfo: TraitInfo =>
-        ParamGraphRegistry.resolveTypesFor(traitInfo, reflectOnClass(clazz)).map( paramList => reflectOnClassWithParams(clazz, paramList) )
-          .orElse(throw new ReflectException(s"Can't resolve parentage relationship between ${inTermsOf.name} and ${clazz}"))
+        ParamCache.resolveTypesFor(traitInfo, reflectOnClass(clazz)).map( paramList => reflectOnClassWithParams(clazz, paramList) )
+          .getOrElse(throw new ReflectException(s"Can't resolve parentage relationship between ${inTermsOf.name} and ${clazz}"))
       case _ => throw new ReflectException("Currently, in-terms-of reflection works only for trait parents of a class. (inTermsOf is not TraitInfo)")
     }
   

@@ -6,6 +6,7 @@ trait RType:
   val infoClass: Class[_]  /** the JVM class of this type */
   val orderedTypeParameters: List[TypeSymbol]  /** if this is a parameterized type,  list of type symbols in order of declaration */
   def show(tab: Int = 0, supressIndent: Boolean = false): String
+  inline final def isParameterized: Boolean = !orderedTypeParameters.isEmpty
   override def toString(): String = show()
 
 

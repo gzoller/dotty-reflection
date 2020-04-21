@@ -194,3 +194,8 @@ case class WithScalaArray(
   x8: Array[Short],
   x9: Array[String]
   )
+
+trait T10[X] { val x: X }
+trait T11[W,T] { val w: W; val t: T }
+case class TBlah1[A,B](w: A, t: B) extends T11[A,B]
+case class TFoo6[C,D](x: T11[C,D]) extends T10[T11[C,D]]

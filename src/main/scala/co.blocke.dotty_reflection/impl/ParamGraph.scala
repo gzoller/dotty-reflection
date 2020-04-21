@@ -2,71 +2,70 @@ package co.blocke.dotty_reflection
 package impl
 
 import info._
-// import scala.quoted._
-// import scala.reflect._
 import scala.tasty.Reflection
 
-// import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 
-/** This registry is to support ScalaJack's need to express a concrete class in terms of a trait, which is an ancestor of the class:
- *
- * trait Pet[X]
- * case class Dog[X](a:Y) extends Pet[Y]
- *
- * We need to be able to map the relationship between parent/child and map their type parameters so the correct substitutions
- * can be made.
- */
-object ParamGraphRegistry:
 
-  // Parent -> Children -> mapping
-  private val graph = MMap.empty[Class[_], MMap[Class[_], Map[TypeSymbol,TypeSymbol]]]
+object ParamCache:
 
-  // Child -> parent list
-  private val child2dadAssoc = MMap.empty[Class[_],MSet[Class[_]]] // basically a reverse of graph
+  // Parent -> (Child -> ((child) TypeSymbol -> SymPath))
+  private val pcache = MMap.empty[Class[_], MMap[Class[_], Map[TypeSymbol, SymPath]]]
 
-  def add( parents: List[(Class[_], Map[TypeSymbol,TypeSymbol])], child: Class[_] ): Unit =
-    parents.map{ (parent,symbolMap) =>
-      if graph.contains(parent) then {
-        if( !graph(parent).contains(child) ) 
-          graph(parent).put(child, symbolMap)  // don't dupliate children if exists
-      } else
-        graph.put(parent, MMap(child -> symbolMap))
-      
-      if(child2dadAssoc.contains(child)) {
-        if( !child2dadAssoc(child).contains(parent) )
-          child2dadAssoc.put(child, child2dadAssoc(child) += parent)
-      } else
-        child2dadAssoc.put(child,MSet(parent))
-      }
+  // Child -> List[Parent]
+  private val child2dadAssoc = MMap.empty[Class[_], MSet[Class[_]]]
 
-    parents.map { (p,m) => 
-      child2dadAssoc.get(p) match {
-        case Some(x) =>
-          val wired = x.map { grandparent =>
-            val grandpa2parentMap = graph(grandparent)(p)
-            val parent2childMap = graph(p)(child)
-            // println(s">> Register ${child.getSimpleName} with parent ${p.getSimpleName} having grandpa ${grandparent.getSimpleName}")
-            // println(s"grandpa2parentMap = $grandpa2parentMap")
-            // println(s"parent2childMap   = $parent2childMap")
-            // println("---")
-            (grandparent, parent2childMap.keySet.collect {
-              case s if grandpa2parentMap.contains(parent2childMap(s)) => s -> grandpa2parentMap(parent2childMap(s))
-              // (grandparent, grandpa2parentMap.keySet.collect {
-              //   case s if parent2childMap.contains(grandpa2parentMap(s)) => s -> parent2childMap(grandpa2parentMap(s))
-            }.toMap)
-          }
-          add(wired.toList, child)
-        case _ =>
-      }
+  def add( parent: Class[_], child: Class[_], maps: Map[TypeSymbol, SymPath]): Unit =
+    println("Add: "+parent+" :: "+child)
+    if( !pcache.contains(parent) )
+      pcache.put(parent, MMap(child -> maps))
+    else
+      pcache(parent).put(child, maps)
+    if(child2dadAssoc.contains(child)) {
+      if( !child2dadAssoc(child).contains(parent) )
+        child2dadAssoc.put(child, child2dadAssoc(child) += parent)
+    } else
+      child2dadAssoc.put(child,MSet(parent))
+
+    child2dadAssoc.get(parent) match {
+      case Some(x) =>
+        x.map { grandparent =>
+          val grandpa2parentMap = pcache(grandparent)(parent)
+          val parent2childMap = pcache(parent)(child)
+          // println(s">> Register ${child.getSimpleName} with parent ${parent.getSimpleName} having grandpa ${grandparent.getSimpleName}")
+          // println(s"grandpa2parentMap = $grandpa2parentMap")
+          // println(s"parent2childMap   = $parent2childMap")
+          // println("---")
+          val grandMap = parent2childMap.keySet.collect {
+            case s if grandpa2parentMap.contains(parent2childMap(s).parentSym) => s -> { grandpa2parentMap(parent2childMap(s).parentSym) match {
+              case n: PathNode => n.copy( childSym = s )
+              case n: PathBranch => 
+                println("HERE!")
+                fixBranch(n, s)
+            }}
+          }.toMap
+          if grandMap.nonEmpty then
+            add(grandparent, child, grandMap)
+        }
+      case _ =>
     }
 
+
+  // Drive to leaf and replace child symbol with s
+  private def fixBranch( b: PathBranch, s: TypeSymbol ): PathBranch =
+    b.branch match {
+      case n: PathNode => b.copy(branch = n.copy( childSym = s ))
+      case b2: PathBranch => b.copy( branch = fixBranch( b2, s ))
+    }
+
+
   def resolveTypesFor(parent: TraitInfo, child: RType): Option[List[RType]] =
-    graph.get(parent.infoClass) match { 
+    println(pcache)
+    pcache.get(parent.infoClass) match { 
       case Some(children) if children.contains(child.infoClass) =>
         Some(child.orderedTypeParameters.map( param => children(child.infoClass).get(param) match {
-          case Some(dadParam) => 
-            parent.actualParameterTypes( parent.orderedTypeParameters.indexOf(dadParam) )
+          case Some(path) => 
+            path.resolve(parent)
           case None => 
             TypeSymbolInfo(param.toString) // mapping not found--take your best guess!
         }))
@@ -74,37 +73,47 @@ object ParamGraphRegistry:
     }
 
 
-  def show: String = 
-    graph.keySet.map(k => s"$k:\n" + graph(k).keySet.map(k2 => s"    $k2: "+graph(k)(k2)).mkString("\n")).mkString("\n")
-
-
 trait ParamGraph:
   self: ScalaClassInspector =>
 
-  protected def registerParents(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(t: reflect.ClassDef, classInfo: RType): Unit = //ScalaClassInfo) =
+  protected def registerParents(reflect: Reflection)(t: reflect.ClassDef, classInfo: RType): Unit = //ScalaClassInfo) =
     import reflect.{_, given _}
     if classInfo.orderedTypeParameters.nonEmpty then
       val parentTrees: List[dotty.tools.dotc.ast.Trees.AppliedTypeTree[_]] = t.parents.collect {
         case a: dotty.tools.dotc.ast.Trees.AppliedTypeTree[_] => a // This matches trait mixins--our primary target
       }
       val parents = parentTrees.map{ appliedTypeTree =>
-        val parentRtype = inspectType(reflect, Map.empty[TypeSymbol,RType])(appliedTypeTree.tpe.asInstanceOf[reflect.TypeRef])
-
-        // This seemingly redundant call forces us to look at dad's ancestors in terms of dad; in other words reflect on dad's parentage up the tree
-        // recursively.  (NOTE: We'll then need to expand the linkages (type associations) down the tree to the leaf nodes/classes!)
-        Reflector.reflectOnClass( parentRtype.infoClass )
-
-        parentRtype
+        inspectType(reflect, Map.empty[TypeSymbol,RType])(appliedTypeTree.tpe.asInstanceOf[reflect.TypeRef])
       }
-      if(parents.nonEmpty)
-        registerTypeMap(reflect, paramMap)(classInfo, parents)
-  
 
-  private def registerTypeMap(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(child: RType, parents: List[RType]) =
-    val candidates = parents.collect {
-      case parent: TraitInfo if parent.orderedTypeParameters.nonEmpty => 
-        val traitParamMap = parent.orderedTypeParameters.zip(parent.actualParameterTypes).collect{case (sym,v:TypeSymbolInfo) => (v.name.asInstanceOf[TypeSymbol], sym) }.toMap
-        // val traitParamMap = parent.orderedTypeParameters.zip(parent.actualParameterTypes).collect{case (sym,v:TypeSymbolInfo) => (sym, v.name.asInstanceOf[TypeSymbol]) }.toMap
-        (parent.infoClass, traitParamMap)
-      }.toList
-    ParamGraphRegistry.add( candidates, child.infoClass )
+      // For each parent, dive in and find paths to type symbols
+      parents.foreach{ p => 
+        val pathsForParent = unpackSymbolPaths( classInfo.orderedTypeParameters, p ).toMap
+        // register paths for this parent
+        ParamCache.add(p.infoClass, classInfo.infoClass, pathsForParent)
+        }
+
+  private def unpackSymbolPaths( syms: List[TypeSymbol], parent: RType ): List[(TypeSymbol,SymPath)] =
+    parent match {
+      case p: TraitInfo =>
+        p.typedParams.flatMap( (k,v) => v match {
+          case s: TypeSymbolInfo if syms.contains(s.name.asInstanceOf[TypeSymbol]) => List((s.name.asInstanceOf[TypeSymbol], PathNode(p, k, s.name.asInstanceOf[TypeSymbol])))
+          case s: TraitInfo => unpackSymbolPaths(syms, s).map( (sym,spath) => (sym,PathBranch(p, k, spath)) )
+          case _ => List.empty[(TypeSymbol,SymPath)] // do nothing
+        } ).toList
+      case _ => List.empty[(TypeSymbol,SymPath)] // Only trait parents supported at this time.  Maybe TODO: non-case class parents
+    }
+
+
+trait SymPath:
+  val parent: RType
+  val parentSym: TypeSymbol
+  def resolve(nav: TraitInfo): RType
+
+case class PathNode( parent: RType, parentSym: TypeSymbol, childSym: TypeSymbol ) extends SymPath:
+  def resolve(nav: TraitInfo): RType = nav.typedParams(parentSym)
+  override def toString(): String = s"${parent.infoClass.getSimpleName}[$parentSym -> $childSym]"
+
+case class PathBranch( parent: RType, parentSym: TypeSymbol, branch: SymPath ) extends SymPath:
+  def resolve(nav: TraitInfo): RType = branch.resolve(nav.typedParams(parentSym).asInstanceOf[TraitInfo])
+  override def toString(): String = s"${parent.infoClass.getSimpleName}[$parentSym -> ${branch.toString()}]"
