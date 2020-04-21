@@ -226,6 +226,7 @@ class Parameters extends munit.FunSuite:
     |            (0) message: java.lang.String""".stripMargin)
   }
 
+  /* Performance tests
   var rtx: RType = null
   test("a") {
     rtx = Reflector.reflectOn[T10[T11[Int, T5[Double, Char]], String]]
@@ -252,25 +253,30 @@ class Parameters extends munit.FunSuite:
   }
   test("a2") {
     rtx = Reflector.reflectOn[T10[T11[Int, T5[Double, Char]], String]]
+    println(rtx)
   }
   test("b2") {
     val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
-    Reflector.reflectOnClassInTermsOf(inst.getClass, rtx)
+    println(Reflector.reflectOnClassInTermsOf(inst.getClass, rtx))
   }
   test("c2") { // roughly 0.6 sec, some of which may be saved by "lite" version of reflectOnClass
     val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
     Reflector.reflectOnClass(inst.getClass)
   }
+  */
 
-  /*
   test("Nested trait substitutions") {
-    val r = Reflector.reflectOn[T10[T11[Int,Boolean]]]
-    val inst = TFoo6(TBlah1(5,true))
+    val r = Reflector.reflectOn[T10[T11[Int, T5[Double, Char]], String]]
+    val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
     val result = Reflector.reflectOnClassInTermsOf( inst.getClass, r )
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.TFoo6[C,D]):
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.TFoo6[A,B,C,D]):
     |   fields:
-    |      (0) x: TraitInfo(co.blocke.dotty_reflection.T11[W,T]):
+    |      (0) x: TraitInfo(co.blocke.dotty_reflection.T11[W,Z]):
     |         actualParamTypes:
     |            [W] scala.Int
-    |            [T] scala.Boolean""".stripMargin)
-  }*/
+    |            [Z] TraitInfo(co.blocke.dotty_reflection.T5[X,Y]):
+    |               actualParamTypes:
+    |                  [X] scala.Double
+    |                  [Y] scala.Char
+    |      (1)[B] y: java.lang.String""".stripMargin)
+  }

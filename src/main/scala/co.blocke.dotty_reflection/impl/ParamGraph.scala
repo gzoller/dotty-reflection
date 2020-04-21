@@ -15,6 +15,8 @@ object ParamCache:
   // Child -> List[Parent]
   private val child2dadAssoc = MMap.empty[Class[_], MSet[Class[_]]]
 
+  def contains(parent: Class[_], child: Class[_]): Boolean = pcache.get(parent).flatMap(_.get(child)).isDefined
+
   def add( parent: Class[_], child: Class[_], maps: Map[TypeSymbol, SymPath]): Unit =
     if( !pcache.contains(parent) )
       pcache.put(parent, MMap(child -> maps))
@@ -74,12 +76,14 @@ trait ParamGraph:
     if classInfo.orderedTypeParameters.nonEmpty then
       t.parents.collect {
         case a: dotty.tools.dotc.ast.Trees.AppliedTypeTree[_] =>  // This matches trait mixins--our primary target
-          // Get the RType of each parent trait
-          val parentRType = Reflector.reflectOnClass(Class.forName(a.tpe.asInstanceOf[reflect.AppliedType].tycon.asInstanceOf[reflect.TypeRef].typeSymbol.fullName))
-          // For each parent, dive in and find paths to type symbols
-          val pathsForParent = unpackSymbolPaths( classInfo.orderedTypeParameters, parentRType ).toMap
-          // register paths for this parent
-          ParamCache.add(parentRType.infoClass, classInfo.infoClass, pathsForParent)
+          val className = a.tpe.asInstanceOf[reflect.AppliedType].tycon.asInstanceOf[reflect.TypeRef].typeSymbol.fullName
+          if !ParamCache.contains(Class.forName(className), classInfo.infoClass) then
+            // Get the RType of each parent trait
+            val parentRType = inspectType(reflect, Map.empty[TypeSymbol,RType])(a.tpe.asInstanceOf[reflect.TypeRef])
+            // For each parent, dive in and find paths to type symbols
+            val pathsForParent = unpackSymbolPaths( classInfo.orderedTypeParameters, parentRType ).toMap
+            // register paths for this parent
+            ParamCache.add(parentRType.infoClass, classInfo.infoClass, pathsForParent)
         }
 
   private def unpackSymbolPaths( syms: List[TypeSymbol], parent: RType ): List[(TypeSymbol,SymPath)] =
