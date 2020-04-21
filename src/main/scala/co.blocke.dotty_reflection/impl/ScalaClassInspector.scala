@@ -20,7 +20,6 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
       case ctx if ctx.isJavaCompilationUnit() => inspected = JavaClassInspector.inspectClass(clazz, initialParamMap)      
       case ctx if ctx.isScala2CompilationUnit() => inspected = UnknownInfo(clazz)  // Can't do much with Scala2 classes--not Tasty
       case ctx if ctx.isAlreadyLoadedCompilationUnit() => 
-        val clazz = Class.forName(ctx.compilationUnitClassname())
         ExtractorRegistry.extractors.collectFirst {
           case e if e.matches(clazz) => inspected = e.emptyInfo(clazz, initialParamMap)
         }
@@ -60,13 +59,8 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
 
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
 
-        val clazz = Class.forName(className)
-        val constructor = t.constructor
-
         // Get any type parameters
-        val typeParams = constructor.typeParams.map( _ match {
-          case TypeDef(tpeSym,_) => tpeSym.asInstanceOf[TypeSymbol]
-        })
+        val typeParams = clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList
 
         val inspected: RType =
           if(t.symbol.flags.is(reflect.Flags.Trait)) then
@@ -92,7 +86,7 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
           else
             // === Scala Class (case or non-case) ===
             val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
-            val paramz = constructor.paramss
+            val paramz = t.constructor.paramss
             val members = t.body.collect {
                 case vd: reflect.ValDef => vd
               }.map(f => (f.name->f)).toMap

@@ -10,6 +10,7 @@ import scala.tasty.inspector.TastyInspector
 import Clazzes._
 
 trait ScalaClassInspectorLike:
+
   def inspectType(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(typeRef: reflect.TypeRef): RType = 
     import reflect.{_, given _}
 

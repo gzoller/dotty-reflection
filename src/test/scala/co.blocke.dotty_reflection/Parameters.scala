@@ -230,6 +230,18 @@ class Parameters extends munit.FunSuite:
   test("a") {
     rtx = Reflector.reflectOn[T10[T11[Int, T5[Double, Char]], String]]
   }
+  test("a.1") {
+    val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
+    Reflector.reflectOnClass(inst.getClass)
+  }
+  test("a.2") {
+    val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
+    Reflector.reflectOnClassLite(inst.getClass)
+  }
+  test("a.3") {
+    val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
+    Reflector.reflectOnClassLite(inst.getClass)
+  }
   test("b") {
     val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
     Reflector.reflectOnClassInTermsOf(inst.getClass, rtx)

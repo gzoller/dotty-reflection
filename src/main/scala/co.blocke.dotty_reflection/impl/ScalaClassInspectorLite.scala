@@ -10,9 +10,9 @@ import scala.tasty.inspector.TastyInspector
 
 
 /**
- * For Reflector.reflectOnClassInTermsOf() we need to pre-inspect a class.  We only need to reflect on the class' parentage tho,
- * so we can save time by ignoring all the deeper reflection into fields, etc.  It returns a partially-populated ScalaClassInfo 
- * object--just enough for reflectOnClassInTermsOf().
+ * For Reflector.reflectOnClassInTermsOf() we need to pre-inspect a class to determine parentage.  We only need to reflect on the class' 
+ * parentage tho, so we can save time by ignoring all the deeper reflection into fields, etc.  It returns a partially-populated 
+ * ScalaClassInfo object--just enough for reflectOnClassInTermsOf().
  */
 class ScalaClassInspectorLite(clazz: Class[_]) extends TastyInspector with ScalaClassInspectorLike with ParamGraph:
   import Clazzes._
@@ -53,10 +53,7 @@ class ScalaClassInspectorLite(clazz: Class[_]) extends TastyInspector with Scala
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
 
         // Get any type parameters
-        val constructor = t.constructor
-        val typeParams = constructor.typeParams.map( _ match {
-          case TypeDef(tpeSym,_) => tpeSym.asInstanceOf[TypeSymbol]
-        })
+        val typeParams = clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList
 
         val inspected: RType =
           // === Trait ===
@@ -68,12 +65,6 @@ class ScalaClassInspectorLite(clazz: Class[_]) extends TastyInspector with Scala
 
           else
             // === Scala Class (case or non-case) ===
-            val isCaseClass = t.symbol.flags.is(reflect.Flags.Case)
-            val paramz = constructor.paramss
-            val members = t.body.collect {
-                case vd: reflect.ValDef => vd
-              }.map(f => (f.name->f)).toMap
-
             val classInfo = ScalaClassInfo(className, clazz, typeParams, Nil, Nil, null, false)
 
             // Now figure out type parameter graph

@@ -18,7 +18,9 @@ object Reflector:
    */
   inline def reflectOn[T](implicit ct: ClassTag[T]): RType = 
     val typeStructure = analyzeType[T]
-    cache.computeIfAbsent(typeStructure, unpackTypeStructure)
+    Option(cache.get(typeStructure)).getOrElse{ 
+      unpackTypeStructure(typeStructure)
+    }
 
 
   /** Runtime callable reflection on a type structure (returned by analyzeType()).  
@@ -26,7 +28,9 @@ object Reflector:
    * @returns RType
    */
   def reflectOnType(typeStructure: TypeStructure): RType =
-    cache.computeIfAbsent(typeStructure, unpackTypeStructure)
+    Option(cache.get(typeStructure)).getOrElse{ 
+      unpackTypeStructure(typeStructure)
+    }
     
 
   /** Same as reflectOn, except given a Class object instead of a type, T.
@@ -34,23 +38,31 @@ object Reflector:
    */
   def reflectOnClass(clazz: Class[_]): RType =
     val className = clazz.getName
-    Option(cache.get(TypeStructure(className,Nil))).getOrElse{ 
+    val structure = TypeStructure(className,Nil)
+    Option(cache.get(structure)).getOrElse{ 
       val tc = new ScalaClassInspector(clazz, Map.empty[TypeSymbol,RType])
       tc.inspect("", List(className))
-      tc.inspected
+      val found = tc.inspected
+      cache.put(structure, found)
+      found
     }
 
+  
+  def reflectOnClassLite( clazz: Class[_] ): RType =
+    val className = clazz.getName
+    val structure = TypeStructure(className,Nil)
+    Option(cache.get(structure)).getOrElse{ 
+      val tc = new ScalaClassInspectorLite(clazz)
+      tc.inspect("", List(className))
+      val found = tc.inspected
+      cache.put(structure, found)
+      found
+    }
 
   def reflectOnClassInTermsOf(clazz: Class[_], inTermsOf: RType): RType = 
     inTermsOf match {
       case traitInfo: TraitInfo =>
-        val className = clazz.getName
-        val inspectedClazz = Option(cache.get(TypeStructure(className,Nil))).getOrElse{ 
-          val tc = new ScalaClassInspectorLite(clazz)
-          tc.inspect("", List(className))
-          tc.inspected
-        }
-        ParamCache.resolveTypesFor(traitInfo, inspectedClazz).map( paramList => reflectOnClassWithParams(clazz, paramList) )
+        ParamCache.resolveTypesFor(traitInfo, reflectOnClassLite(clazz)).map( paramList => reflectOnClassWithParams(clazz, paramList) )
           .getOrElse(throw new ReflectException(s"Can't resolve parentage relationship between ${inTermsOf.name} and ${clazz}"))
       case _ => throw new ReflectException("Currently, in-terms-of reflection works only for trait parents of a class. (inTermsOf is not TraitInfo)")
     }
@@ -58,13 +70,15 @@ object Reflector:
 
   /** Construct a fully-parameterized RType if the class' type params are known */
   def reflectOnClassWithParams(clazz: Class[_], params: List[RType]): RType =
-    val className = clazz.getName
-    val classParams = clazz.params.zip(params).toMap
-    val tc = new ScalaClassInspector(clazz, classParams)
+    Option(paramerterizedClassCache.get( (clazz,params) )).getOrElse{ 
+      val className = clazz.getName
+      val classParams = clazz.params.zip(params).toMap
+      val tc = new ScalaClassInspector(clazz, classParams)
 
-    // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
-    tc.inspect("", List(className))
-    tc.inspected
+      // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
+      tc.inspect("", List(className))
+      tc.inspected
+    }
 
 
   // pre-loaded with known language primitive types
@@ -105,6 +119,9 @@ object Reflector:
       TypeStructure("java.lang.Object",Nil)     -> PrimitiveType.Java_Object,
       TypeStructure("java.lang.Number",Nil)     -> PrimitiveType.Java_Number
     ).asJava)
+
+  // parameterized class cache
+  private val paramerterizedClassCache = new java.util.concurrent.ConcurrentHashMap[(Class[_],List[RType]), RType]
 
 
   private def unpackTypeStructure(ps: TypeStructure): RType =

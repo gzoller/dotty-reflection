@@ -72,18 +72,14 @@ trait ParamGraph:
   protected def registerParents(reflect: Reflection)(t: reflect.ClassDef, classInfo: RType): Unit = //ScalaClassInfo) =
     import reflect.{_, given _}
     if classInfo.orderedTypeParameters.nonEmpty then
-      val parentTrees: List[dotty.tools.dotc.ast.Trees.AppliedTypeTree[_]] = t.parents.collect {
-        case a: dotty.tools.dotc.ast.Trees.AppliedTypeTree[_] => a // This matches trait mixins--our primary target
-      }
-      val parents = parentTrees.map{ appliedTypeTree =>
-        inspectType(reflect, Map.empty[TypeSymbol,RType])(appliedTypeTree.tpe.asInstanceOf[reflect.TypeRef])
-      }
-
-      // For each parent, dive in and find paths to type symbols
-      parents.foreach{ p => 
-        val pathsForParent = unpackSymbolPaths( classInfo.orderedTypeParameters, p ).toMap
-        // register paths for this parent
-        ParamCache.add(p.infoClass, classInfo.infoClass, pathsForParent)
+      t.parents.collect {
+        case a: dotty.tools.dotc.ast.Trees.AppliedTypeTree[_] =>  // This matches trait mixins--our primary target
+          // Get the RType of each parent trait
+          val parentRType = Reflector.reflectOnClass(Class.forName(a.tpe.asInstanceOf[reflect.AppliedType].tycon.asInstanceOf[reflect.TypeRef].typeSymbol.fullName))
+          // For each parent, dive in and find paths to type symbols
+          val pathsForParent = unpackSymbolPaths( classInfo.orderedTypeParameters, parentRType ).toMap
+          // register paths for this parent
+          ParamCache.add(parentRType.infoClass, classInfo.infoClass, pathsForParent)
         }
 
   private def unpackSymbolPaths( syms: List[TypeSymbol], parent: RType ): List[(TypeSymbol,SymPath)] =
