@@ -15,16 +15,18 @@ case class ScalaClassInfo protected[dotty_reflection] (
     name:                  String,
     infoClass:             Class[_],
     orderedTypeParameters: List[TypeSymbol],
-    typeMembers:           List[RType],
+    typeMembers:           List[TypeMemberInfo],
     fields:                List[FieldInfo],
     annotations:           Map[String, Map[String,String]],
     isValueClass:          Boolean
   ) extends ClassInfo:
 
-  private lazy val constructor = 
+  lazy val constructor = 
     infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
 
   def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
+
+  def setActualTypeParams( actuals: List[TypeMemberInfo] ) = this.copy(typeMembers = actuals)
 
   def show(tab:Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

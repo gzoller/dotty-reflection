@@ -96,6 +96,7 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
               case TypeDef(typeName, dotty.tools.dotc.ast.Trees.Ident(typeSym)) if typeParams.contains(typeSym.toString.asInstanceOf[TypeSymbol]) => 
                 TypeMemberInfo(
                   typeName,
+                  typeSym.toString.asInstanceOf[TypeSymbol],
                   paramMap.getOrElse(typeSym.toString.asInstanceOf[TypeSymbol],
                     TypeSymbolInfo(typeSym.toString)
                   )

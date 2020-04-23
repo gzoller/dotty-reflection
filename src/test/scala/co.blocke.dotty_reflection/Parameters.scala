@@ -221,7 +221,7 @@ class Parameters extends munit.FunSuite:
     |         fields:
     |            (0) message: java.lang.String
     |   type members:
-    |      Giraffe: ScalaClassInfo(co.blocke.dotty_reflection.FancyBody):
+    |      Giraffe[T]: ScalaClassInfo(co.blocke.dotty_reflection.FancyBody):
     |         fields:
     |            (0) message: java.lang.String""".stripMargin)
   }
