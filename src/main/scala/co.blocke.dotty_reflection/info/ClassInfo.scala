@@ -28,6 +28,10 @@ case class ScalaClassInfo protected[dotty_reflection] (
 
   def setActualTypeParams( actuals: List[TypeMemberInfo] ) = this.copy(typeMembers = actuals)
 
+  // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
+  // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
+  def filterTraitTypeParams: ScalaClassInfo = this.copy( typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaClassInfo]) )
+
   def show(tab:Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
 

@@ -90,7 +90,7 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
             val members = t.body.collect {
                 case vd: reflect.ValDef => vd
               }.map(f => (f.name->f)).toMap
-
+       
             // Find any type members matching a class type parameter
             val typeMembers = t.body.collect {
               case TypeDef(typeName, dotty.tools.dotc.ast.Trees.Ident(typeSym)) if typeParams.contains(typeSym.toString.asInstanceOf[TypeSymbol]) => 

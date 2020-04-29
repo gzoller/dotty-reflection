@@ -8,7 +8,7 @@ import PrimitiveType._
 class ScalaTasty extends munit.FunSuite:
 
   test("reflect basic Tasty class with union") {
-    val result = Reflector.reflectOn[Person] 
+    val result = RType.of[Person] 
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.Person):
     |   fields:
     |      (0) name: java.lang.String

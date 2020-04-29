@@ -27,3 +27,7 @@ case class TypeSymbolInfo(name: String) extends RType:
 
 // Poked this here for now.  Used for show()
 final inline def tabs(t:Int) = "   "*t
+
+
+object RType:
+  inline def of[T](implicit ct: scala.reflect.ClassTag[T]): RType = Reflector.reflectOn[T]
