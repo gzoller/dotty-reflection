@@ -12,7 +12,7 @@ import scala.tasty.inspector.TastyInspector
 /**
  * For Reflector.reflectOnClassInTermsOf() we need to pre-inspect a class to determine parentage.  We only need to reflect on the class' 
  * parentage tho, so we can save time by ignoring all the deeper reflection into fields, etc.  It returns a partially-populated 
- * ScalaClassInfo object--just enough for reflectOnClassInTermsOf().
+ * ScalaCaseClassInfo object--just enough for reflectOnClassInTermsOf().
  */
 class ScalaClassInspectorLite(clazz: Class[_]) extends TastyInspector with ScalaClassInspectorLike with ParamGraph:
   import Clazzes._
@@ -65,7 +65,7 @@ class ScalaClassInspectorLite(clazz: Class[_]) extends TastyInspector with Scala
 
           else
             // === Scala Class (case or non-case) ===
-            val classInfo = ScalaClassInfo(className, clazz, typeParams, Nil, Nil, null, false)
+            val classInfo = ScalaCaseClassInfo(className, clazz, typeParams, Nil, Nil, null, false)
 
             // Now figure out type parameter graph
             registerParents(reflect)(t, classInfo)

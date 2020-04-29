@@ -35,7 +35,7 @@ import co.blocke.dotty_reflection
 case class Thing(a: String)
 
 val artifact: ConcreteType = Reflector.reflectOn[Thing]
-// Concrete type here is typically a ScalaClassInfo or JavaClassInfo but could be something else if you reflected on, say, List[Foo], in which case you'd
+// Concrete type here is typically a ScalaCaseClassInfo or JavaClassInfo but could be something else if you reflected on, say, List[Foo], in which case you'd
 // get back a SeqLikeInfo.
 
 // Alternatively, if you have the Class instance:

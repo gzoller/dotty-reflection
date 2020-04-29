@@ -201,3 +201,15 @@ trait T11[W, Z] { val w: W; val z: Z }
 case class TBlah1[A, B](w: A, z: B) extends T11[A, B]
 case class TBar7[A, B](thing1: A, thing2: B) extends T5[A, B]
 case class TFoo6[A, B, C, D](x: T11[C, T5[D, A]], y: B) extends T10[T11[C, T5[D, A]], B]
+
+// Non-Case Scala class handling
+class FoomNC(val a: Int, val b: String) {
+  @FieldAnno(idx=5) var blah: Boolean = false
+  @Ignore var hey: Int = 2
+  private var cantSee: Boolean = true
+  val nope: Float = 1.2
+
+  private var _age = 0
+  def age = _age
+  @FieldAnno(idx=2) def age_=(g: Int): Unit = _age = g
+}

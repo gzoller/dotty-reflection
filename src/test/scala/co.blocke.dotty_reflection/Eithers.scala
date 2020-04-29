@@ -9,7 +9,7 @@ class Eithers extends munit.FunSuite:
 
   test("Scala simple Either field") {
     val result = Reflector.reflectOn[BothSides]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.BothSides):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.BothSides):
     |   fields:
     |      (0) a: Either:
     |         left--scala.Int
@@ -17,7 +17,7 @@ class Eithers extends munit.FunSuite:
   }
 
   test("Scala simple Either field assignment") {
-    val r = Reflector.reflectOn[BothSides].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[BothSides].asInstanceOf[ScalaCaseClassInfo]
     assert(
       r.constructWith[BothSides](List(Right("Foom"))) == BothSides(Right("Foom"))
     )
@@ -28,7 +28,7 @@ class Eithers extends munit.FunSuite:
 
   test("Scala Either with Option") {
     val result = Reflector.reflectOn[BothSidesWithOption]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.BothSidesWithOption):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.BothSidesWithOption):
     |   fields:
     |      (0) a: Either:
     |         left--scala.Int
@@ -36,7 +36,7 @@ class Eithers extends munit.FunSuite:
   }
 
   test("Scala Either with Option assignment") {
-    val r = Reflector.reflectOn[BothSidesWithOption].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[BothSidesWithOption].asInstanceOf[ScalaCaseClassInfo]
     assert(
       r.constructWith[BothSidesWithOption](List(Right(None))) == BothSidesWithOption(Right(None))
     )
@@ -47,7 +47,7 @@ class Eithers extends munit.FunSuite:
 
   test("Scala Either with Union type") {
     val result = Reflector.reflectOn[BothSidesWithUnion]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.BothSidesWithUnion):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.BothSidesWithUnion):
     |   fields:
     |      (0) a: Either:
     |         left--scala.Int
@@ -57,7 +57,7 @@ class Eithers extends munit.FunSuite:
   }
 
   test("Scala Either with Union type assignment") {
-    val r = Reflector.reflectOn[BothSidesWithUnion].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[BothSidesWithUnion].asInstanceOf[ScalaCaseClassInfo]
     assert(
       r.constructWith[BothSidesWithUnion](List(Right("foo"))) == BothSidesWithUnion(Right("foo"))
     )
@@ -68,11 +68,11 @@ class Eithers extends munit.FunSuite:
 
   test("Scala Either having a parameterized type") {
     val result = Reflector.reflectOn[BothSidesParam[Double]]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.BothSidesParam[Z]):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.BothSidesParam[Z]):
     |   fields:
     |      (0) a: Either:
     |         left--scala.Int
-    |         right--Option of ScalaClassInfo(co.blocke.dotty_reflection.ParamOption[T]):
+    |         right--Option of ScalaCaseClassInfo(co.blocke.dotty_reflection.ParamOption[T]):
     |            fields:
     |               (0) a: Option of scala.Double""".stripMargin)
   }

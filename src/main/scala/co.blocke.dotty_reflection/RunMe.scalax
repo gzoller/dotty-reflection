@@ -1,0 +1,34 @@
+package co.blocke.dotty_reflection
+
+import impl._ 
+import info._
+
+case class XScalaPrimitives(
+  a: Boolean,
+  b: Byte,
+  c: Char,
+  d: Double,
+  e: Float,
+  f: Int,
+  g: Long,
+  h: Short,
+  i: String,
+  j: Any
+)
+
+// class Foom(val a: Int, val b: String) {
+//   @Optional var blah: Boolean = false
+//   @Ignore var hey: Int = 2
+//   val nope: Float = 1.2
+
+//   private var _age = 0
+//   def age = _age
+//   def age_=(g: Int): Unit = _age = g
+// }
+
+
+object RunMe extends App:
+
+  println(Reflector.reflectOn[XScalaPrimitives])
+
+

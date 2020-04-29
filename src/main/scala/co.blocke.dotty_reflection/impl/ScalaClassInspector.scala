@@ -9,7 +9,11 @@ import scala.tasty.Reflection
 import scala.tasty.inspector.TastyInspector
   
 
-class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RType]) extends TastyInspector with ScalaClassInspectorLike with ParamGraph:
+class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RType]) 
+    extends TastyInspector 
+    with ScalaClassInspectorLike 
+    with ParamGraph
+    with NonCaseClassInspector:
   import Clazzes._
 
   var inspected: RType = UnknownInfo(clazz)
@@ -137,7 +141,10 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
               case Apply(Select(New(x),_),_) => x 
             }.map(_.symbol.name == "AnyVal").getOrElse(false)
 
-            val classInfo = ScalaClassInfo(className, clazz, typeParams, typeMembers, fields, annos, isValueClass)
+            val classInfo = if( isCaseClass ) then
+              ScalaCaseClassInfo(className, clazz, typeParams, typeMembers, fields, annos, isValueClass)
+            else
+              inspectNonCaseClass(reflect, paramMap)(t, className, clazz, typeParams, typeMembers, fields, annos, isValueClass)
 
             // Now figure out type parameter graph
             registerParents(reflect)(t, classInfo)

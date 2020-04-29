@@ -9,7 +9,7 @@ class Options extends munit.FunSuite:
 
   test("Scala optional field") {
     val result = Reflector.reflectOn[NormalOption]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.NormalOption):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.NormalOption):
     |   fields:
     |      (0) a: Option of scala.Int""".stripMargin)
   }
@@ -23,7 +23,7 @@ class Options extends munit.FunSuite:
 
   test("Scala nested optional field") {
     val result = Reflector.reflectOn[NestedOption]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.NestedOption):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.NestedOption):
     |   fields:
     |      (0) a: Option of Option of scala.Int""".stripMargin)
   }
@@ -37,7 +37,7 @@ class Options extends munit.FunSuite:
 
   test("Scala optional parameterized field") {
     val result = Reflector.reflectOn[ParamOption[Char]]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.ParamOption[T]):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.ParamOption[T]):
     |   fields:
     |      (0) a: Option of scala.Char""".stripMargin)
   }
@@ -50,7 +50,7 @@ class Options extends munit.FunSuite:
   }
 
   test("Option assignments in union type") {
-    val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[UnionHavingOption].asInstanceOf[ScalaCaseClassInfo]
     assert(
       r.constructWith[UnionHavingOption](List(None,Optional.empty())) == UnionHavingOption(None,Optional.empty())
     )
@@ -61,7 +61,7 @@ class Options extends munit.FunSuite:
 
   test("Option of a union") {    
     val result = Reflector.reflectOn[OptionHavingUnion]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.OptionHavingUnion):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.OptionHavingUnion):
     |   fields:
     |      (0) a: Option of Union:
     |         left--scala.Boolean
@@ -69,7 +69,7 @@ class Options extends munit.FunSuite:
   }
 
   test("Option of a union assignment") {    
-    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[ScalaClassInfo]
+    val r = Reflector.reflectOn[OptionHavingUnion].asInstanceOf[ScalaCaseClassInfo]
     assert(
       r.constructWith[OptionHavingUnion](List(None)) == OptionHavingUnion(None)
     )

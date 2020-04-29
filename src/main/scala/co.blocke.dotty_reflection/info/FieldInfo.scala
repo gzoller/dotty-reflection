@@ -40,7 +40,7 @@ case class ScalaFieldInfo(
       case info: UnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
       case _ if originalSymbol.isDefined => classOf[Object]
       case info: AliasInfo => info.unwrappedType.infoClass
-      case info: ScalaClassInfo if info.isValueClass => info.fields.head.fieldType.infoClass
+      case info: ScalaCaseClassInfo if info.isValueClass => info.fields.head.fieldType.infoClass
       case info: ScalaEnumerationInfo => Class.forName("scala.Enumeration$Value")
       case info => info.infoClass
     }

@@ -71,7 +71,7 @@ object ParamCache:
 trait ParamGraph:
   self: ScalaClassInspectorLike =>
 
-  protected def registerParents(reflect: Reflection)(t: reflect.ClassDef, classInfo: RType): Unit = //ScalaClassInfo) =
+  protected def registerParents(reflect: Reflection)(t: reflect.ClassDef, classInfo: RType): Unit = //ScalaCaseClassInfo) =
     import reflect.{_, given _}
     if classInfo.orderedTypeParameters.nonEmpty then
       t.parents.collect {
