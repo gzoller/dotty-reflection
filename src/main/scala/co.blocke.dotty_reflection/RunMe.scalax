@@ -3,18 +3,18 @@ package co.blocke.dotty_reflection
 import impl._ 
 import info._
 
-case class XScalaPrimitives(
-  a: Boolean,
-  b: Byte,
-  c: Char,
-  d: Double,
-  e: Float,
-  f: Int,
-  g: Long,
-  h: Short,
-  i: String,
-  j: Any
-)
+case class VCDouble(vc: Double) extends AnyVal
+class PlayerMix() {
+  def someConfusingThing() = true // <-- This is crashing things.... not populating annotations table in NonCaseClassInspector :-(
+  var name: String = "" // public var member
+  var maybe: Option[Int] = Some(1) // optional member
+
+  @Ignore @Change(name="boom") var bogus: String = ""
+
+  private var _age: VCDouble = VCDouble(0.0)
+  @Change(name="ancient") def age: VCDouble = _age // getter/setter member
+  def age_=(a: VCDouble): Unit = _age = a
+}
 
 // class Foom(val a: Int, val b: String) {
 //   @Optional var blah: Boolean = false
@@ -29,6 +29,6 @@ case class XScalaPrimitives(
 
 object RunMe extends App:
 
-  println(Reflector.reflectOn[XScalaPrimitives])
-
-
+  val r = Reflector.reflectOn[PlayerMix].asInstanceOf[ScalaClassInfo]
+  println(r)
+  

@@ -17,73 +17,81 @@ trait NonCaseClassInspector:
     fields:                List[FieldInfo],
     annotations:           Map[String, Map[String,String]],
     isValueClass:          Boolean
-  ): ScalaClassInfo =
+  ): ScalaClassInfo = 
     import reflect.{_, given _}
 
-    // classDef.body.foldLeft( (List.empty[], List.emtpy[]) ){}
+    var index: Int = fields.length - 1
+
     val fieldNames = fields.map(_.name)
 
-    val found = classDef.body.collect{
+    val varAnnos = scala.collection.mutable.Map.empty[String,Map[String, Map[String,String]]]
+    val varDefDeclarations = classDef.body.collect{
         // We just want public var definitions here
         case s: ValDef if !s.symbol.flags.is(reflect.Flags.Private) 
           && !s.symbol.flags.is(reflect.Flags.Protected) 
           && !fieldNames.contains(s.name) 
-          && s.symbol.flags.is(reflect.Flags.Mutable) => s.name -> s
-        // Public defs only please
-        case d: DefDef if !d.symbol.flags.is(reflect.Flags.Private) 
-          && !d.symbol.flags.is(reflect.Flags.Protected) => d.name -> d
-      }.toMap
-    val otherFieldNames = found.keySet.filterNot(_.endsWith("_="))
+          && s.symbol.flags.is(reflect.Flags.Mutable) => 
+            val annoSymbol = s.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
+            val fieldAnnos = annoSymbol.map{ a => 
+              val reflect.Apply(_, params) = a
+              val annoName = a.symbol.signature.resultSig
+              (annoName,(params collect {
+                case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
+              }).toMap)
+            }.toMap
+            varAnnos.put(s.name, fieldAnnos) // yes, this is a side-effect but it saves mutliple field scans!
+            s.name -> s.tpt.tpe.asInstanceOf[reflect.TypeRef]
 
-    // Read any annotations on all the ValDefs or DefDefs--could be any of these, so produce a map of name -> Map[String,Map[String,String]]
-    val otherAnnotations = found.map{ (name,defy) => 
-      val annoSymbol = defy.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
-      val fieldAnnos = annoSymbol.map{ a => 
-        val reflect.Apply(_, params) = a
-        val annoName = a.symbol.signature.resultSig
-        (annoName,(params collect {
-          case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
-        }).toMap)
-      }.toMap
-      name -> fieldAnnos
-      }
-      
-    val nonConstructorFields = otherFieldNames.map(found(_)).collect { 
-      case vd: ValDef if !otherAnnotations(vd.name).contains("co.blocke.dotty_reflection.Ignore") => 
+        // We just want public def definitions here
+        // WARNING: These defs may also include non-field functions!  Filter later...
+        case d: DefDef if !d.symbol.flags.is(reflect.Flags.Private) 
+          && !d.symbol.flags.is(reflect.Flags.Protected) 
+          && !d.name.endsWith("_=") => d.name -> d.returnTpt.tpe.asInstanceOf[reflect.TypeRef]
+    }.toMap
+
+    val numConstructorFields = fields.length
+
+    // Include inherited methods (var & def), including inherited!
+    val getterSetter = infoClass.getMethods.filter(_.getName.endsWith("_$eq")).map( m => (infoClass.getMethod(m.getName.dropRight(4)), m) )
+    val getterSetterAnnos = getterSetter.map{ (fGet, fSet) =>
+      val both = fGet.getAnnotations.toList ++ fSet.getAnnotations.toList
+      val annoMap: Map[String,Map[String,String]] = both.map{ a => 
+        val parms = a.annotationType.getDeclaredMethods.toList
+        (a.annotationType.getName -> parms.map(p => (p.getName, p.invoke(a).toString)).toMap)
+        }.toMap
+      val allMap = annoMap ++ varAnnos.getOrElse(fGet.getName, Map.empty[String,Map[String,String]])
+      (fGet.getName -> allMap)
+    }.toMap
+
+    val nonConstructorFields = getterSetter.collect {
+      case (fGet, fSet) if !getterSetterAnnos(fGet.getName).contains(IGNORE) =>
+        val fieldName = fGet.getName
+
+        val rtype = 
+          if varDefDeclarations.contains(fieldName) then
+            inspectType(reflect, paramMap)(varDefDeclarations(fieldName))
+          else
+            Reflector.reflectOnClass(fGet.getReturnType)
 
         // Figure out the original type symbols, i.e. T, (if any)
-        val valTypeRef = vd.tpt.tpe.asInstanceOf[reflect.TypeRef]
-        val isTypeParam = valTypeRef.typeSymbol.flags.is(Flags.Param)
-        val originalTypeSymbol = if isTypeParam then Some(valTypeRef.name.asInstanceOf[TypeSymbol]) else None
-  
+        val originalTypeSymbol =
+          varDefDeclarations.get(fieldName).flatMap{ declared => 
+            val isTypeParam = declared.typeSymbol.flags.is(Flags.Param)
+            if isTypeParam then Some(declared.name.asInstanceOf[TypeSymbol]) else None
+          }
+
+        index += 1
+
         ScalaFieldInfo(
-          -1,
-          vd.name,
-          inspectType(reflect, paramMap)(vd.tpt.tpe.asInstanceOf[reflect.TypeRef]),
-          otherAnnotations(vd.name),
-          infoClass.getMethod(vd.name),
-          None,
+          index,
+          fieldName,
+          rtype,
+          getterSetterAnnos(fieldName),
+          fGet,
+          {if index >= numConstructorFields then Some(()=>fGet) else None},
           originalTypeSymbol
         )
-
-      case dd: DefDef if !otherAnnotations(dd.name).contains("co.blocke.dotty_reflection.Ignore") 
-        && !otherAnnotations(dd.name+"_=").contains("co.blocke.dotty_reflection.Ignore") => 
-
-        // Figure out the original type symbols, i.e. T, (if any)
-          val valTypeRef = dd.returnTpt.tpe.asInstanceOf[reflect.TypeRef]
-          val isTypeParam = valTypeRef.typeSymbol.flags.is(Flags.Param)
-          val originalTypeSymbol = if isTypeParam then Some(valTypeRef.name.asInstanceOf[TypeSymbol]) else None
-    
-          ScalaFieldInfo(
-            -1,
-            dd.name,
-            inspectType(reflect, paramMap)(dd.returnTpt.tpe.asInstanceOf[reflect.TypeRef]),
-            otherAnnotations(dd.name) ++ otherAnnotations(dd.name+"_="),
-            infoClass.getMethod(dd.name),
-            None,
-            originalTypeSymbol
-          )
-      }
+    }.toList
 
     ScalaClassInfo(
       name,
@@ -91,7 +99,7 @@ trait NonCaseClassInspector:
       orderedTypeParameters,
       typeMembers,
       fields,
-      nonConstructorFields.toList,
+      nonConstructorFields,
       annotations,
       isValueClass
     )

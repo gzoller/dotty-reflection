@@ -7,6 +7,7 @@ trait ClassInfo extends RType with ClassOrTrait:
   val name:                  String
   val fields:                List[FieldInfo]
   val orderedTypeParameters: List[TypeSymbol]
+  val typeMembers:           List[TypeMemberInfo]
   val annotations:           Map[String, Map[String,String]]
   def constructWith[T](args: List[Object]): T 
 
@@ -90,6 +91,8 @@ case class JavaClassInfo protected[dotty_reflection] (
     fields:                List[FieldInfo],
     annotations:           Map[String, Map[String,String]],
   ) extends ClassInfo:
+
+  val typeMembers: List[TypeMemberInfo] = Nil  // unused for Java classes but needed on ClassInfo
 
   private val fieldsByName = fields.map(f => (f.name, f.asInstanceOf[JavaFieldInfo])).toMap
 

@@ -180,8 +180,8 @@ class ScalaTasty extends munit.FunSuite:
     |      (0) a: scala.Int
     |      (1) b: java.lang.String
     |   non-constructor fields:
-    |      (-1) blah: scala.Boolean
+    |      (2) blah: scala.Boolean
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))
-    |      (-1) age: scala.Int
+    |      (3) age: scala.Int
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))""".stripMargin)
   }
