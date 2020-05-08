@@ -5,10 +5,17 @@ object ExtractorRegistry:
 
   lazy val extractors: List[impl.TypeInfoExtractor[_]] = 
     List(
-      OptionExtractor(), 
+      OptionExtractor(),
       EitherExtractor(), 
       SeqExtractor(), 
+      ScalaArrayExtractor(),
       MapExtractor(), 
       TupleExtractor(),
-      TryExtractor()
+      TryExtractor(),
+      JavaMapExtractor(),
+      JavaStackExtractor(),  // This must come before Java List, because it is a list--but is created differently
+      JavaListExtractor(),
+      JavaSetExtractor(),
+      JavaQueueExtractor(),
+      OptionalExtractor()
     )

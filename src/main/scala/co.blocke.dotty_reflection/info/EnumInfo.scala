@@ -1,21 +1,24 @@
 package co.blocke.dotty_reflection
-package infos
+package info
 
 /** Something to smooth the differences between the 2.x Enumeration class and the 3.x Enum class
  */
-trait ScalaEnumInfo extends ConcreteType:
+trait EnumInfo extends RType:
   val infoClass: Class[_]
   lazy val values: List[Any]
   def ordinal(s: String): Int
   def valueOf(s: String): Any
   def valueOf(i: Int): Any
+  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+    val newTab = {if supressIndent then tab else tab+1}
+    {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s" with values [${values.map(_.toString).mkString(",")}]\n"
 
 
-case class ScalaEnum protected[dotty_reflection](
+case class ScalaEnumInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_]
-) extends ScalaEnumInfo: 
-  val typeParameters = Nil
+) extends EnumInfo: 
+  val orderedTypeParameters = Nil
 
   private val companion = Class.forName(name+"$")
   private val companionConst = companion.getDeclaredConstructor()
@@ -33,11 +36,11 @@ case class ScalaEnum protected[dotty_reflection](
   def valueOf(i: Int): Any = values(i)
 
 
-case class ScalaEnumeration protected[dotty_reflection](
+case class ScalaEnumerationInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_]
-) extends ScalaEnumInfo:
-  val typeParameters = Nil
+) extends EnumInfo:
+  val orderedTypeParameters = Nil
 
   private val companion = Class.forName(name+"$")
   private val companionConst = companion.getDeclaredConstructor()
@@ -52,8 +55,14 @@ case class ScalaEnumeration protected[dotty_reflection](
   def valueOf(s: String): Any = withNameMethod.invoke(companionInstance,s)
   def valueOf(i: Int): Any = applyMethod.invoke(companionInstance,i.asInstanceOf[Object])
 
+
+  
 case class JavaEnumInfo protected[dotty_reflection](
   name: String,
-  enumClass: Class[_]
-) extends ConcreteType: 
-  val typeParameters = Nil
+  infoClass: Class[_]
+) extends RType: 
+  val orderedTypeParameters = Nil
+
+  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+    val newTab = {if supressIndent then tab else tab+1}
+    {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName +s"(${infoClass.getName})\n"

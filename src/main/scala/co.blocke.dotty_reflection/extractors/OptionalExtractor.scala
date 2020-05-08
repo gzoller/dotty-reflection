@@ -6,19 +6,19 @@ import Clazzes._
 import info._ 
 import scala.tasty.Reflection
 
-case class OptionExtractor() extends TypeInfoExtractor[ScalaOptionInfo]:
+case class OptionalExtractor() extends TypeInfoExtractor[JavaOptionalInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz =:= OptionClazz
+  def matches(clazz: Class[_]): Boolean = clazz =:= OptionalClazz
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): ScalaOptionInfo =
+  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): JavaOptionalInfo = 
     val optionParamSymName = clazz.getTypeParameters.toList.head.getName 
     val optionParamType = paramMap.getOrElse(
       optionParamSymName.asInstanceOf[TypeSymbol], 
       TypeSymbolInfo(optionParamSymName)
       )
-    ScalaOptionInfo(
+    JavaOptionalInfo(
       clazz.getName, 
-      clazz,
+      clazz, 
       optionParamType
       )
 
@@ -29,4 +29,4 @@ case class OptionExtractor() extends TypeInfoExtractor[ScalaOptionInfo]:
     clazz: Class[_], 
     typeInspector: ScalaClassInspectorLike): RType =
 
-    ScalaOptionInfo(className, clazz, typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))
+    JavaOptionalInfo(className, clazz, typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))

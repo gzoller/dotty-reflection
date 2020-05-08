@@ -1,7 +1,6 @@
 package co.blocke.dotty_reflection
 
 import scala.reflect.ClassTag
-import infos._
 import scala.quoted._
 
 
@@ -42,11 +41,11 @@ def analyzeTypeImpl[T]()(implicit qctx: QuoteContext, ttype:scala.quoted.Type[T]
       case OrType(left,right) =>
         val resolvedLeft = diveDeep(left.asInstanceOf[Type])
         val resolvedRight = diveDeep(right.asInstanceOf[Type])
-        TypeStructure(Reflector.UNION_CLASS, List(resolvedLeft, resolvedRight))
+        TypeStructure(UNION_CLASS, List(resolvedLeft, resolvedRight))
       case AndType(left,right) =>
         val resolvedLeft = diveDeep(left.asInstanceOf[Type])
         val resolvedRight = diveDeep(right.asInstanceOf[Type])
-        TypeStructure(Reflector.INTERSECTION_CLASS, List(resolvedLeft, resolvedRight))
+        TypeStructure(INTERSECTION_CLASS, List(resolvedLeft, resolvedRight))
     }
 
   val dive = diveDeep(typeOf[T])

@@ -1,23 +1,24 @@
 package co.blocke.dotty_reflection
-package impl
+
 
 object Clazzes {
-  val EnumClazz        = Class.forName("scala.Enum")
+  val EnumClazz        = classOf[Enum]
   val TryClazz         = Class.forName("scala.util.Try")
   val MapClazz         = Class.forName("scala.collection.Map")
   val SetClazz         = Class.forName("scala.collection.Set")
   val SeqClazz         = Class.forName("scala.collection.Seq")
   val OptionClazz      = Class.forName("scala.Option")
   val EitherClazz      = Class.forName("scala.util.Either")
-  val BooleanClazz     = Class.forName("scala.Boolean")
-  val ByteClazz        = Class.forName("scala.Byte")
-  val CharClazz        = Class.forName("scala.Char")
-  val DoubleClazz      = Class.forName("scala.Double")
-  val FloatClazz       = Class.forName("scala.Float")
-  val IntClazz         = Class.forName("scala.Int")
-  val LongClazz        = Class.forName("scala.Long")
-  val ShortClazz       = Class.forName("scala.Short")
-  val StringClazz      = Class.forName("java.lang.String") // shared Java/Scala
+  val BooleanClazz     = classOf[Boolean]
+  val ByteClazz        = classOf[Byte]
+  val CharClazz        = classOf[Char]
+  val DoubleClazz      = classOf[Double]
+  val FloatClazz       = classOf[Float]
+  val IntClazz         = classOf[Int]
+  val LongClazz        = classOf[Long]
+  val ShortClazz       = classOf[Short]
+  val StringClazz      = classOf[String] // shared Java/Scala
+  val ScalaArrayClazz  = Class.forName("scala.Array")
 
   // Java-specific -- lots of wrapped/primitive type stuff going on
   val booleanClazz    = java.lang.Boolean.TYPE
@@ -37,6 +38,7 @@ object Clazzes {
   val shortClazz      = java.lang.Short.TYPE
   val JShortClazz     = Class.forName("java.lang.Short")
 
+  val AnyClazz        = classOf[Any]
   val ObjectClazz     = Class.forName("java.lang.Object")
   val ParamTypeClazz  = Class.forName("java.lang.reflect.ParameterizedType")
   val OptionalClazz   = Class.forName("java.util.Optional")
@@ -44,7 +46,11 @@ object Clazzes {
   val JListClazz      = classOf[java.util.List[_]]
   val JQueueClazz     = classOf[java.util.Queue[_]]
   val JSetClazz       = classOf[java.util.Set[_]]
+  val JStackClazz     = classOf[java.util.Stack[_]]
+  val JNumberClazz    = Class.forName("java.lang.Number")
 
+  // Class Ops
   def (c: Class[_]).=:=(other: Class[_]): Boolean = c == other
   def (c: Class[_]).<:<(other: Class[_]): Boolean = other.isAssignableFrom(c)
+  def (c: Class[_]).params: List[TypeSymbol] = c.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 }

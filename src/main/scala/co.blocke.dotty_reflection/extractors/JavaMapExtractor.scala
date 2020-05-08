@@ -6,11 +6,11 @@ import Clazzes._
 import info._ 
 import scala.tasty.Reflection
 
-case class MapExtractor() extends TypeInfoExtractor[MapLikeInfo]:
+case class JavaMapExtractor() extends TypeInfoExtractor[JavaMapInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz <:< MapClazz
+  def matches(clazz: Class[_]): Boolean = clazz <:< JMapClazz
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): MapLikeInfo = 
+  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): JavaMapInfo = 
     val keyParamSymName = clazz.getTypeParameters()(0).getName 
     val keyParamType = paramMap.getOrElse(
       keyParamSymName.asInstanceOf[TypeSymbol], 
@@ -21,9 +21,10 @@ case class MapExtractor() extends TypeInfoExtractor[MapLikeInfo]:
       valueParamSymName.asInstanceOf[TypeSymbol], 
       TypeSymbolInfo(valueParamSymName)
       )
-    MapLikeInfo(
+    JavaMapInfo(
       clazz.getName, 
       clazz, 
+      clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
       keyParamType,
       valueParamType
       )
@@ -36,8 +37,9 @@ case class MapExtractor() extends TypeInfoExtractor[MapLikeInfo]:
       typeInspector: ScalaClassInspectorLike
     ): RType =
 
-    MapLikeInfo(
+    JavaMapInfo(
       className, 
       clazz,
+      clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
       typeInspector.inspectType(reflect, paramMap)(tob(0).asInstanceOf[reflect.TypeRef]),
       typeInspector.inspectType(reflect, paramMap)(tob(1).asInstanceOf[reflect.TypeRef]))

@@ -35,7 +35,7 @@ import co.blocke.dotty_reflection
 case class Thing(a: String)
 
 val artifact: ConcreteType = Reflector.reflectOn[Thing]
-// Concrete type here is typically a ScalaClassInfo or JavaClassInfo but could be something else if you reflected on, say, List[Foo], in which case you'd
+// Concrete type here is typically a ScalaCaseClassInfo or JavaClassInfo but could be something else if you reflected on, say, List[Foo], in which case you'd
 // get back a SeqLikeInfo.
 
 // Alternatively, if you have the Class instance:
@@ -85,3 +85,7 @@ There are 11 things ScalaJack must reflect on in order to function. These are:
 11. Type equivalence (<:< and =:=)
 
 If we've done the proper inventory, with these 11 laws solved for Dotty we should have enough for ScalaJack to serialize/deserialize objects to wire formats.  dotty_reflection should account for all 11 laws needed by ScalaJack, plus a few new tricks that are Dotty-specific (i.e. not used in ScalaJack--yet)
+
+
+### Notes:
+This library can handle some pretty tricky trait type resolution (see tests), but there are limits.  Some attempts to resolveClassInTermsOf() a deeply nested trait may fail.  These will be pretty knarly and (hopefully) unlikely case though.
