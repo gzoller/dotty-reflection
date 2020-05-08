@@ -4,17 +4,20 @@ import impl._
 import info._
 
 case class VCDouble(vc: Double) extends AnyVal
-class PlayerMix() {
-  def someConfusingThing() = true // <-- This is crashing things.... not populating annotations table in NonCaseClassInspector :-(
-  var name: String = "" // public var member
-  var maybe: Option[Int] = Some(1) // optional member
+case class One(vc: VCDouble)
+class Two(val vc: VCDouble)
 
-  @Ignore @Change(name="boom") var bogus: String = ""
+// class PlayerMix() {
+//   def someConfusingThing() = true // <-- This is crashing things.... not populating annotations table in NonCaseClassInspector :-(
+//   var name: String = "" // public var member
+//   var maybe: Option[Int] = Some(1) // optional member
 
-  private var _age: VCDouble = VCDouble(0.0)
-  @Change(name="ancient") def age: VCDouble = _age // getter/setter member
-  def age_=(a: VCDouble): Unit = _age = a
-}
+//   @Ignore @Change(name="boom") var bogus: String = ""
+
+//   private var _age: VCDouble = VCDouble(0.0)
+//   @Change(name="ancient") def age: VCDouble = _age // getter/setter member
+//   def age_=(a: VCDouble): Unit = _age = a
+// }
 
 // class Foom(val a: Int, val b: String) {
 //   @Optional var blah: Boolean = false
@@ -29,6 +32,12 @@ class PlayerMix() {
 
 object RunMe extends App:
 
-  val r = Reflector.reflectOn[PlayerMix].asInstanceOf[ScalaClassInfo]
-  println(r)
+  val r = Reflector.reflectOn[One].asInstanceOf[ScalaCaseClassInfo]
+  val f = r.fields(0).asInstanceOf[ScalaFieldInfo]
+
+  val thing = One(VCDouble(12.34))
+  val d = 12.34
+
+  println(f.valueOf(d.asInstanceOf[Object]))
+  // println(f.valueOf(thing))
   
