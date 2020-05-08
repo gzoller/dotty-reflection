@@ -114,9 +114,7 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
                 scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
                   throw new ReflectException(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
                 )
-              // Field annotations (stored internal 'val' definitions in class)
-              val annoSymbol = members.get(fieldName).get.symbol.annots.filter( a => !a.symbol.signature.resultSig.startsWith("scala.annotation.internal."))
-              val fieldAnnos = annoSymbol.map{ a => 
+              val fieldAnnos = paramValDef.symbol.annots.map{ a => 
                 val reflect.Apply(_, params) = a
                 val annoName = a.symbol.signature.resultSig
                 (annoName,(params collect {
