@@ -15,7 +15,7 @@ class Enums extends munit.FunSuite:
 
   test("Scala Enums (old and new)") {
     val result = Reflector.reflectOn[Birthday]
-    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.Birthday):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Birthday):
     |   fields:
     |      (0) m: ScalaEnumInfo with values [Jan,Feb,Mar]
     |      (1) d: ScalaEnumerationInfo with values [Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday]""".stripMargin)

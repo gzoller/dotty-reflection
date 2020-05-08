@@ -1,0 +1,43 @@
+package co.blocke.dotty_reflection
+
+import impl._ 
+import info._
+
+case class VCDouble(vc: Double) extends AnyVal
+case class One(vc: VCDouble)
+class Two(val vc: VCDouble)
+
+// class PlayerMix() {
+//   def someConfusingThing() = true // <-- This is crashing things.... not populating annotations table in NonCaseClassInspector :-(
+//   var name: String = "" // public var member
+//   var maybe: Option[Int] = Some(1) // optional member
+
+//   @Ignore @Change(name="boom") var bogus: String = ""
+
+//   private var _age: VCDouble = VCDouble(0.0)
+//   @Change(name="ancient") def age: VCDouble = _age // getter/setter member
+//   def age_=(a: VCDouble): Unit = _age = a
+// }
+
+// class Foom(val a: Int, val b: String) {
+//   @Optional var blah: Boolean = false
+//   @Ignore var hey: Int = 2
+//   val nope: Float = 1.2
+
+//   private var _age = 0
+//   def age = _age
+//   def age_=(g: Int): Unit = _age = g
+// }
+
+
+object RunMe extends App:
+
+  val r = Reflector.reflectOn[One].asInstanceOf[ScalaCaseClassInfo]
+  val f = r.fields(0).asInstanceOf[ScalaFieldInfo]
+
+  val thing = One(VCDouble(12.34))
+  val d = 12.34
+
+  println(f.valueOf(d.asInstanceOf[Object]))
+  // println(f.valueOf(thing))
+  

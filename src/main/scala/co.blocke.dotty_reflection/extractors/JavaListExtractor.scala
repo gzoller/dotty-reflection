@@ -28,7 +28,7 @@ case class JavaListExtractor() extends TypeInfoExtractor[JavaListInfo]:
       tob: List[reflect.TypeOrBounds], 
       className: String, 
       clazz: Class[_], 
-      typeInspector: ScalaClassInspector
+      typeInspector: ScalaClassInspectorLike
     ): RType =
 
     JavaListInfo(

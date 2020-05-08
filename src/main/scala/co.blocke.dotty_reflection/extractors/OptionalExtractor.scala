@@ -27,6 +27,6 @@ case class OptionalExtractor() extends TypeInfoExtractor[JavaOptionalInfo]:
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): RType =
+    typeInspector: ScalaClassInspectorLike): RType =
 
     JavaOptionalInfo(className, clazz, typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))

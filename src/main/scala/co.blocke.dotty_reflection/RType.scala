@@ -6,14 +6,15 @@ trait RType:
   val infoClass: Class[_]  /** the JVM class of this type */
   val orderedTypeParameters: List[TypeSymbol]  /** if this is a parameterized type,  list of type symbols in order of declaration */
   def show(tab: Int = 0, supressIndent: Boolean = false): String
+  inline final def isParameterized: Boolean = !orderedTypeParameters.isEmpty
   override def toString(): String = show()
 
 
-case class TypeMemberInfo(name: String, memberType: RType) extends RType {
+case class TypeMemberInfo(name: String, typeSymbol: TypeSymbol, memberType: RType) extends RType {
   val orderedTypeParameters: List[TypeSymbol] = Nil
   val infoClass = Clazzes.ObjectClazz
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
-    {if(!supressIndent) tabs(tab) else ""} + name + ": "+ memberType.show(tab+1, true)
+    {if(!supressIndent) tabs(tab) else ""} + name + s"[$typeSymbol]: "+ memberType.show(tab+1, true)
 }
 
 
@@ -26,3 +27,7 @@ case class TypeSymbolInfo(name: String) extends RType:
 
 // Poked this here for now.  Used for show()
 final inline def tabs(t:Int) = "   "*t
+
+
+object RType:
+  inline def of[T](implicit ct: scala.reflect.ClassTag[T]): RType = Reflector.reflectOn[T]

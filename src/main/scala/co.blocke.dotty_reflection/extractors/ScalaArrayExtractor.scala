@@ -40,7 +40,7 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
       tob: List[reflect.TypeOrBounds], 
       className: String, 
       clazz: Class[_], 
-      typeInspector: ScalaClassInspector
+      typeInspector: ScalaClassInspectorLike
     ): RType =
 
     val elementType = typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef])

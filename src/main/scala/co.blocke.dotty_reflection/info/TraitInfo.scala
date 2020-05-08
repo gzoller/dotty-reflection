@@ -11,6 +11,7 @@ case class TraitInfo protected[dotty_reflection](
   ) extends RType with ClassOrTrait:
 
   def setActualTypeParameters( params: List[RType] ) = this.copy(actualParameterTypes = params)
+  lazy val typedParams = orderedTypeParameters.zip(actualParameterTypes).toMap
 
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

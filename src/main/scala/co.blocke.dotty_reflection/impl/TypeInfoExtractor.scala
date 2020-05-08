@@ -15,5 +15,5 @@ trait TypeInfoExtractor[T <: RType]:
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): RType
+    typeInspector: ScalaClassInspectorLike): RType
 

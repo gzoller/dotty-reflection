@@ -29,7 +29,7 @@ case class TupleExtractor() extends TypeInfoExtractor[TupleInfo]:
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): RType =
+    typeInspector: ScalaClassInspectorLike): RType =
 
     val elementTypes = tob.map( t => typeInspector.inspectType(reflect, paramMap)(t.asInstanceOf[reflect.TypeRef]))
     // val (elementTypes, elementTypeSymbols) = tob.foldRight( (List.empty[ALL_TYPE], List.empty[Option[TypeSymbol]]) ){ (rawTypeRef, acc) => 

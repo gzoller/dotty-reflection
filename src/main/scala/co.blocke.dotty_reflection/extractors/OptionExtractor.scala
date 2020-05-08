@@ -27,6 +27,6 @@ case class OptionExtractor() extends TypeInfoExtractor[ScalaOptionInfo]:
     tob: List[reflect.TypeOrBounds], 
     className: String, 
     clazz: Class[_], 
-    typeInspector: ScalaClassInspector): RType =
+    typeInspector: ScalaClassInspectorLike): RType =
 
     ScalaOptionInfo(className, clazz, typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))
