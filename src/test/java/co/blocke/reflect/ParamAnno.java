@@ -1,7 +1,5 @@
 package co.blocke.reflect;
 
-import co.blocke.dotty_reflection.Ignore;
-
 @ClassAnno(name="Foom")
 public class ParamAnno<T> {
   public ParamAnno() {}

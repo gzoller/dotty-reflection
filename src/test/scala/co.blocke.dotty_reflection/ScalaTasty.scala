@@ -183,5 +183,33 @@ class ScalaTasty extends munit.FunSuite:
     |      (2) blah: scala.Boolean
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))
     |      (3) age: scala.Int
-    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))""".stripMargin)
+    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))
+    |      (4) hey: scala.Int
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin)
+  }
+
+  test("Inheritance and Annotations") {
+    val result = Reflector.reflectOn[InheritSimpleChild]
+    assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.InheritSimpleChild):
+    |   fields:
+    |      (0) extra: java.lang.String
+    |      (1) one: java.lang.String
+    |         annotations: Map(co.blocke.reflect.Change -> Map(name -> uno), co.blocke.reflect.DBKey -> Map())
+    |   non-constructor fields:
+    |      (2) foo: scala.Int
+    |         annotations: Map(co.blocke.reflect.DBKey -> Map(index -> 99))
+    |      (3) bogus: java.lang.String
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |      (4) nada: scala.Double
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |      (5) two: scala.Int
+    |         annotations: Map(co.blocke.reflect.Change -> Map(name -> foobar), co.blocke.reflect.DBKey -> Map(index -> 1))
+    |      (6) three: scala.Boolean
+    |      (7) dontseeme: scala.Int
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |      (8) four: scala.Double
+    |         annotations: Map(co.blocke.reflect.DBKey -> Map(index -> 2), co.blocke.reflect.Change -> Map(name -> quatro))
+    |      (9) dontForget: scala.Int
+    |      (10) unused: scala.Double
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin)
   }
