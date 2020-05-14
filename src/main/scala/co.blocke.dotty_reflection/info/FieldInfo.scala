@@ -12,6 +12,8 @@ trait FieldInfo:
   val valueAccessor:        Method
   val defaultValueAccessor: Option[()=>Object]
 
+  def reIndex(i: Int): FieldInfo
+
   def show(tab: Int = 0, supressIndent: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} 
@@ -33,6 +35,8 @@ case class ScalaFieldInfo(
 ) extends FieldInfo:
   def valueOf(target: Object) = valueAccessor.invoke(target)
   def constructorClass: Class[_] = constructorClassFor(fieldType)
+
+  def reIndex(i: Int): FieldInfo = this.copy(index = i)
 
   private def constructorClassFor(t: RType): Class[_] = 
     t match {
@@ -56,3 +60,5 @@ case class JavaFieldInfo(
   originalSymbol:  Option[TypeSymbol]
 ) extends FieldInfo:
   val defaultValueAccessor = None
+  def reIndex(i: Int): FieldInfo = this.copy(index = i)
+

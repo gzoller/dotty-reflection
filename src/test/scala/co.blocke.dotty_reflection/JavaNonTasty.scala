@@ -138,7 +138,9 @@ class JavaNonTasty extends munit.FunSuite:
     |   fields:
     |      (0) age: T
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))
-    |      (1) name: java.lang.String
+    |      (1) bogus: java.lang.Boolean
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |      (2) name: java.lang.String
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 1))
     |   annotations: Map(co.blocke.reflect.ClassAnno -> Map(name -> Foom))""".stripMargin)
   }

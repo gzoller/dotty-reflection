@@ -51,7 +51,8 @@ object JavaClassInspector:
           val fieldType = inspectType(clazz.getTypeParameters.toList, getter.getGenericReturnType, paramMap)
 
           JavaFieldInfo(0,fieldName, fieldType, fieldAnnos, getter, setter, None)
-      }.toList.filterNot(_.annotations.contains(IGNORE)).zipWithIndex.map{
+      }.toList.zipWithIndex.map{
+            // }.toList.filterNot(_.annotations.contains(IGNORE)).zipWithIndex.map{
         (f,i) => f.copy(index = i)
       }
 
