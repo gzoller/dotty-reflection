@@ -107,6 +107,10 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
                 )
             }
 
+            // Get superclass' constructor field annotations (so we can blend with this class' constructor field annotations)
+            // This lazy here only is needed/eval'ed if we find an 'override' val in the parameter list of this class.
+            lazy val dad = Reflector.reflectOnClass(clazz.getSuperclass)
+
             val fields = paramz.head.zipWithIndex.map{ (paramValDef, i) =>
               val valDef = members(paramValDef.name) // we use the members here because match types aren't resolved in paramValDef but are resolved in members
               val fieldName = valDef.name
@@ -114,13 +118,20 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
                 scala.util.Try(clazz.getDeclaredMethod(fieldName)).toOption.orElse(
                   throw new ReflectException(s"Class [$className]: Non-case class constructor arguments must all be 'val'")
                 )
-              val fieldAnnos = paramValDef.symbol.annots.map{ a => 
-                val reflect.Apply(_, params) = a
-                val annoName = a.symbol.signature.resultSig
-                (annoName,(params collect {
-                  case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
-                }).toMap)
-              }.toMap
+              val fieldAnnos = {
+                val baseAnnos = 
+                  if valDef.symbol.flags.is(Flags.Override) then
+                    dad.asInstanceOf[ScalaClassInfo].fields.find(_.name == valDef.name).map(_.annotations).get
+                  else
+                    Map.empty[String,Map[String,String]]
+                baseAnnos ++ paramValDef.symbol.annots.map{ a => 
+                  val reflect.Apply(_, params) = a
+                  val annoName = a.symbol.signature.resultSig
+                  (annoName,(params collect {
+                    case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
+                  }).toMap)
+                }.toMap
+              }
 
               inspectField(reflect, paramMap)(valDef, i, fieldAnnos, className) 
             }
@@ -139,7 +150,7 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
               case Apply(Select(New(x),_),_) => x 
             }.map(_.symbol.name == "AnyVal").getOrElse(false)
 
-            val classInfo = if( isCaseClass ) then
+            val classInfo = if isCaseClass then
               ScalaCaseClassInfo(className, clazz, typeParams, typeMembers, fields, annos, isValueClass)
             else
               inspectNonCaseClass(reflect, paramMap)(t, className, clazz, typeParams, typeMembers, fields, annos, isValueClass)

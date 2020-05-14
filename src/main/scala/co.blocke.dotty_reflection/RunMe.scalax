@@ -3,41 +3,47 @@ package co.blocke.dotty_reflection
 import impl._ 
 import info._
 
-case class VCDouble(vc: Double) extends AnyVal
-case class One(vc: VCDouble)
-class Two(val vc: VCDouble)
+class InheritSimpleBase(
+    @DBKey(index = 50)@Change(name = "bogus") val one:String= "blather"
+) {
+  // Public data member
+  @DBKey(index = 1) @Change(name = "foobar") var two: Int = 5
+  var three: Boolean = true
 
-// class PlayerMix() {
-//   def someConfusingThing() = true // <-- This is crashing things.... not populating annotations table in NonCaseClassInspector :-(
-//   var name: String = "" // public var member
-//   var maybe: Option[Int] = Some(1) // optional member
+  // Private var or val
+  val notOne: Int = 2
 
-//   @Ignore @Change(name="boom") var bogus: String = ""
+  @Ignore var dontseeme: Int = 90
 
-//   private var _age: VCDouble = VCDouble(0.0)
-//   @Change(name="ancient") def age: VCDouble = _age // getter/setter member
-//   def age_=(a: VCDouble): Unit = _age = a
-// }
+  // Scala-style getter/setter
+  private var _four: Double = 0.1
+  @DBKey(index = 2) def four: Double = _four
+  @Change(name = "quatro") def four_=(a: Double): Unit = _four = a
 
-// class Foom(val a: Int, val b: String) {
-//   @Optional var blah: Boolean = false
-//   @Ignore var hey: Int = 2
-//   val nope: Float = 1.2
+  private var _dontForget: Int = 9
+  def dontForget: Int = _dontForget
+  def dontForget_=(a: Int): Unit = _dontForget = a
 
-//   private var _age = 0
-//   def age = _age
-//   def age_=(g: Int): Unit = _age = g
-// }
+  private var _unused: Double = 0.1
+  @Ignore def unused: Double = _unused
+  def unused_=(a: Double): Unit = _unused = a
+}
+
+class InheritSimpleChild(
+    val extra:                                  String,
+    @DBKey @Change(name = "uno") override val one:String)
+  extends InheritSimpleBase(one) {
+  @DBKey(index = 99) var foo: Int = 39
+  @Ignore var bogus: String = ""
+
+  private var _nada: Double = 0.1
+  def nada: Double = _nada
+  @Ignore def nada_=(a: Double): Unit = _nada = a
+}
 
 
 object RunMe extends App:
 
-  val r = Reflector.reflectOn[One].asInstanceOf[ScalaCaseClassInfo]
-  val f = r.fields(0).asInstanceOf[ScalaFieldInfo]
-
-  val thing = One(VCDouble(12.34))
-  val d = 12.34
-
-  println(f.valueOf(d.asInstanceOf[Object]))
-  // println(f.valueOf(thing))
+  // println( Reflector.reflectOn[InheritSimpleBase])
+  println( Reflector.reflectOn[InheritSimpleChild])
   

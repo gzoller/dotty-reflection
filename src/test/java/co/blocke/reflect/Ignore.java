@@ -1,4 +1,4 @@
-package co.blocke.dotty_reflection;
+package co.blocke.reflect;
 
 import java.lang.annotation.*;
 
