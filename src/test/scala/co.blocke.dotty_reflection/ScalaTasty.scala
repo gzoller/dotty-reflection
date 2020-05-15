@@ -176,44 +176,46 @@ class ScalaTasty extends munit.FunSuite:
   test("handle Scala non-case classes") {
     val result = Reflector.reflectOn[FoomNC]
     val target = result.show()
-    // This is ugly because non-constructor fields can show in any order, so testing is problematic...
-    assert( target.contains("""ScalaClassInfo(co.blocke.dotty_reflection.FoomNC):
+    assertEquals( result.show(0,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.FoomNC):
     |   fields:
     |      (0) a: scala.Int
     |      (1) b: java.lang.String
-    |   non-constructor fields:""".stripMargin) )
-    assert( target.contains(""") blah: scala.Boolean
-    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))""".stripMargin))
-    assert( target.contains(""") hey: scala.Int
-    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin))
-    assert( target.contains(""") age: scala.Int
-    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))""".stripMargin))
+    |   non-constructor fields:
+    |      (_) age: scala.Int
+    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))
+    |      (_) blah: scala.Boolean
+    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))
+    |      (_) hey: scala.Int
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin)
   }
 
   test("Inheritance and Annotations") {
     val result = Reflector.reflectOn[InheritSimpleChild]
     val target = result.show()
-    // This is ugly because non-constructor fields can show in any order, so testing is problematic...
-    assert( target.contains("""ScalaClassInfo(co.blocke.dotty_reflection.InheritSimpleChild):
+    assertEquals( result.show(0,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.InheritSimpleChild):
     |   fields:
     |      (0) extra: java.lang.String
     |      (1) one: java.lang.String
     |         annotations: Map(co.blocke.reflect.Change -> Map(name -> uno), co.blocke.reflect.DBKey -> Map())
-    |   non-constructor fields:""".stripMargin) )
-    assert( target.contains(""") foo: scala.Int
-    |         annotations: Map(co.blocke.reflect.DBKey -> Map(index -> 99))""".stripMargin))
-    assert( target.contains(""") bogus: java.lang.String
-    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin))
-    assert( target.contains(""") nada: scala.Double
-    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin))
-    assert( target.contains(""") two: scala.Int
-    |         annotations: Map(co.blocke.reflect.Change -> Map(name -> foobar), co.blocke.reflect.DBKey -> Map(index -> 1))""".stripMargin))
-    assert( target.contains(""") three: scala.Boolean"""))
-    assert( target.contains(""") dontseeme: scala.Int
-    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin))
-    assert( target.contains(""") four: scala.Double
-    |         annotations: Map(co.blocke.reflect.DBKey -> Map(index -> 2), co.blocke.reflect.Change -> Map(name -> quatro))""".stripMargin))
-    assert( target.contains(""") dontForget: scala.Int"""))
-    assert( target.contains(""") unused: scala.Double
-    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin))
+    |   non-constructor fields:
+    |      (_) bogus: java.lang.String
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |      (_) dontForget: scala.Int
+    |      (_) dontseeme: scala.Int
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |      (_) foo: scala.Int
+    |         annotations: Map(co.blocke.reflect.DBKey -> Map(index -> 99))
+    |      (_) four: scala.Double
+    |         annotations: Map(co.blocke.reflect.DBKey -> Map(index -> 2), co.blocke.reflect.Change -> Map(name -> quatro))
+    |      (_) nada: scala.Double
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |      (_) three: scala.Boolean
+    |      (_) two: scala.Int
+    |         annotations: Map(co.blocke.reflect.Change -> Map(name -> foobar), co.blocke.reflect.DBKey -> Map(index -> 1))
+    |      (_) unused: scala.Double
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin)
+  }
+
+  test("Inheritance and Parameterized Classes") {
+    
   }

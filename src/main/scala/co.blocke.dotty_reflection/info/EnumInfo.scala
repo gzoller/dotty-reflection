@@ -9,7 +9,7 @@ trait EnumInfo extends RType:
   def ordinal(s: String): Int
   def valueOf(s: String): Any
   def valueOf(i: Int): Any
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s" with values [${values.map(_.toString).mkString(",")}]\n"
 
@@ -63,6 +63,6 @@ case class JavaEnumInfo protected[dotty_reflection](
 ) extends RType: 
   val orderedTypeParameters = Nil
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName +s"(${infoClass.getName})\n"

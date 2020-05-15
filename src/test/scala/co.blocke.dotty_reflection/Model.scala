@@ -252,3 +252,14 @@ class InheritSimpleChild(
   def nada: Double = _nada
   @Ignore def nada_=(a: Double): Unit = _nada = a
 }
+
+// Inheritance and parameterized classes
+class ParamBase[T](val thing: T) {
+  var item: T = null.asInstanceOf[T]
+
+  private var _cosa: T = null.asInstanceOf[T]
+  def cosa: T = _cosa
+  def cosa_=(a: T): Unit = _cosa = a
+}
+
+class ParamChild[T](override val thing: T) extends ParamBase[T](thing)

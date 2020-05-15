@@ -16,7 +16,7 @@ case class ScalaOptionInfo protected[dotty_reflection](
 
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + "Option of " + optionParamType.show(newTab,true)
 
@@ -29,6 +29,6 @@ case class JavaOptionalInfo protected[dotty_reflection](
 
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + "Optional of " + optionParamType.show(newTab,true)

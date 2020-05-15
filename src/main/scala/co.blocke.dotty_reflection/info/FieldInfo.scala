@@ -14,10 +14,10 @@ trait FieldInfo:
 
   def reIndex(i: Int): FieldInfo
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} 
-      + s"($index)" 
+      + s"(${if !modified then index else '_'})" 
       + {if originalSymbol.isDefined then s"[${originalSymbol.get}]" else ""}
       + s" $name: " 
       + fieldType.show(newTab,true) 
