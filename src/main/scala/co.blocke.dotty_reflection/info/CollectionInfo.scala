@@ -19,7 +19,7 @@ case class MapLikeInfo protected[dotty_reflection](
 ) extends RType with CollectionType:
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
-  override def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  override def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
     + s"($name" + {if orderedTypeParameters.nonEmpty then s"""[${orderedTypeParameters.mkString(",")}]):\n""" else "):\n"}
@@ -35,7 +35,7 @@ case class ArrayInfo protected[dotty_reflection](
 ) extends RType:
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"array of " + elementType.show(newTab,true)
 
@@ -66,7 +66,7 @@ case class JavaArrayInfo protected[dotty_reflection](
   val name: String = JAVA_ARRAY_CLASS
   val orderedTypeParameters: List[TypeSymbol] = Nil
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"array of " + elementType.show(newTab,true)
 
@@ -98,7 +98,7 @@ case class JavaMapInfo protected[dotty_reflection](
   elementType2: RType
 ) extends RType with CollectionType:
 
-  override def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  override def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
     + s"($name" + {if orderedTypeParameters.nonEmpty then s"""[${orderedTypeParameters.mkString(",")}]):\n""" else "):\n"}

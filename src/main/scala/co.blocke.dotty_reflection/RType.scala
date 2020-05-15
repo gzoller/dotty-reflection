@@ -5,7 +5,7 @@ trait RType:
   val name: String         /** typically the fully-qualified class name */
   val infoClass: Class[_]  /** the JVM class of this type */
   val orderedTypeParameters: List[TypeSymbol]  /** if this is a parameterized type,  list of type symbols in order of declaration */
-  def show(tab: Int = 0, supressIndent: Boolean = false): String
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String  // modified is "special", ie. don't show index & sort for nonconstructor fields
   inline final def isParameterized: Boolean = !orderedTypeParameters.isEmpty
   override def toString(): String = show()
 
@@ -13,7 +13,7 @@ trait RType:
 case class TypeMemberInfo(name: String, typeSymbol: TypeSymbol, memberType: RType) extends RType {
   val orderedTypeParameters: List[TypeSymbol] = Nil
   val infoClass = Clazzes.ObjectClazz
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     {if(!supressIndent) tabs(tab) else ""} + name + s"[$typeSymbol]: "+ memberType.show(tab+1, true)
 }
 
@@ -21,7 +21,7 @@ case class TypeMemberInfo(name: String, typeSymbol: TypeSymbol, memberType: RTyp
 case class TypeSymbolInfo(name: String) extends RType:
   val orderedTypeParameters: List[TypeSymbol] = Nil
   val infoClass = Clazzes.ObjectClazz
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     {if(!supressIndent) tabs(tab) else ""} + name + "\n"
 
 

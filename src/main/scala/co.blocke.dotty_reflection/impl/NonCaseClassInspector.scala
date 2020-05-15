@@ -79,19 +79,21 @@ trait NonCaseClassInspector:
     val nonConstructorFields = getterSetter.map { (fGet, fSet) =>
       val fieldName = fGet.getName
 
-      val rtype = 
-        if varDefDeclarations.contains(fieldName) then
-          inspectType(reflect, paramMap)(varDefDeclarations(fieldName))
-        else
-          Reflector.reflectOnClass(fGet.getReturnType)
-
       // Figure out the original type symbols, i.e. T, (if any)
-      val originalTypeSymbol =
-        varDefDeclarations.get(fieldName).flatMap{ declared => 
-          val isTypeParam = declared.typeSymbol.flags.is(Flags.Param)
-          if isTypeParam then Some(declared.name.asInstanceOf[TypeSymbol]) else None
-        }
+      val originalTypeSymbol = 
+        if paramMap.contains(fGet.getGenericReturnType.toString.asInstanceOf[TypeSymbol])
+          Some(fGet.getGenericReturnType.toString.asInstanceOf[TypeSymbol])
+        else
+          None
 
+      val rtype = 
+        originalTypeSymbol.flatMap( ots => paramMap.get(ots) ).getOrElse{
+          if varDefDeclarations.contains(fieldName) then
+            inspectType(reflect, paramMap)(varDefDeclarations(fieldName))
+          else
+            Reflector.reflectOnClass(fGet.getReturnType)
+        }
+  
       index += 1
 
       ScalaFieldInfo(

@@ -33,7 +33,7 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaCaseClassInfo = this.copy( typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
-  def show(tab:Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab:Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
 
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
@@ -69,14 +69,15 @@ case class ScalaClassInfo protected[dotty_reflection] (
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfo = this.copy( typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
-  def show(tab:Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab:Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
+    val showNCFields = {if !modified then nonConstructorFields else nonConstructorFields.sortBy(_.name) }
 
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
     + {if isValueClass then "--Value Class--" else ""}
     + s"($name" + {if orderedTypeParameters.nonEmpty then s"""[${orderedTypeParameters.mkString(",")}]):\n""" else "):\n"}
     + tabs(newTab) + "fields:\n" + fields.map(_.show(newTab+1)).mkString
-    + tabs(newTab) + "non-constructor fields:\n" + nonConstructorFields.map(_.show(newTab+1)).mkString
+    + tabs(newTab) + "non-constructor fields:\n" + showNCFields.map(_.show(newTab+1, supressIndent, modified)).mkString
     + {if annotations.nonEmpty then tabs(newTab) + "annotations: "+annotations.toString + "\n" else ""}
     + {if( typeMembers.nonEmpty ) tabs(newTab) + "type members:\n" + typeMembers.map(_.show(newTab+1)).mkString else ""}
 
@@ -103,7 +104,7 @@ case class JavaClassInfo protected[dotty_reflection] (
     fields.zipWithIndex.foreach((f,a) => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(c,args(a)))
     c.asInstanceOf[T]
 
-  def show(tab:Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab:Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
 
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 

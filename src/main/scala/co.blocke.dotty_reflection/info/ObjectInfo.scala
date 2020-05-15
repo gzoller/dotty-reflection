@@ -8,5 +8,5 @@ case class ObjectInfo protected[dotty_reflection](
 
   val orderedTypeParameters: List[TypeSymbol] = Nil
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name)\n"

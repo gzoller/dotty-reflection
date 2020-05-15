@@ -13,7 +13,7 @@ case class TraitInfo protected[dotty_reflection](
   def setActualTypeParameters( params: List[RType] ) = this.copy(actualParameterTypes = params)
   lazy val typedParams = orderedTypeParameters.zip(actualParameterTypes).toMap
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     val both = orderedTypeParameters.zip(actualParameterTypes)
 
@@ -31,7 +31,7 @@ case class SealedTraitInfo protected(
     children: List[RType]
   ) extends RType with ClassOrTrait:
 
-  def show(tab: Int = 0, supressIndent: Boolean = false): String = 
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
     + s"($name" + {if orderedTypeParameters.nonEmpty then s"""[${orderedTypeParameters.mkString(",")}])""" else ")"}

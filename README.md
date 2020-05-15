@@ -87,3 +87,7 @@ If we've done the proper inventory, with these 11 laws solved for Dotty we shoul
 
 ### Notes:
 This library can handle some pretty tricky trait type resolution (see tests), but there are limits.  Some attempts to resolveClassInTermsOf() a deeply nested trait may fail.  These will be pretty knarly and (hopefully) unlikely case though.
+
+#### Future plans:
+* Instead of a deep-dive to resolve type parameters, try using a function to "self-resolve" the actual types when they become known
+* Because Dotty Inspection reads .tasty files, the file IO is....slow.  Do some experiments to see if we can either pre-process things via a macro, or like Scala 2, generate an annotation pre-loaded with the reflected information during compile-time.
