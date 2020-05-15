@@ -182,10 +182,10 @@ class ScalaTasty extends munit.FunSuite:
     |   non-constructor fields:
     |      (2) blah: scala.Boolean
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))
-    |      (3) age: scala.Int
-    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))
-    |      (4) hey: scala.Int
-    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin)
+    |      (3) hey: scala.Int
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |      (4) age: scala.Int
+    |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))""".stripMargin)
   }
 
   test("Inheritance and Annotations") {
