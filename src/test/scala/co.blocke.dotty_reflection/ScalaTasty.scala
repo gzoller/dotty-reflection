@@ -217,5 +217,11 @@ class ScalaTasty extends munit.FunSuite:
   }
 
   test("Inheritance and Parameterized Classes") {
-    
+    val result = Reflector.reflectOn[ParamChild[Boolean]]
+    assertEquals( result.show(0,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.ParamChild[T]):
+    |   fields:
+    |      (0)[T] thing: scala.Boolean
+    |   non-constructor fields:
+    |      (_)[T] cosa: scala.Boolean
+    |      (_)[T] item: scala.Boolean""".stripMargin)
   }
