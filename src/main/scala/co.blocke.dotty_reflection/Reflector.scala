@@ -36,16 +36,21 @@ object Reflector:
   /** Same as reflectOn, except given a Class object instead of a type, T.
    *  NOTE: If Class is parameterized, this call can't infer the types of the parameters.  In that case, call reflectOnClassWithParams
    */
-  def reflectOnClass(clazz: Class[_]): RType =
+  def reflectOnClass(clazz: Class[_], prebakedStructure: Option[TypeStructure] = None): RType =
     val className = clazz.getName
-    val structure = TypeStructure(className,Nil)
-    Option(cache.get(structure)).getOrElse{ 
-      val tc = new ScalaClassInspector(clazz, Map.empty[TypeSymbol,RType])
-      tc.inspect("", List(className))
-      val found = tc.inspected
-      cache.put(structure, found)
-      found
-    }
+    // See if this is a top-level Scala 2 Enumeration... cumbersome, I know...
+    val isEnumeration = scala.util.Try(clazz.getMethod("values")).toOption.map( _.getReturnType.getName == "scala.Enumeration$ValueSet").getOrElse(false)
+    if isEnumeration then
+      ScalaEnumerationInfo(className, clazz)
+    else
+      val structure = prebakedStructure.getOrElse(TypeStructure(className,Nil))
+      Option(cache.get(structure)).getOrElse{ 
+        val tc = new ScalaClassInspector(clazz, Map.empty[TypeSymbol,RType])
+        tc.inspect("", List(className))
+        val found = tc.inspected
+        cache.put(structure, found)
+        found
+      }
 
   
   def reflectOnClassLite( clazz: Class[_] ): RType =
@@ -128,8 +133,8 @@ object Reflector:
     ps match {
       case TypeStructure(ANY_CLASS, Nil) => 
         PrimitiveType.Scala_Any
-      case TypeStructure(className, Nil) => 
-        reflectOnClass(Class.forName(className))
+      case ts @ TypeStructure(className, Nil) => 
+        reflectOnClass(Class.forName(className), Some(ts))
       case TypeStructure(UNION_CLASS, subparams) =>
         val resolvedParams = subparams.map(sp => unpackTypeStructure(sp))
         UnionInfo(UNION_CLASS, resolvedParams(0), resolvedParams(1))

@@ -37,7 +37,12 @@ def analyzeTypeImpl[T]()(implicit qctx: QuoteContext, ttype:scala.quoted.Type[T]
         val res = tob.map(_.asInstanceOf[TypeRef].classSymbol.get.fullName)
         val params = tob.map( tb => diveDeep(tb.asInstanceOf[Type]) )
         TypeStructure(className, params)
-      case tr: TypeRef => TypeStructure(tr.classSymbol.get.fullName, Nil)
+      case tr: TypeRef => 
+        val className = tr.classSymbol.get.fullName
+        if className == ENUM_CLASSNAME then
+          TypeStructure(tr.qualifier.asInstanceOf[TypeRef].termSymbol.moduleClass.fullName.dropRight(1), Nil)
+        else
+          TypeStructure(className, Nil)
       case OrType(left,right) =>
         val resolvedLeft = diveDeep(left.asInstanceOf[Type])
         val resolvedRight = diveDeep(right.asInstanceOf[Type])

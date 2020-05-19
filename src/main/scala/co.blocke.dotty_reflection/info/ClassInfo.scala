@@ -9,7 +9,6 @@ trait ClassInfo extends RType with ClassOrTrait:
   val orderedTypeParameters: List[TypeSymbol]
   val typeMembers:           List[TypeMemberInfo]
   val annotations:           Map[String, Map[String,String]]
-  def constructWith[T](args: List[Object]): T 
 
 
 case class ScalaCaseClassInfo protected[dotty_reflection] (
@@ -21,11 +20,6 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
     annotations:           Map[String, Map[String,String]],
     isValueClass:          Boolean
   ) extends ClassInfo:
-
-  lazy val constructor = 
-    infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
-
-  def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
 
   def setActualTypeParams( actuals: List[TypeMemberInfo] ) = this.copy(typeMembers = actuals)
 
@@ -57,11 +51,6 @@ case class ScalaClassInfo protected[dotty_reflection] (
     annotations:           Map[String, Map[String,String]],
     isValueClass:          Boolean
   ) extends ClassInfo:
-
-  lazy val constructor = 
-    infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
-
-  def constructWith[T](args: List[Object]): T = constructor.newInstance(args:_*).asInstanceOf[T]
 
   def setActualTypeParams( actuals: List[TypeMemberInfo] ) = this.copy(typeMembers = actuals)
 
@@ -98,11 +87,6 @@ case class JavaClassInfo protected[dotty_reflection] (
   private val fieldsByName = fields.map(f => (f.name, f.asInstanceOf[JavaFieldInfo])).toMap
 
   def field(name: String): Option[JavaFieldInfo] = fieldsByName.get(name)
-
-  def constructWith[T](args: List[Object]): T = 
-    val c = Class.forName(name).getConstructors.head.newInstance()
-    fields.zipWithIndex.foreach((f,a) => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(c,args(a)))
-    c.asInstanceOf[T]
 
   def show(tab:Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

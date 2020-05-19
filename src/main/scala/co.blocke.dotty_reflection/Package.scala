@@ -18,3 +18,4 @@ val ANY_CLASS = "scala.Any"
 
 class ReflectException(msg: String) extends Exception(msg)
 
+val ENUM_CLASSNAME = "scala.Enumeration.Value"
