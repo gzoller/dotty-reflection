@@ -4,19 +4,11 @@ import impl._
 import info._
 
 
-object Food extends Enumeration {
-  val Seeds, Meat, Pellets, Veggies = Value
-}
-
-case class Foom( a: Food.Value )
-
-enum Month {
-  case Jan, Feb, Mar
-}
+case class HooLoo(name: String, more: HooLoo)
 
 
 object RunMe extends App:
 
-  println( Reflector.reflectOn[Food.Value])
-  // println(analyzeType[Food.Value])
+  val r = Reflector.reflectOn[HooLoo].asInstanceOf[ScalaCaseClassInfo]
+  println(r.fields)
   

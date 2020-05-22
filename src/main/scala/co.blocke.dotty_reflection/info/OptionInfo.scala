@@ -5,14 +5,19 @@ import java.lang.reflect._
 import java.util.Optional
 
 trait OptionInfo extends RType:
-  val optionParamType: RType
+  lazy val optionParamType: RType
 
 
 case class ScalaOptionInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
-  optionParamType: RType
+  _optionParamType: RType
 ) extends OptionInfo:
+
+  lazy val optionParamType: RType = _optionParamType match {
+    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e => e
+  }
 
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
@@ -24,8 +29,13 @@ case class ScalaOptionInfo protected[dotty_reflection](
 case class JavaOptionalInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
-  optionParamType: RType
+  _optionParamType: RType
 ) extends OptionInfo:
+
+  lazy val optionParamType: RType = _optionParamType match {
+    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e => e
+  }
 
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 

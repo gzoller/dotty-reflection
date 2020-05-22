@@ -25,6 +25,13 @@ case class TypeSymbolInfo(name: String) extends RType:
     {if(!supressIndent) tabs(tab) else ""} + name + "\n"
 
 
+// Placeholder to be lazy-resolved, used for self-referencing types
+// When one of this is encountered in the wild, just re-Reflect on the infoClass and you'll get the non-SelfRef (i.e. normal) RType
+case class SelfRefRType(name: String, infoClass: Class[_]) extends RType:
+  val orderedTypeParameters: List[TypeSymbol] = Nil
+  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = s"SelfRefRType of $name" 
+
+
 // Poked this here for now.  Used for show()
 final inline def tabs(t:Int) = "   "*t
 

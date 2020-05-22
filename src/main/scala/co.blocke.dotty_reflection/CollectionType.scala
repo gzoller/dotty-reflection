@@ -5,7 +5,7 @@ package co.blocke.dotty_reflection
 trait CollectionType:
   self: RType =>
 
-  val elementType: RType
+  lazy val elementType: RType
 
   def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

@@ -6,8 +6,14 @@ import scala.util.Try
 case class TryInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
-  tryType: RType
+  _tryType: RType
 ) extends RType:
+
+  lazy val tryType: RType = _tryType match {
+    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e => e
+  }
+
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
   def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 

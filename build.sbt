@@ -21,6 +21,8 @@ lazy val root = project
     
     resolvers += Resolver.jcenterRepo,
 
+    doc := null,  // disable dottydoc for now
+
     scalaVersion := dottyVersion,
 
     Test / parallelExecution := false,

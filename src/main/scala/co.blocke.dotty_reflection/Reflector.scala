@@ -45,6 +45,7 @@ object Reflector:
     else
       val structure = prebakedStructure.getOrElse(TypeStructure(className,Nil))
       Option(cache.get(structure)).getOrElse{ 
+        cache.put(structure, SelfRefRType(className, clazz))
         val tc = new ScalaClassInspector(clazz, Map.empty[TypeSymbol,RType])
         tc.inspect("", List(className))
         val found = tc.inspected
@@ -57,6 +58,7 @@ object Reflector:
     val className = clazz.getName
     val structure = TypeStructure(className,Nil)
     Option(cache.get(structure)).getOrElse{ 
+      cache.put(structure, SelfRefRType(className, clazz))
       val tc = new ScalaClassInspectorLite(clazz)
       tc.inspect("", List(className))
       val found = tc.inspected
@@ -75,15 +77,13 @@ object Reflector:
 
   /** Construct a fully-parameterized RType if the class' type params are known */
   def reflectOnClassWithParams(clazz: Class[_], params: List[RType]): RType =
-    Option(paramerterizedClassCache.get( (clazz,params) )).getOrElse{ 
-      val className = clazz.getName
-      val classParams = clazz.params.zip(params).toMap
-      val tc = new ScalaClassInspector(clazz, classParams)
+    val className = clazz.getName
+    val classParams = clazz.params.zip(params).toMap
+    val tc = new ScalaClassInspector(clazz, classParams)
 
-      // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
-      tc.inspect("", List(className))
-      tc.inspected
-    }
+    // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
+    tc.inspect("", List(className))
+    tc.inspected
 
 
   // pre-loaded with known language primitive types
@@ -124,9 +124,6 @@ object Reflector:
       TypeStructure("java.lang.Object",Nil)     -> PrimitiveType.Java_Object,
       TypeStructure("java.lang.Number",Nil)     -> PrimitiveType.Java_Number
     ).asJava)
-
-  // parameterized class cache
-  private val paramerterizedClassCache = new java.util.concurrent.ConcurrentHashMap[(Class[_],List[RType]), RType]
 
 
   private def unpackTypeStructure(ps: TypeStructure): RType =

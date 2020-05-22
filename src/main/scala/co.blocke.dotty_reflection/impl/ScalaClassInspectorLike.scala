@@ -14,7 +14,6 @@ trait ScalaClassInspectorLike:
   def inspectType(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(typeRef: reflect.TypeRef): RType = 
     import reflect.{_, given _}
 
-    println("Woof: "+typeRef)
     typeRef.classSymbol match {
 
       // Intersection types don't have a class symbol, so don't assume one!

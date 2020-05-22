@@ -4,11 +4,20 @@ package info
 case class EitherInfo protected[dotty_reflection](
   name: String,
   infoClass: Class[_],
-  leftType: RType,
-  rightType: RType
+  _leftType: RType,
+  _rightType: RType
 ) extends RType: 
 
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+
+  lazy val leftType: RType = _leftType match {
+    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e => e
+  }
+  lazy val rightType: RType = _rightType match {
+    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e => e
+  }
 
   def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
