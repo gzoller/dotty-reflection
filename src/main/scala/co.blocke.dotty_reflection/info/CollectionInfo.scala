@@ -7,9 +7,11 @@ case class SeqLikeInfo protected[dotty_reflection](
   infoClass: Class[_],
   _elementType: RType
 ) extends RType with CollectionType:
+
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -24,11 +26,11 @@ case class MapLikeInfo protected[dotty_reflection](
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
   lazy val elementType2: RType = _elementType2 match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -49,7 +51,7 @@ case class ArrayInfo protected[dotty_reflection](
   val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -66,7 +68,7 @@ case class JavaSetInfo protected[dotty_reflection](
   _elementType: RType
 ) extends RType with CollectionType:
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -79,7 +81,7 @@ case class JavaListInfo protected[dotty_reflection](
   _elementType: RType
 ) extends RType with CollectionType:
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -92,7 +94,7 @@ case class JavaArrayInfo protected[dotty_reflection](
   val orderedTypeParameters: List[TypeSymbol] = Nil
 
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -109,7 +111,7 @@ case class JavaQueueInfo protected[dotty_reflection](
   _elementType: RType
 ) extends RType with CollectionType:
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -121,7 +123,7 @@ case class JavaStackInfo protected[dotty_reflection](
   _elementType: RType
 ) extends RType with CollectionType:
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -135,11 +137,11 @@ case class JavaMapInfo protected[dotty_reflection](
 ) extends RType with CollectionType:
 
   lazy val elementType: RType = _elementType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
   lazy val elementType2: RType = _elementType2 match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 

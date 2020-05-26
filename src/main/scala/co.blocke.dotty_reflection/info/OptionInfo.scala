@@ -15,7 +15,7 @@ case class ScalaOptionInfo protected[dotty_reflection](
 ) extends OptionInfo:
 
   lazy val optionParamType: RType = _optionParamType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 
@@ -33,7 +33,7 @@ case class JavaOptionalInfo protected[dotty_reflection](
 ) extends OptionInfo:
 
   lazy val optionParamType: RType = _optionParamType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 

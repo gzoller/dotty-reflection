@@ -27,8 +27,12 @@ case class TypeSymbolInfo(name: String) extends RType:
 
 // Placeholder to be lazy-resolved, used for self-referencing types
 // When one of this is encountered in the wild, just re-Reflect on the infoClass and you'll get the non-SelfRef (i.e. normal) RType
-case class SelfRefRType(name: String, infoClass: Class[_]) extends RType:
+case class SelfRefRType(name: String, infoClass: Class[_], params: List[RType] = Nil) extends RType:
   val orderedTypeParameters: List[TypeSymbol] = Nil
+  def resolve = params match {
+    case Nil => Reflector.reflectOnClass(infoClass)
+    case p => Reflector.reflectOnClassWithParams(infoClass, p)
+  }
   def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = s"SelfRefRType of $name" 
 
 

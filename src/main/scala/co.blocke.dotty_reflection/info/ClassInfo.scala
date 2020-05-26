@@ -23,7 +23,7 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
 
   // Fields may be self-referencing, so we need to unwind this...
   lazy val fields = _fields.map( f => f.fieldType match {
-    case s: SelfRefRType => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = Reflector.reflectOnClass(s.infoClass))
+    case s: SelfRefRType => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = s.resolve)
     case s => f
   })
 
@@ -63,7 +63,7 @@ case class ScalaClassInfo protected[dotty_reflection] (
 
   // Fields may be self-referencing, so we need to unwind this...
   lazy val fields = _fields.map( f => f.fieldType match {
-    case s: SelfRefRType => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = Reflector.reflectOnClass(s.infoClass))
+    case s: SelfRefRType => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = s.resolve)
     case s => f
   })
   
@@ -102,7 +102,7 @@ case class JavaClassInfo protected[dotty_reflection] (
 
   // Fields may be self-referencing, so we need to unwind this...
   lazy val fields = _fields.map( f => f.fieldType match {
-    case s: SelfRefRType => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = Reflector.reflectOnClass(s.infoClass))
+    case s: SelfRefRType => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = s.resolve)
     case s => f
   })
 

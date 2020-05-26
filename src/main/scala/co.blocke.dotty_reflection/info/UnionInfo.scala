@@ -11,11 +11,11 @@ case class UnionInfo protected[dotty_reflection] (
   val orderedTypeParameters: List[TypeSymbol] = Nil
 
   lazy val leftType: RType = _leftType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
   lazy val rightType: RType = _rightType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 

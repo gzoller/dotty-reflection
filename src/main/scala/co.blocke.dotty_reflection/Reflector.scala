@@ -44,27 +44,32 @@ object Reflector:
       ScalaEnumerationInfo(className, clazz)
     else
       val structure = prebakedStructure.getOrElse(TypeStructure(className,Nil))
-      Option(cache.get(structure)).getOrElse{ 
-        cache.put(structure, SelfRefRType(className, clazz))
-        val tc = new ScalaClassInspector(clazz, Map.empty[TypeSymbol,RType])
-        tc.inspect("", List(className))
-        val found = tc.inspected
-        cache.put(structure, found)
-        found
+      this.synchronized {
+        Option(cache.get(structure)).getOrElse{ 
+          cache.put(structure, SelfRefRType(className, clazz))
+          val tc = new ScalaClassInspector(clazz, Map.empty[TypeSymbol,RType])
+          tc.inspect("", List(className))
+          val found = tc.inspected
+          cache.put(structure, found)
+          found
+        }
       }
 
   
   def reflectOnClassLite( clazz: Class[_] ): RType =
     val className = clazz.getName
     val structure = TypeStructure(className,Nil)
-    Option(cache.get(structure)).getOrElse{ 
-      cache.put(structure, SelfRefRType(className, clazz))
-      val tc = new ScalaClassInspectorLite(clazz)
-      tc.inspect("", List(className))
-      val found = tc.inspected
-      cache.put(structure, found)
-      found
+    this.synchronized {
+      Option(cache.get(structure)).getOrElse{ 
+        cache.put(structure, SelfRefRType(className, clazz))
+        val tc = new ScalaClassInspectorLite(clazz)
+        tc.inspect("", List(className))
+        val found = tc.inspected
+        cache.put(structure, found)
+        found
+      }
     }
+
 
   def reflectOnClassInTermsOf(clazz: Class[_], inTermsOf: RType): RType = 
     inTermsOf match {
@@ -77,14 +82,18 @@ object Reflector:
 
   /** Construct a fully-parameterized RType if the class' type params are known */
   def reflectOnClassWithParams(clazz: Class[_], params: List[RType]): RType =
-    val className = clazz.getName
-    val classParams = clazz.params.zip(params).toMap
-    val tc = new ScalaClassInspector(clazz, classParams)
+    Option(paramerterizedClassCache.get( (clazz,params) )).getOrElse{
+      paramerterizedClassCache.put((clazz,params), SelfRefRType(clazz.getName, clazz, params))
+      val className = clazz.getName
+      val classParams = clazz.params.zip(params).toMap
+      val tc = new ScalaClassInspector(clazz, classParams)
 
-    // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
-    tc.inspect("", List(className))
-    tc.inspected
-
+      // WARNING: This can fail if you inspect on a Scala library class or primitive: Int, Option, List, etc
+      tc.inspect("", List(className))
+      val found = tc.inspected
+      paramerterizedClassCache.put((clazz,params), found)
+      found
+    }
 
   // pre-loaded with known language primitive types
   private val cache = new java.util.concurrent.ConcurrentHashMap[TypeStructure, RType](Map(
@@ -125,6 +134,8 @@ object Reflector:
       TypeStructure("java.lang.Number",Nil)     -> PrimitiveType.Java_Number
     ).asJava)
 
+  // parameterized class cache
+  private val paramerterizedClassCache = new java.util.concurrent.ConcurrentHashMap[(Class[_],List[RType]), RType]
 
   private def unpackTypeStructure(ps: TypeStructure): RType =
     ps match {

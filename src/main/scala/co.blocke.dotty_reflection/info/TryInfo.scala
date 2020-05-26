@@ -10,7 +10,7 @@ case class TryInfo protected[dotty_reflection](
 ) extends RType:
 
   lazy val tryType: RType = _tryType match {
-    case e: SelfRefRType => Reflector.reflectOnClass(e.infoClass)
+    case e: SelfRefRType => e.resolve
     case e => e
   }
 

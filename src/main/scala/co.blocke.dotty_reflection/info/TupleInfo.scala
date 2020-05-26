@@ -11,7 +11,7 @@ case class TupleInfo protected[dotty_reflection](
 
   // Elements may be self-referencing, so we need to unwind this...
   lazy val tupleTypes = _tupleTypes.map( _ match {
-    case s: SelfRefRType => Reflector.reflectOnClass(s.infoClass)
+    case s: SelfRefRType => s.resolve
     case s => s
   })
   
