@@ -61,6 +61,9 @@ class ScalaClassInspector(clazz: Class[_], initialParamMap: Map[TypeSymbol, RTyp
         // === Object (Scala Object) ===
         Some( ObjectInfo(vd.symbol.fullName, Class.forName(vd.symbol.fullName)) )
 
+      case t: reflect.ClassDef if t.symbol.flags.is(reflect.Flags.Enum) => // Found top-level enum (i.e. not part of a class), e.g. member of a collection
+        Some(ScalaEnumInfo(className, Class.forName(className)))
+
       case t: reflect.ClassDef if !t.name.endsWith("$") =>
 
         // Get any type parameters

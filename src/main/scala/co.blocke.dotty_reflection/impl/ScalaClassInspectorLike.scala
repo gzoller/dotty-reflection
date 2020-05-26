@@ -30,7 +30,6 @@ trait ScalaClassInspectorLike:
 
       case Some(classSymbol) =>
         // Handle gobbled non-class scala.Enumeration.Value (old 2.x Enumeration class values)
-        val ENUM_CLASSNAME = "scala.Enumeration.Value"
         val (is2xEnumeration, className) = classSymbol.fullName match { 
           case raw if raw == ENUM_CLASSNAME => 
             val enumerationClass = typeRef.typeSymbol.fullName

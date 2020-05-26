@@ -4,11 +4,20 @@ package info
 
 case class UnionInfo protected[dotty_reflection] (
   val name: String,
-  val leftType: RType,
-  val rightType: RType
+  val _leftType: RType,
+  val _rightType: RType
   ) extends RType:
 
   val orderedTypeParameters: List[TypeSymbol] = Nil
+
+  lazy val leftType: RType = _leftType match {
+    case e: SelfRefRType => e.resolve
+    case e => e
+  }
+  lazy val rightType: RType = _rightType match {
+    case e: SelfRefRType => e.resolve
+    case e => e
+  }
 
   val infoClass: Class[_] = Clazzes.AnyClazz
 
