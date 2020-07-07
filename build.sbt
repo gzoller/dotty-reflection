@@ -6,7 +6,27 @@ lazy val root = project
   .in(file("."))
   .settings(publishArtifact := false)
   .settings(publish := {})
-  .aggregate(plugin)
+  .aggregate(library,reflector,plugin)
+
+lazy val library = project
+  .in(file("library"))
+  .settings(settings)
+  .settings(
+    name := "reflection_library",
+    doc := null,  // disable dottydoc for now
+    sources in (Compile, doc) := Seq(),
+    libraryDependencies ++= commonDependencies
+  )
+
+lazy val reflector = project
+  .in(file("reflector"))
+  .settings(settings)
+  .settings(
+    name := "reflection_reflector",
+    doc := null,  // disable dottydoc for now
+    sources in (Compile, doc) := Seq(),
+    libraryDependencies ++= commonDependencies
+  ).dependsOn(library)
 
 lazy val plugin = project
   .in(file("plugin"))
@@ -16,8 +36,10 @@ lazy val plugin = project
     Compile / packageBin / mappings += {
       (baseDirectory.value / "plugin.properties") -> "plugin.properties"
     },
+    doc := null,  // disable dottydoc for now
+    sources in (Compile, doc) := Seq(),
     libraryDependencies ++= commonDependencies
-  )
+  ).dependsOn(library)
 
 //==========================
 // Dependencies
