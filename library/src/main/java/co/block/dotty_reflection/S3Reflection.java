@@ -5,5 +5,5 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface S3Reflection {
-	String rtype();
+	String rtype();  // serialized RType object
 }
