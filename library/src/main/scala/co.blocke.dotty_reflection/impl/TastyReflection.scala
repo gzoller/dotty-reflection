@@ -152,9 +152,21 @@ object TastyReflection:
           kidsRTypes.toArray)
       else
         //  >> Normal (unsealed) traits
-        TraitInfo(
-          className, 
-          Array.empty[RType]) // TODO!  else typeSymbols.map(paramMap(_)).toArray)
+        // println("TypeRef: "+typeRef)
+        // val typeSymbols = getTypeParameters(reflect)(symbol).map(s => typeRef.memberType(s.asInstanceOf[reflect.Symbol]))
+        // println(s"Type symbols for ${className}: "+typeSymbols)
+
+        // Parameterized or non-parameterized trait?
+        typeRef match {
+          case AppliedType(t,tob) =>
+            TraitInfo(
+              className, 
+              tob.map(oneTob => RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])).toArray)
+          case _ =>
+            TraitInfo(
+              className, 
+              Array.empty[RType])
+        }
 
     else if symbol.flags.is(reflect.Flags.Enum) then // Found top-level enum (i.e. not part of a class), e.g. member of a collection
       val enumClassSymbol = typeRef.classSymbol.get

@@ -18,30 +18,24 @@ val ENUM_CLASSNAME = "scala.Enumeration.Value"
 val typesymregx = """.*\.\_\$(.+)$""".r
 
 
-/*
 // Need this cache because apparently calling paramSymss mutates states and crashes on repeated calls!
 import dotty.tools.dotc.core.Symbols.{Symbol => CoreSymbol}
-private val mm = new java.util.concurrent.ConcurrentHashMap[CoreSymbol, List[TypeSymbol]]
+private val mm = new java.util.concurrent.ConcurrentHashMap[CoreSymbol, List[CoreSymbol]]
 
-def getTypeParameters(reflect: scala.tasty.Reflection)(symbol: reflect.Symbol): List[TypeSymbol] = 
-  // Arrays are "special" for some reason--other collections work here but Arrays blow up!
-  symbol match {
-    case sym if sym.fullName == Clazzes.ScalaArrayClazz.getName => List("T".asInstanceOf[TypeSymbol])
-    case _ =>
-      this.synchronized {
-        Option(mm.get(symbol.asInstanceOf[CoreSymbol])).getOrElse{
-          val syms = symbol.primaryConstructor.paramSymss match {
-            case Nil => Nil
-            case p if p.nonEmpty  => p.head.filter(_.isType).map(_.name.asInstanceOf[TypeSymbol])
-            case _   => Nil
-          }
-          mm.put(symbol.asInstanceOf[CoreSymbol],syms)
-          syms
-        }
+def getTypeParameters(reflect: scala.tasty.Reflection)(symbol: reflect.Symbol): List[CoreSymbol] = 
+  this.synchronized {
+    Option(mm.get(symbol.asInstanceOf[CoreSymbol])).getOrElse{
+      val syms = symbol.primaryConstructor.paramSymss match {
+        case Nil             => Nil
+        case p if p.nonEmpty => p.head.filter(_.isType).map(_.asInstanceOf[CoreSymbol])
+        case _               => Nil
       }
+      mm.put(symbol.asInstanceOf[CoreSymbol],syms)
+      syms
     }
-    */
+  }
 
+    
 def mangleArrayClassName(tpe: RType): String =
   val mangled = tpe match {
     case _: info.TypeSymbolInfo => "Ljava.lang.Object;"

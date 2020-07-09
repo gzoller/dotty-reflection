@@ -47,15 +47,19 @@ object RType:
   //------------------------
   inline def of[T]: RType = ${ ofImpl[T]() }
 
+  inline def of[T](className: String): RType = 
+    val tc = new TastyInspection[T](Class.forName(className), of[T].asInstanceOf[info.TraitInfo])
+    tc.inspect("", List(className))
+    tc.inspected
+
   // pre-loaded with known language primitive types
   private val cache = new java.util.concurrent.ConcurrentHashMap[Object, RType]()
   
   def ofImpl[T]()(implicit qctx: QuoteContext, ttype: scala.quoted.Type[T]): Expr[RType] = 
     import qctx.tasty.{_, given _}
-
     Expr( unwindType(qctx.tasty)(typeOf[T]) )
 
-
+    
   protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type): RType =
     import reflect.{_, given _}
 

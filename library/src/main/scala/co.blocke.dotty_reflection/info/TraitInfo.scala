@@ -16,9 +16,8 @@ case class TraitInfo protected[dotty_reflection](
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name) (self-ref recursion)\n"
     else
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
-      + s"($name)"
-      + "actualParamTypes: [\n"
-      + actualParameterTypes.map( ap => ap.show(newTab+2,name :: seenBefore,true) ).mkString
+      + s"($name) actualParamTypes: [\n"
+      + actualParameterTypes.map( ap => ap.show(newTab,name :: seenBefore) ).mkString
       + "]\n"
 
 

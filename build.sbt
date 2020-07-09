@@ -8,6 +8,16 @@ lazy val root = project
   .settings(publish := {})
   .aggregate(library,reflector,plugin)
 
+lazy val disposable = project
+  .in(file("disposable"))
+  .settings(settings)
+  .settings(
+    name := "reflection_disposable",
+    doc := null,  // disable dottydoc for now
+    sources in (Compile, doc) := Seq(),
+    libraryDependencies ++= commonDependencies
+  )
+
 lazy val library = project
   .in(file("library"))
   .settings(settings)
@@ -16,7 +26,7 @@ lazy val library = project
     doc := null,  // disable dottydoc for now
     sources in (Compile, doc) := Seq(),
     libraryDependencies ++= commonDependencies
-  )
+  ).dependsOn(disposable)
 
 lazy val reflector = project
   .in(file("reflector"))
@@ -47,10 +57,12 @@ lazy val plugin = project
 lazy val dependencies =
   new {
     val dottyCompiler = "ch.epfl.lamp" %% "dotty-compiler" % dottyVersion
+    val dottyInspection = "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion
   }
 
 lazy val commonDependencies = Seq(
-  dependencies.dottyCompiler
+  dependencies.dottyCompiler,
+  dependencies.dottyInspection
 )
 
 //==========================
