@@ -243,7 +243,7 @@ class InheritSimpleBase(
 
 class InheritSimpleChild(
     val extra:                                  String,
-    @DBKey @Change(name = "uno") override val one:String)
+    @Change(name = "uno") override val one:String)
   extends InheritSimpleBase(one) {
   @DBKey(index = 99) var foo: Int = 39
   @Ignore var bogus: String = ""

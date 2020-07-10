@@ -23,7 +23,7 @@ given Liftable[TypeMemberInfo] {
 
 given Liftable[SelfRefRType] {
   def toExpr(x: SelfRefRType) =
-    '{ new SelfRefRType(${Expr(x.name)}, ${ Expr( x.params ) } ) }
+    '{ new SelfRefRType(${Expr(x.name)}) }
 }
 
 // In order to cross the compiler->runtime bridge, we need to serialize some objects, e.g. traits.

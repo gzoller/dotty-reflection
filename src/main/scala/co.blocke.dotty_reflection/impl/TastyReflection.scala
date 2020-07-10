@@ -53,59 +53,59 @@ object TastyReflection extends NonCaseClassReflection:
           case _  => (false, classSymbol.fullName)
         }
 
-        // Quick-check for primitive type:
-        PrimitiveType.values.find(_.name == className).getOrElse{
-          typeRef match {
-            case named: dotty.tools.dotc.core.Types.NamedType if classSymbol == Symbol.classSymbol("scala.Any") =>
-              // Scala3 opaque type alias
-              //----------------------------------------
-              if typeRef.isOpaqueAlias then
-                val translucentSuperType = typeRef.translucentSuperType
-                AliasInfo(typeRef.show, RType.unwindType(reflect)(translucentSuperType))
-
-              // Any Type
-              //----------------------------------------
-              else
-                PrimitiveType.Scala_Any
-
-            // Scala3 Tasty-equipped type incl. primitive types
-            // Traits and classes w/type parameters are *not* here... they're AppliedTypes
+        typeRef match {
+          case named: dotty.tools.dotc.core.Types.NamedType if classSymbol == Symbol.classSymbol("scala.Any") =>
+            // Scala3 opaque type alias
             //----------------------------------------
-            case named: dotty.tools.dotc.core.Types.NamedType => 
-              val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
-              classSymbol match {
-                case cs if isTypeParam => 
-                  TypeSymbolInfo(typeRef.name)  // TypeSymbols Foo[T] have typeRef of Any
-                case cs if is2xEnumeration => 
-                  val enumerationClassSymbol = typeRef.qualifier.asInstanceOf[reflect.TermRef].termSymbol.moduleClass
-                  ScalaEnumerationInfo(enumerationClassSymbol.fullName.dropRight(1), enumerationClassSymbol.fields.map( _.name ))  // get the values of the Enumeration
-                case cs => 
+            if typeRef.isOpaqueAlias then
+              val translucentSuperType = typeRef.translucentSuperType
+              AliasInfo(typeRef.show, RType.unwindType(reflect)(translucentSuperType))
+
+            // Any Type
+            //----------------------------------------
+            else
+              PrimitiveType.Scala_Any
+
+          // Scala3 Tasty-equipped type incl. primitive types
+          // Traits and classes w/type parameters are *not* here... they're AppliedTypes
+          //----------------------------------------
+          case named: dotty.tools.dotc.core.Types.NamedType => 
+            val isTypeParam = typeRef.typeSymbol.flags.is(Flags.Param)   // Is 'T' or a "real" type?  (true if T)
+            classSymbol match {
+              case cs if isTypeParam => 
+                TypeSymbolInfo(typeRef.name)  // TypeSymbols Foo[T] have typeRef of Any
+              case cs if is2xEnumeration => 
+                val enumerationClassSymbol = typeRef.qualifier.asInstanceOf[reflect.TermRef].termSymbol.moduleClass
+                ScalaEnumerationInfo(enumerationClassSymbol.fullName.dropRight(1), enumerationClassSymbol.fields.map( _.name ))  // get the values of the Enumeration
+              case cs => 
+                // Primitive type test:
+                PrimitiveType.values.find(_.name == className).getOrElse(
                   reflectOnClass(reflect)(typeRef)
-              }
+                )
+            }
 
-            // Union Type
-            //----------------------------------------
-            case OrType(left,right) =>
-              val resolvedLeft = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
-              val resolvedRight = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
-              UnionInfo(UNION_CLASS, resolvedLeft, resolvedRight)
-          
-            // Parameterized Types (classes, traits, & collections)
-            //----------------------------------------
-            case a @ AppliedType(t,tob) => 
-              // First see if we have some sort of collection or other "wrapped" type
-              val foundType: Option[RType] = extractors.ExtractorRegistry.extractors.collectFirst {
-                case e if e.matches(reflect)(classSymbol) => e.extractInfo(reflect)(t, tob, classSymbol)   
-              }
-              foundType.getOrElse {
-                // Nope--we've got a parameterized class or trait here
-                reflectOnClass(reflect)(a.asInstanceOf[TypeRef])
-              }
-          
-            case x => 
-              // === No idea!  Unkonwn entity...
-              UnknownInfo(className)
-          }
+          // Union Type
+          //----------------------------------------
+          case OrType(left,right) =>
+            val resolvedLeft = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
+            val resolvedRight = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
+            UnionInfo(UNION_CLASS, resolvedLeft, resolvedRight)
+        
+          // Parameterized Types (classes, traits, & collections)
+          //----------------------------------------
+          case a @ AppliedType(t,tob) => 
+            // First see if we have some sort of collection or other "wrapped" type
+            val foundType: Option[RType] = extractors.ExtractorRegistry.extractors.collectFirst {
+              case e if e.matches(reflect)(classSymbol) => e.extractInfo(reflect)(t, tob, classSymbol)   
+            }
+            foundType.getOrElse {
+              // Nope--we've got a parameterized class or trait here
+              reflectOnClass(reflect)(a.asInstanceOf[TypeRef])
+            }
+        
+          case x => 
+            // === No idea!  Unkonwn entity...
+            UnknownInfo(className)
         }
     }
 
@@ -205,7 +205,6 @@ object TastyReflection extends NonCaseClassReflection:
         case _ => None
       }
 
-      val constructorParamz = classDef.constructor.paramss
       // Get any case field default value accessor method names (map by field index)
       val fieldDefaultMethods = symbol.companionClass match {
         case dotty.tools.dotc.core.Symbols.NoSymbol => Map.empty[Int, (String,String)]
@@ -233,9 +232,11 @@ object TastyReflection extends NonCaseClassReflection:
 
       if symbol.flags.is(reflect.Flags.Case) then
         // === Case Classes ===
-        val caseFields = constructorParamz.head.zipWithIndex.map{ p => 
-          val fieldType = RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(p._2)))
-          reflectOnField(reflect)(fieldType, p._1, p._2, dad, fieldDefaultMethods) 
+        val caseFields = classDef.constructor.paramss.head.zipWithIndex.map{ (valDef, idx) => 
+          val fieldType = scala.util.Try( RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx))) ).toOption.getOrElse(
+            TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
+          )
+          reflectOnField(reflect)(fieldType, valDef, idx, dad, fieldDefaultMethods) 
           }
 
         ScalaCaseClassInfo(
@@ -249,6 +250,7 @@ object TastyReflection extends NonCaseClassReflection:
         // === Non-Case Classes ===
         
         // ensure all constructur fields are vals
+        val constructorParams = classDef.constructor.paramss.head
         val caseFields = symbol.fields.filter( _.flags.is(Flags.ParamAccessor))
           .zipWithIndex
           .map{ (oneField, idx) => 
@@ -256,7 +258,7 @@ object TastyReflection extends NonCaseClassReflection:
               throw new ReflectException(s"Class [${symbol.fullName}]: Non-case class constructor arguments must all be 'val'")
             else
               val fieldType = RType.unwindType(reflect)(typeRef.memberType(oneField))
-              reflectOnField(reflect)(fieldType, oneField.tree.asInstanceOf[ValDef], idx, dad, fieldDefaultMethods)
+              reflectOnField(reflect)(fieldType, constructorParams(idx), idx, dad, fieldDefaultMethods)
           }
 
         inspectNonCaseClass(reflect)(

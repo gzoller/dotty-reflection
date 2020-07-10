@@ -8,7 +8,6 @@ lazy val root = project
   .settings(publishArtifact := false)
   .settings(publish := {})
   .aggregate(library)//,reflector,plugin)
-  */
 
 lazy val disposable = project
   .in(file("disposable"))
@@ -19,16 +18,18 @@ lazy val disposable = project
     sources in (Compile, doc) := Seq(),
     libraryDependencies ++= commonDependencies
   )
+  */
 
 lazy val root = project
-  .in(file("library"))
+  .in(file("."))
   .settings(settings)
   .settings(
     name := "reflection_library",
     doc := null,  // disable dottydoc for now
     sources in (Compile, doc) := Seq(),
+    Test / parallelExecution := false,
     libraryDependencies ++= commonDependencies
-  ).dependsOn(disposable)
+  )//.dependsOn(disposable)
 
   /*
 lazy val reflector = project
@@ -90,7 +91,8 @@ lazy val compilerOptions = Seq(
 lazy val commonSettings = Seq(
   scalacOptions ++= compilerOptions,
   resolvers += Resolver.jcenterRepo,
-  scalaVersion := dottyVersion
+  scalaVersion := dottyVersion,
+  testFrameworks += new TestFramework("munit.Framework")
 )
 
 lazy val publishSettings = Seq(

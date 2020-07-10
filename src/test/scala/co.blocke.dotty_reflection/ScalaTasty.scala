@@ -57,8 +57,8 @@ class ScalaTasty extends munit.FunSuite:
   // The processing in Reflection is too slow... it's called @ runtime for inspection
   test("handle parameterized class - inspection") {
     val wp = WithParam(1,true)
-    val result = RType.inTermsOf[Any](wp.getClass.getName) 
-    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithParam[T,U]):
+    val result = RType.of(wp.getClass) 
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithParam):
     |   fields:
     |      (0)[T] one: T
     |      (1)[U] two: U
@@ -67,7 +67,7 @@ class ScalaTasty extends munit.FunSuite:
 
   test("handle parameterized class - reflection") {
     val result = RType.of[WithParam[Int,Boolean]] 
-    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithParam[T,U]):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithParam):
     |   fields:
     |      (0)[T] one: scala.Int
     |      (1)[U] two: scala.Boolean
@@ -222,12 +222,11 @@ class ScalaTasty extends munit.FunSuite:
 
   test("Inheritance and Annotations") {
     val result = RType.of[InheritSimpleChild]
-    val target = result.show()
     assertEquals( result.show(0,Nil,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.InheritSimpleChild):
     |   fields:
     |      (0) extra: java.lang.String
     |      (1) one: java.lang.String
-    |         annotations: Map(co.blocke.reflect.Change -> Map(name -> uno), co.blocke.reflect.DBKey -> Map())
+    |         annotations: Map(co.blocke.reflect.Change -> Map(name -> uno), co.blocke.reflect.DBKey -> Map(index -> 50))
     |   non-constructor fields:
     |      (_) bogus: java.lang.String
     |         annotations: Map(co.blocke.reflect.Ignore -> Map())
@@ -250,7 +249,7 @@ class ScalaTasty extends munit.FunSuite:
 
   test("Inheritance and Parameterized Classes") {
     val result = RType.of[ParamChild[Boolean]]
-    assertEquals( result.show(0,Nil,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.ParamChild[T]):
+    assertEquals( result.show(0,Nil,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.ParamChild):
     |   fields:
     |      (0)[T] thing: scala.Boolean
     |   non-constructor fields:
@@ -270,10 +269,10 @@ class ScalaTasty extends munit.FunSuite:
 
   test("Self-referencing types (parameterized") {
     val result = RType.of[Drawer[Shape]]
-    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Drawer[T]):
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Drawer):
     |   fields:
     |      (0) id: scala.Int
-    |      (1) nextInChain: Option of ScalaCaseClassInfo(co.blocke.dotty_reflection.Drawer[co.blocke.dotty_reflection.Shape]) (self-ref recursion)
+    |      (1) nextInChain: Option of ScalaCaseClassInfo(co.blocke.dotty_reflection.Drawer) (self-ref recursion)
     |      (2)[T] thing: ScalaCaseClassInfo(co.blocke.dotty_reflection.Shape):
     |         fields:
     |            (0) id: scala.Int

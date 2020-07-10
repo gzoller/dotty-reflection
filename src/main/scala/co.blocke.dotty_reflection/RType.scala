@@ -25,14 +25,9 @@ trait RType extends Serializable:
  *  type cache so that when the self-reference comes there's something in the cache to find.
  *  When one of these is encountered in the wild, just re-Reflect on the infoClass and you'll get the non-SelfRef (i.e. normal) RType
  */
-case class SelfRefRType(name: String, params: Array[RType] = Array.empty[RType]) extends RType:
+case class SelfRefRType(name: String) extends RType:
   lazy val infoClass = Class.forName(name)
-  lazy val orderedTypeParameters: List[TypeSymbol] = Nil
-  def resolve = null // TODO
-    // if params.isEmpty then
-    //   Reflector.reflectOnClass(infoClass)
-    // else
-    //   Reflector.reflectOnClassWithParams(infoClass, params)
+  def resolve = RType.of(infoClass)
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = s"SelfRefRType of $name" 
 
 
@@ -47,9 +42,14 @@ object RType:
   //------------------------
   inline def of[T]: RType = ${ ofImpl[T]() }
 
-  inline def inTermsOf[T](className: String): RType = 
-    val tc = new TastyInspection[T](Class.forName(className), of[T].asInstanceOf[info.TraitInfo])
-    tc.inspect("", List(className))
+  inline def of(clazz: Class[_]): RType = 
+    val tc = new TastyInspection[Any](clazz)
+    tc.inspect("", List(clazz.getName))
+    tc.inspected
+
+  inline def inTermsOf[T](clazz: Class[_]): RType = 
+    val tc = new TastyInspection[T](clazz, Some(of[T].asInstanceOf[info.TraitInfo]))
+    tc.inspect("", List(clazz.getName))
     tc.inspected
 
   // pre-loaded with known language primitive types
@@ -75,7 +75,7 @@ object RType:
         if className == "scala.Any" then
           TastyReflection.reflectOnType(reflect)(aType)
         else
-          cache.put(aType, SelfRefRType(className, Nil.toArray)) // TODO! paramList.toArray))
+          cache.put(aType, SelfRefRType(className)) // TODO! paramList.toArray))
           val reflectedRtype = TastyReflection.reflectOnType(reflect)(aType)
           cache.put(aType, reflectedRtype)
           reflectedRtype

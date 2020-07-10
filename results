@@ -1,0 +1,44 @@
+co.blocke.dotty_reflection.ScalaTasty:
+  + reflect basic Tasty class with union 0.033s
+  + create basic Tasty class 0.005s
+  + handle match types 0.004s
+  + process mixins 0.001s
+  + capture field and class annotations 0.002s
+  + handle parameterized class - reflection 0.001s
+  + handle opaque type alias 0.004s
+  + opaque type alias is a union type 0.003s
+  + support value classes 0.002s
+  + detect default values in case class constructor fields 0.005s
+  + plain class support 0.004s
+  + all Scala primitive types 0.008s
+  + Scala 2.x class 0.003s
+  + Try type 0.004s
+  + sealed trait with case classes 0.005s
+  + sealed trait with case objects 0.005s
+  + handle intersection types 0.006s
+  + handle Scala non-case classes 0.002s
+
+co.blocke.dotty_reflection.ScalaTasty:
+  + reflect basic Tasty class with union 0.173s
+  + create basic Tasty class 0.028s
+  + handle match types 0.015s
+  + process mixins 0.005s
+  + capture field and class annotations 0.006s
+  + handle parameterized class - inspection 2.142s
+  + handle parameterized class - reflection 0.003s
+  + handle opaque type alias 0.006s
+  + opaque type alias is a union type 0.004s
+  + support value classes 0.003s
+  + detect default values in case class constructor fields 0.008s
+  + plain class support 0.009s
+  + all Scala primitive types 0.011s
+  + Scala 2.x class 0.003snly 2s
+  + Try type 0.005s
+  + sealed trait with case classes 0.007s
+  + sealed trait with case objects 0.005s
+  + handle intersection types 0.006s
+  + handle Scala non-case classes 0.004s
+  + Inheritance and Annotations 0.017s
+  + Inheritance and Parameterized Classes 0.003s
+  + Self-referencing types (non-parameterized 0.422s
+  + Self-referencing types (parameterized 0.901s
