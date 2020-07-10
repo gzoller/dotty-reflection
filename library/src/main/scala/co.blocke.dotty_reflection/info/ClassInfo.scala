@@ -14,7 +14,6 @@ trait ClassInfo extends RType:
 
 abstract class ScalaClassInfoBase protected[dotty_reflection] (
     name:                   String,
-    actualParameterTypes:   Array[RType],
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
@@ -43,8 +42,7 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
   def show(tab:Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     if seenBefore.contains(name) then
-      val params = if actualParameterTypes.nonEmpty then actualParameterTypes.map(_.name).mkString("[",",","]") else ""
-      {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name$params) (self-ref recursion)\n"
+      {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name) (self-ref recursion)\n"
     else
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
       + {if isValueClass then "--Value Class--" else ""}
@@ -57,13 +55,12 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
 
 case class ScalaCaseClassInfo protected[dotty_reflection] (
     name:                   String,
-    actualParameterTypes:   Array[RType],
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
     _mixins:                List[String],
     isValueClass:           Boolean
-  ) extends ScalaClassInfoBase(name, actualParameterTypes, _typeMembers, _fields, _annotations, _mixins, isValueClass):
+  ) extends ScalaClassInfoBase(name, _typeMembers, _fields, _annotations, _mixins, isValueClass):
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
@@ -75,14 +72,13 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
 
 case class ScalaClassInfo protected[dotty_reflection] (
     name:                   String,
-    actualParameterTypes:   Array[RType],
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],  // constructor fields
-    nonConstructorFields:   Array[FieldInfo],
+    nonConstructorFields:   Array[ScalaFieldInfo],
     _annotations:           Map[String, Map[String,String]],
     _mixins:                List[String],
     isValueClass:           Boolean
-  ) extends ScalaClassInfoBase(name, actualParameterTypes, _typeMembers, _fields, _annotations, _mixins, isValueClass):
+  ) extends ScalaClassInfoBase(name, _typeMembers, _fields, _annotations, _mixins, isValueClass):
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)

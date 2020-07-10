@@ -19,6 +19,7 @@ val typesymregx = """.*\.\_\$(.+)$""".r
 
 
 // Need this cache because apparently calling paramSymss mutates states and crashes on repeated calls!
+/*  NOT NEEDED???
 import dotty.tools.dotc.core.Symbols.{Symbol => CoreSymbol}
 private val mm = new java.util.concurrent.ConcurrentHashMap[CoreSymbol, List[CoreSymbol]]
 
@@ -34,6 +35,7 @@ def getTypeParameters(reflect: scala.tasty.Reflection)(symbol: reflect.Symbol): 
       syms
     }
   }
+  */
 
     
 def mangleArrayClassName(tpe: RType): String =

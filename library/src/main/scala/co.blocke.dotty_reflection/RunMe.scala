@@ -13,5 +13,9 @@ object RunMe extends App:
 
   // println(RType.of[Movable[Int,Boolean]])
 
-  println(RType.of[Item[Float, Boolean]]("co.blocke.dotty_reflection.Thing"))
+  // println(RType.inTermsOf[Item[Float, Boolean]]("co.blocke.dotty_reflection.Thing"))
+
+  // println(RType.of[Message[Boolean,FieldCommand]])
+
+  println(RType.of[IntersectionHolder])
 

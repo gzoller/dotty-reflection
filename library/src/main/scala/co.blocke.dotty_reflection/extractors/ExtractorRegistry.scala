@@ -6,10 +6,10 @@ object ExtractorRegistry:
   lazy val extractors: List[impl.TypeInfoExtractor[_]] = 
     List(
       OptionExtractor(),
-      // EitherExtractor(),
+      EitherExtractor(),
       SeqExtractor(),
-      ScalaArrayExtractor()
-      // MapExtractor(),
-      // TupleExtractor(),
-      // TryExtractor()
+      ScalaArrayExtractor(),
+      MapExtractor(),
+      TupleExtractor(),
+      TryExtractor()
     )

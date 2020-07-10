@@ -2,11 +2,13 @@ name := "dotty-reflection"
 organization in ThisBuild := "co.blocke"
 val dottyVersion =  "0.25.0-RC2"
 
+/*
 lazy val root = project
   .in(file("."))
   .settings(publishArtifact := false)
   .settings(publish := {})
-  .aggregate(library,reflector,plugin)
+  .aggregate(library)//,reflector,plugin)
+  */
 
 lazy val disposable = project
   .in(file("disposable"))
@@ -18,7 +20,7 @@ lazy val disposable = project
     libraryDependencies ++= commonDependencies
   )
 
-lazy val library = project
+lazy val root = project
   .in(file("library"))
   .settings(settings)
   .settings(
@@ -28,6 +30,7 @@ lazy val library = project
     libraryDependencies ++= commonDependencies
   ).dependsOn(disposable)
 
+  /*
 lazy val reflector = project
   .in(file("reflector"))
   .settings(settings)
@@ -50,6 +53,7 @@ lazy val plugin = project
     sources in (Compile, doc) := Seq(),
     libraryDependencies ++= commonDependencies
   ).dependsOn(library)
+  */
 
 //==========================
 // Dependencies
@@ -58,11 +62,13 @@ lazy val dependencies =
   new {
     val dottyCompiler = "ch.epfl.lamp" %% "dotty-compiler" % dottyVersion
     val dottyInspection = "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion
+    val munit = "org.scalameta" %% "munit" % "0.7.9" % Test
   }
 
 lazy val commonDependencies = Seq(
   dependencies.dottyCompiler,
-  dependencies.dottyInspection
+  dependencies.dottyInspection,
+  dependencies.munit
 )
 
 //==========================

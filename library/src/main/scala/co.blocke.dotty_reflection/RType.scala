@@ -47,7 +47,7 @@ object RType:
   //------------------------
   inline def of[T]: RType = ${ ofImpl[T]() }
 
-  inline def of[T](className: String): RType = 
+  inline def inTermsOf[T](className: String): RType = 
     val tc = new TastyInspection[T](Class.forName(className), of[T].asInstanceOf[info.TraitInfo])
     tc.inspect("", List(className))
     tc.inspected
@@ -63,20 +63,20 @@ object RType:
   protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type): RType =
     import reflect.{_, given _}
 
-    // If this is the initial entry, may need to "seed" paramMap if this is an AppliedType (parameterized)
-    // val (paramList, paramMap, structure) = extractParams(reflect, _paramMap)(aType)
-
-    // val structure = TypeStructure(className, List(paramMap)) //discoverStructure(reflect,paramMap)(aType)
-    val className = aType.asInstanceOf[TypeRef].classSymbol.get.fullName
+    val className = aType.asInstanceOf[TypeRef] match {
+      case AndType(_,_) => INTERSECTION_CLASS
+      case OrType(_,_)  => UNION_CLASS
+      case normal       => normal.classSymbol.get.fullName
+    }
     this.synchronized {
       Option(cache.get(aType)).getOrElse{ 
         // Any is a special case... It may just be an "Any", or something else, like a opaque type alias.
         // In either event, we don't want to cache the result.
         if className == "scala.Any" then
-          TastyReflection.reflectOn(reflect)(aType)
+          TastyReflection.reflectOnType(reflect)(aType)
         else
           cache.put(aType, SelfRefRType(className, Nil.toArray)) // TODO! paramList.toArray))
-          val reflectedRtype = TastyReflection.reflectOn(reflect)(aType)
+          val reflectedRtype = TastyReflection.reflectOnType(reflect)(aType)
           cache.put(aType, reflectedRtype)
           reflectedRtype
       }

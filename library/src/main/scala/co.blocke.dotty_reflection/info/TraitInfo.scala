@@ -15,10 +15,9 @@ case class TraitInfo protected[dotty_reflection](
     if seenBefore.contains(name) then
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name) (self-ref recursion)\n"
     else
+      val params = if actualParameterTypes.isEmpty then "" else " actualParamTypes: [\n"+actualParameterTypes.map( ap => ap.show(newTab,name :: seenBefore) ).mkString+"]"
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
-      + s"($name) actualParamTypes: [\n"
-      + actualParameterTypes.map( ap => ap.show(newTab,name :: seenBefore) ).mkString
-      + "]\n"
+      + s"($name)$params\n" 
 
 
 case class SealedTraitInfo protected(
