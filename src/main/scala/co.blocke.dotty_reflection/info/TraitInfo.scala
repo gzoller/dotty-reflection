@@ -4,10 +4,14 @@ package info
 
 case class TraitInfo protected[dotty_reflection](
     name: String, 
-    actualParameterTypes: Array[RType]
+    actualParameterTypes: Array[RType] = Array.empty[RType],
+    paramSymbols: Array[TypeSymbol] = Array.empty[TypeSymbol]
   ) extends RType: 
 
   lazy val infoClass: Class[_] = Class.forName(name)
+
+  println("??? Trait: "+name+ paramSymbols.toList.map(_.toString).mkString("[",",","]"))
+  println("           "+actualParameterTypes.toList)
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -15,7 +19,12 @@ case class TraitInfo protected[dotty_reflection](
     if seenBefore.contains(name) then
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name) (self-ref recursion)\n"
     else
-      val params = if actualParameterTypes.isEmpty then "" else " actualParamTypes: [\n"+actualParameterTypes.map( ap => ap.show(newTab,name :: seenBefore) ).mkString+"]"
+      val params = 
+        if actualParameterTypes.isEmpty then 
+          "" 
+        else 
+          val syms = actualParameterTypes.zip(paramSymbols)
+          " actualParamTypes: [\n"+syms.map{ (ap:RType, s:TypeSymbol) => tabs(tab+1) + s.toString+": "+ap.show(tab+2,name :: seenBefore, true) }.mkString + tabs(tab) + "]"
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
       + s"($name)$params\n" 
 

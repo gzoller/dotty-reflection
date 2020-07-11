@@ -152,11 +152,11 @@ object TastyReflection extends NonCaseClassReflection:
           case AppliedType(t,tob) =>  // parameterized trait
             TraitInfo(
               className, 
-              tob.map(oneTob => RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])).toArray)
+              tob.map(oneTob => RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])).toArray,
+              symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol]).toArray
+            )
           case _ =>  // non-parameterized trait
-            TraitInfo(
-              className, 
-              Array.empty[RType])
+            TraitInfo(className)
         }
 
     else if symbol.flags.is(reflect.Flags.Enum) then // Found top-level enum (i.e. not part of a class), e.g. member of a collection
@@ -233,9 +233,15 @@ object TastyReflection extends NonCaseClassReflection:
       if symbol.flags.is(reflect.Flags.Case) then
         // === Case Classes ===
         val caseFields = classDef.constructor.paramss.head.zipWithIndex.map{ (valDef, idx) => 
-          val fieldType = scala.util.Try( RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx))) ).toOption.getOrElse(
-            TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
-          )
+          val fieldType = {//scala.util.Try{ 
+            println(s"($className) field ${symbol.caseFields(idx)}")
+            println("  ! "+typeRef.memberType(symbol.caseFields(idx)))
+            println(" >> "+RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx)))+"\n")
+            RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx))) 
+          }
+          // }.toOption.getOrElse(
+          //   TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
+          // )
           reflectOnField(reflect)(fieldType, valDef, idx, dad, fieldDefaultMethods) 
           }
 

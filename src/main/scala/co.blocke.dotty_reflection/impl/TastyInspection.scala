@@ -17,6 +17,11 @@ class TastyInspection[T](clazz: Class[_], inTermsOf: Option[TraitInfo] = None) e
     import reflect.{_, given _}
     inTermsOf match {
       case Some(ito) =>
+        println("HEY: "+ito.actualParameterTypes.toList)
+        // PROBLEM:  Actual types come across the compile->runtime bridge as RTypes in actualParameterTypes.
+        //  But... unless the type is simple (e.g. primitive) valuable parameters get lost during Type(p.infoClass).
+        //  In other words Level1[Int,Boolean] merely becomes Type(Level1.class) (no params)
+        //  Hmm...
         val args = ito.actualParameterTypes.map(p => Type(p.infoClass)).toList
         inspected = RType.unwindType(reflect)( AppliedType(Type(clazz), args) )
       case None      =>
