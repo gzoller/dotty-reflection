@@ -1,17 +1,24 @@
 package co.blocke.dotty_reflection
 package info
 
+import scala.tasty.Reflection
 
 case class TraitInfo protected[dotty_reflection](
     name: String, 
+    fields: Array[FieldInfo],
     actualParameterTypes: Array[RType] = Array.empty[RType],
-    paramSymbols: Array[TypeSymbol] = Array.empty[TypeSymbol]
+    paramSymbols: Array[TypeSymbol] = Array.empty[TypeSymbol],
   ) extends RType: 
 
   lazy val infoClass: Class[_] = Class.forName(name)
 
-  println("??? Trait: "+name+ paramSymbols.toList.map(_.toString).mkString("[",",","]"))
-  println("           "+actualParameterTypes.toList)
+  // override def toType(reflect: Reflection): reflect.Type = 
+  //   import reflect.{_, given _}
+  //   if actualParameterTypes.nonEmpty then
+  //     val args = actualParameterTypes.map(_.toType(reflect).asInstanceOf[reflect.Type]).toList
+  //     AppliedType(Type(infoClass), args)
+  //   else
+  //     reflect.Type(infoClass)
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -26,7 +33,8 @@ case class TraitInfo protected[dotty_reflection](
           val syms = actualParameterTypes.zip(paramSymbols)
           " actualParamTypes: [\n"+syms.map{ (ap:RType, s:TypeSymbol) => tabs(tab+1) + s.toString+": "+ap.show(tab+2,name :: seenBefore, true) }.mkString + tabs(tab) + "]"
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
-      + s"($name)$params\n" 
+      + s"($name)$params with fields:\n"
+      + { fields.toList.map(f => tabs(tab+1)+f.name+{if f.originalSymbol.isDefined then "["+f.originalSymbol.get.toString+"]" else ""}+": "+f.fieldType.show(tab+1, Nil, true)).mkString("") }
 
 
 case class SealedTraitInfo protected(

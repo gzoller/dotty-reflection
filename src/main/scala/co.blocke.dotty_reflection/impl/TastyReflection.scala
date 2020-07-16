@@ -79,9 +79,9 @@ object TastyReflection extends NonCaseClassReflection:
                 ScalaEnumerationInfo(enumerationClassSymbol.fullName.dropRight(1), enumerationClassSymbol.fields.map( _.name ))  // get the values of the Enumeration
               case cs => 
                 // Primitive type test:
-                PrimitiveType.values.find(_.name == className).getOrElse(
+                PrimitiveType.values.find(_.name == className).getOrElse{
                   reflectOnClass(reflect)(typeRef)
-                )
+                }
             }
 
           // Union Type
@@ -114,6 +114,7 @@ object TastyReflection extends NonCaseClassReflection:
     import reflect.{_, given _}
 
     val className = typeRef.classSymbol.get.fullName
+    println("Reflecting...: "+className)
 
     object DefaultMethod {
       val reg = """\$lessinit\$greater\$default\$(\d+)""".r
@@ -149,14 +150,58 @@ object TastyReflection extends NonCaseClassReflection:
       else
         //  >> Normal (unsealed) traits
         typeRef match {
-          case AppliedType(t,tob) =>  // parameterized trait
+          case a @ AppliedType(t,tob) =>  // parameterized trait
+            val actualParamTypes = tob.map{ oneTob => 
+              scala.util.Try{
+                RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])
+              }.toOption.getOrElse{
+                println("  sym oops: "+oneTob.asInstanceOf[Type].typeSymbol.name)
+                TypeSymbolInfo(oneTob.asInstanceOf[Type].typeSymbol.name)
+              }
+            }
+            val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
+            println("Got here 1")
+            val paramMap = paramTypeSymbols.zip(actualParamTypes).toMap
+
+            val traitFields = symbol.fields.map { f =>
+              println("a1 "+f)
+              val fieldType = scala.util.Try{
+                RType.unwindType(reflect)(typeRef.memberType(f))
+              }.toOption.getOrElse{
+                TypeSymbolInfo(f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
+              }
+              println("b")
+              val typeSym = 
+                f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol] match {
+                  case ts if paramTypeSymbols.contains(ts) => Some(ts)
+                  case _ => None
+                }
+              println("c") 
+              ScalaFieldInfo(-1, f.name, fieldType, Map.empty[String,Map[String,String]], None, typeSym, true)
+            }
+            println("Got here 3") // didnt get here
             TraitInfo(
-              className, 
-              tob.map(oneTob => RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])).toArray,
-              symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol]).toArray
+              className,
+              traitFields.toArray, 
+              actualParamTypes.toArray,
+              paramTypeSymbols.toArray
             )
-          case _ =>  // non-parameterized trait
-            TraitInfo(className)
+          case _ =>   // TODO
+            // non-parameterized trait
+            // val traitFields = symbol.tree.asInstanceOf[ClassDef].body.collect {
+            //   case valDef: ValDef =>
+            //     val typeSymbol = valDef.tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol]
+            //     val fieldType = scala.util.Try{
+            //       RType.unwindType(reflect)(t.memberType(valDef.symbol))
+            //     }.toOption.getOrElse{
+            //       TypeSymbolInfo(valDef.name)
+            //     } match {
+            //       case tsi: TypeSymbolInfo => paramMap(typeSymbol)
+            //       case other => other
+            //     }
+            //     ScalaFieldInfo(-1, valDef.name, fieldType, Map.empty[String,Map[String,String]], None, Some(typeSymbol), true)
+            // }
+            TraitInfo(className, Nil.toArray)
         }
 
     else if symbol.flags.is(reflect.Flags.Enum) then // Found top-level enum (i.e. not part of a class), e.g. member of a collection
@@ -165,7 +210,7 @@ object TastyReflection extends NonCaseClassReflection:
       val enumValues = enumClassSymbol.children.map(_.name)
       ScalaEnumInfo(symbol.fullName, enumValues)
 
-    /*
+    /* TODO
     // === Java Class ===
     // User-written Java classes will have the source file.  Java library files will have <no file> for source
     else if symbol.pos.sourceFile.toString.endsWith(".java") || symbol.pos.sourceFile.toString == "<no file>" then
@@ -233,15 +278,11 @@ object TastyReflection extends NonCaseClassReflection:
       if symbol.flags.is(reflect.Flags.Case) then
         // === Case Classes ===
         val caseFields = classDef.constructor.paramss.head.zipWithIndex.map{ (valDef, idx) => 
-          val fieldType = {//scala.util.Try{ 
-            println(s"($className) field ${symbol.caseFields(idx)}")
-            println("  ! "+typeRef.memberType(symbol.caseFields(idx)))
-            println(" >> "+RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx)))+"\n")
+          val fieldType = scala.util.Try{ 
             RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx))) 
+          }.toOption.getOrElse{
+            TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
           }
-          // }.toOption.getOrElse(
-          //   TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
-          // )
           reflectOnField(reflect)(fieldType, valDef, idx, dad, fieldDefaultMethods) 
           }
 

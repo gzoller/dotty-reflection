@@ -20,6 +20,8 @@ case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
     tob: List[reflect.TypeOrBounds], 
     symbol: reflect.Symbol): RType =
 
+    println(" ------------ List -> "+tob.head.asInstanceOf[reflect.Type].typeSymbol.name)
+
     SeqLikeInfo(
       t.classSymbol.get.fullName, 
       RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])

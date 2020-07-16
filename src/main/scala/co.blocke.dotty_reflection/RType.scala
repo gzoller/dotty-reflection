@@ -8,6 +8,7 @@ import scala.tasty.Reflection
 trait RType extends Serializable:
   val name: String         /** typically the fully-qualified class name */
   lazy val infoClass: Class[_]  /** the JVM class of this type */
+  // def toType(reflect: Reflection): reflect.Type = reflect.Type(infoClass)
 
   def show(
     tab: Int = 0,
@@ -62,6 +63,8 @@ object RType:
     
   protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type): RType =
     import reflect.{_, given _}
+
+    println("[][][] "+aType.typeSymbol.name)
 
     val className = aType.asInstanceOf[TypeRef] match {
       case AndType(_,_) => INTERSECTION_CLASS
