@@ -14,29 +14,30 @@ object TastyReflection extends NonCaseClassReflection:
   def reflectOnType(reflect: Reflection)(aType: reflect.Type): RType = 
     import reflect.{_, given _}
 
-    val typeRef = aType.asInstanceOf[TypeRef]
-    typeRef.classSymbol match {
+    scala.util.Try {
+      val typeRef = aType.asInstanceOf[TypeRef]
+      typeRef.classSymbol match {
 
-      // Intersection types don't have a class symbol, so don't assume one!
-      case None =>
-        typeRef match {
-          // Intersection Type
-          //----------------------------------------
-          case AndType(left,right) =>
-            val resolvedLeft: RType = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
-            val resolvedRight: RType = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
-            IntersectionInfo(INTERSECTION_CLASS, resolvedLeft, resolvedRight)
+        // Intersection types don't have a class symbol, so don't assume one!
+        case None =>
+          typeRef match {
+            // Intersection Type
+            //----------------------------------------
+            case AndType(left,right) =>
+              val resolvedLeft: RType = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
+              val resolvedRight: RType = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
+              IntersectionInfo(INTERSECTION_CLASS, resolvedLeft, resolvedRight)
 
-          // Union Type
-          //----------------------------------------
-          case OrType(left,right) =>
-            val resolvedLeft: RType = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
-            val resolvedRight: RType = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
-            UnionInfo(UNION_CLASS, resolvedLeft, resolvedRight)
+            // Union Type
+            //----------------------------------------
+            case OrType(left,right) =>
+              val resolvedLeft: RType = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
+              val resolvedRight: RType = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
+              UnionInfo(UNION_CLASS, resolvedLeft, resolvedRight)
 
-          case u => 
-            throw new ReflectException("Unsupported TypeRef: "+typeRef)
-        }
+            case u => 
+              throw new ReflectException("Unsupported TypeRef: "+typeRef)
+          }
 
       case Some(classSymbol) =>
         // Handle gobbled non-class scala.Enumeration.Value (old 2.x Enumeration class values)
@@ -94,6 +95,7 @@ object TastyReflection extends NonCaseClassReflection:
           // Parameterized Types (classes, traits, & collections)
           //----------------------------------------
           case a @ AppliedType(t,tob) => 
+            println("Applied: "+className)
             // First see if we have some sort of collection or other "wrapped" type
             val foundType: Option[RType] = extractors.ExtractorRegistry.extractors.collectFirst {
               case e if e.matches(reflect)(classSymbol) => e.extractInfo(reflect)(t, tob, classSymbol)   
@@ -107,6 +109,10 @@ object TastyReflection extends NonCaseClassReflection:
             // === No idea!  Unkonwn entity...
             UnknownInfo(className)
         }
+      }
+    }.toOption.getOrElse{
+      println("BOOM: "+aType)
+      TypeSymbolInfo(aType.typeSymbol.name)
     }
 
 
@@ -152,34 +158,32 @@ object TastyReflection extends NonCaseClassReflection:
         typeRef match {
           case a @ AppliedType(t,tob) =>  // parameterized trait
             val actualParamTypes = tob.map{ oneTob => 
-              scala.util.Try{
+              scala.util.Try {
                 RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])
               }.toOption.getOrElse{
-                println("  sym oops: "+oneTob.asInstanceOf[Type].typeSymbol.name)
-                TypeSymbolInfo(oneTob.asInstanceOf[Type].typeSymbol.name)
+                TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
               }
             }
             val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
-            println("Got here 1")
             val paramMap = paramTypeSymbols.zip(actualParamTypes).toMap
 
             val traitFields = symbol.fields.map { f =>
-              println("a1 "+f)
-              val fieldType = scala.util.Try{
-                RType.unwindType(reflect)(typeRef.memberType(f))
-              }.toOption.getOrElse{
-                TypeSymbolInfo(f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
-              }
-              println("b")
+              val fieldType = 
+                scala.util.Try {
+                  RType.unwindType(reflect)(typeRef.memberType(f))
+                }.toOption.getOrElse{
+                  paramMap.getOrElse(
+                    f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol],
+                    RType.unwindType(reflect)(f.tree.asInstanceOf[ValDef].tpt.tpe) // TODO: .resolveWith(paramMap)
+                  )
+                }
               val typeSym = 
                 f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol] match {
                   case ts if paramTypeSymbols.contains(ts) => Some(ts)
                   case _ => None
                 }
-              println("c") 
               ScalaFieldInfo(-1, f.name, fieldType, Map.empty[String,Map[String,String]], None, typeSym, true)
             }
-            println("Got here 3") // didnt get here
             TraitInfo(
               className,
               traitFields.toArray, 
@@ -284,7 +288,7 @@ object TastyReflection extends NonCaseClassReflection:
             TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
           }
           reflectOnField(reflect)(fieldType, valDef, idx, dad, fieldDefaultMethods) 
-          }
+        }
 
         ScalaCaseClassInfo(
           className, 

@@ -64,8 +64,6 @@ object RType:
   protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type): RType =
     import reflect.{_, given _}
 
-    println("[][][] "+aType.typeSymbol.name)
-
     val className = aType.asInstanceOf[TypeRef] match {
       case AndType(_,_) => INTERSECTION_CLASS
       case OrType(_,_)  => UNION_CLASS
