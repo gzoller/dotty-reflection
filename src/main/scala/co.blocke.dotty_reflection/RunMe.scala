@@ -8,9 +8,9 @@ case class TBar7[A, B](thing1: A, thing2: B) extends T5[A, B]
 case class TFoo6[A, B, C, D](x: T11[C, T5[D, A]], y: B) extends T10[T11[C, T5[D, A]], B]
 
 
-trait Level1[T,U] { val t: T; val u: List[U] }
+trait Level1[T,U] { val t: T; val u: Option[List[U]] }
 trait Base[A,B] { val a: A; val b: B }
-case class L1Class[X,Y]( t: X, u: List[Y] ) extends Level1[X,Y]
+case class L1Class[X,Y]( t: X, u: Option[List[Y]] ) extends Level1[X,Y]
 case class BaseClass[X, Y, Z]( a: Level1[X,Z], b: Y ) extends Base[Level1[X,Z],Y]
 
 object RunMe extends App:
@@ -21,7 +21,7 @@ object RunMe extends App:
   // val inst: Base[Level1[String,Boolean],Long] = BaseClass(L1Class("foo",true), 3L)
   // val result = RType.inTermsOf[Base[Level1[String,Boolean],Long]](inst.getClass)
 
-  val inst: Base[Level1[String,Boolean],Int] = BaseClass(L1Class("foo",List(true)), 3)
+  val inst: Base[Level1[String,Boolean],Int] = BaseClass(L1Class("foo",Some(List(true))), 3)
   val result = RType.inTermsOf[Base[Level1[String,Boolean],Int]](inst.getClass)
   println(result.show())
 

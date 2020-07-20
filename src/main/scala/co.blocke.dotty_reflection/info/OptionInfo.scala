@@ -20,6 +20,13 @@ case class ScalaOptionInfo protected[dotty_reflection](
     case e => e
   }
 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _optionParamType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_optionParamType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_optionParamType = other.resolveTypeParams(paramMap))
+    }
+
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + "Option of " + optionParamType.show(newTab,name :: seenBefore,true)

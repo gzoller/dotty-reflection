@@ -8,6 +8,7 @@ import scala.tasty.Reflection
 trait RType extends Serializable:
   val name: String         /** typically the fully-qualified class name */
   lazy val infoClass: Class[_]  /** the JVM class of this type */
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = this
   // def toType(reflect: Reflection): reflect.Type = reflect.Type(infoClass)
 
   def show(

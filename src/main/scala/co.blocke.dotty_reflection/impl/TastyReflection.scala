@@ -95,7 +95,6 @@ object TastyReflection extends NonCaseClassReflection:
           // Parameterized Types (classes, traits, & collections)
           //----------------------------------------
           case a @ AppliedType(t,tob) => 
-            println("Applied: "+className)
             // First see if we have some sort of collection or other "wrapped" type
             val foundType: Option[RType] = extractors.ExtractorRegistry.extractors.collectFirst {
               case e if e.matches(reflect)(classSymbol) => e.extractInfo(reflect)(t, tob, classSymbol)   
@@ -111,7 +110,6 @@ object TastyReflection extends NonCaseClassReflection:
         }
       }
     }.toOption.getOrElse{
-      println("BOOM: "+aType)
       TypeSymbolInfo(aType.typeSymbol.name)
     }
 
@@ -120,7 +118,6 @@ object TastyReflection extends NonCaseClassReflection:
     import reflect.{_, given _}
 
     val className = typeRef.classSymbol.get.fullName
-    println("Reflecting...: "+className)
 
     object DefaultMethod {
       val reg = """\$lessinit\$greater\$default\$(\d+)""".r
@@ -165,16 +162,18 @@ object TastyReflection extends NonCaseClassReflection:
               }
             }
             val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
-            val paramMap = paramTypeSymbols.zip(actualParamTypes).toMap
+            val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
 
             val traitFields = symbol.fields.map { f =>
               val fieldType = 
+                // A lot of complex messiness to sew down the mapped type:  Foo[T]( val x: List[T]) where we call Foo[W] from a higher class,
+                // so T -> W.  We need resolveTypeParams to sew down for deeper nested types like List.  Ugh.
                 scala.util.Try {
                   RType.unwindType(reflect)(typeRef.memberType(f))
                 }.toOption.getOrElse{
                   paramMap.getOrElse(
                     f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol],
-                    RType.unwindType(reflect)(f.tree.asInstanceOf[ValDef].tpt.tpe) // TODO: .resolveWith(paramMap)
+                    RType.unwindType(reflect)(f.tree.asInstanceOf[ValDef].tpt.tpe).resolveTypeParams(paramMap)
                   )
                 }
               val typeSym = 

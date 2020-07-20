@@ -9,6 +9,13 @@ case class SeqLikeInfo protected[dotty_reflection](
 
   lazy val infoClass: Class[_] = Class.forName(name)
 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_elementType = other.resolveTypeParams(paramMap))
+    }
+
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
