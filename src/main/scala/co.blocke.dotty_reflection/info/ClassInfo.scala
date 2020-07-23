@@ -1,6 +1,7 @@
 package co.blocke.dotty_reflection
 package info
 
+import impl._
 
 trait ClassInfo extends RType: 
   val name:                       String
@@ -34,6 +35,27 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
   })
 
   lazy val constructor = infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
+
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    val interestingFields = referenceTrait.map{ refTrait =>
+       fields.filter(f => refTrait.fields.map(_.name).contains(f.name))
+    }.getOrElse(fields)
+    interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
+      val (found, notFound) = acc
+      if notFound.nonEmpty then
+        f.fieldType match {
+          case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+            // This field's type is one of the sought-after TypeSymbols...
+            val sym = ts.name.asInstanceOf[TypeSymbol]
+            (found + (sym -> notFound(sym).push(TraitPathElement(name,f.name))), notFound - sym)
+          case _ =>
+            // Or it's not...
+            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.push(TraitPathElement(name,f.name)) ))
+            (found ++ themThatsFound, themThatsStillLost.map( (k,v) => k -> findSyms(k) ))
+        }
+      else
+        (found, notFound)
+      }
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)

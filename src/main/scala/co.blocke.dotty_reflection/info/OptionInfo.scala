@@ -3,6 +3,7 @@ package info
 
 import java.lang.reflect._
 import java.util.Optional
+import impl._
 
 
 trait OptionInfo extends RType:
@@ -19,6 +20,15 @@ case class ScalaOptionInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    optionParamType match {
+      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+        val sym = ts.name.asInstanceOf[TypeSymbol]
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(OptionPathElement()) ), findSyms - sym)
+      case other => 
+        other.findPaths(findSyms.map( (k,v) => k -> v.push(OptionPathElement()) ))
+    }
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _optionParamType match {

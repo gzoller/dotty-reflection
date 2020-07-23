@@ -24,6 +24,8 @@ class TastyInspection[T](clazz: Class[_], inTermsOf: Option[TraitInfo] = None) e
         println("-=-=-=-=-=-=-")
         println("PRE: "+pre)
 
+        println("TYPES: "+pre.findPaths(Map("Y".asInstanceOf[TypeSymbol]->Path(Nil), "B".asInstanceOf[TypeSymbol]->Path(Nil)), Some(ito)))
+
         // We have to pre-reflect the class to get the position of all the type parameters.
         // These are then mapped against the given inTermsOf TraitInfo via a fancy visitor.
         // Finally once we know the actual "exploded" actual types, we can construct the args

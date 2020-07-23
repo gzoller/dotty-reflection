@@ -1,4 +1,5 @@
 package co.blocke.dotty_reflection
+import impl._
 
 trait T5[X, Y] { val thing1: X; val thing2: Y }
 trait T10[X, Y] { val x: X; val y: Y }
@@ -13,6 +14,10 @@ trait Base[A,B] { val a: A; val b: B }
 case class L1Class[X,Y]( t: X, u: Option[List[Y]] ) extends Level1[X,Y]
 case class BaseClass[X, Y, Z]( a: Level1[X,Z], b: Y ) extends Base[Level1[X,Z],Y]
 
+trait Wow[X]{ val a: Option[X]; val b: Int }
+trait Tubular[Z]{ val a: Z }
+case class Wowow[Y]( u: Y, a: Option[Y], b: Int ) extends Wow[Y]
+
 object RunMe extends App:
 
   // val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
@@ -21,11 +26,25 @@ object RunMe extends App:
   // val inst: Base[Level1[String,Boolean],Long] = BaseClass(L1Class("foo",true), 3L)
   // val result = RType.inTermsOf[Base[Level1[String,Boolean],Long]](inst.getClass)
 
-  val inst: Base[Level1[String,Boolean],Int] = BaseClass(L1Class("foo",Some(List(true))), 3)
-  val result = RType.inTermsOf[Base[Level1[String,Boolean],Int]](inst.getClass)
+//   val inst: Base[Level1[String,Boolean],Int] = BaseClass(L1Class("foo",Some(List(true))), 3)
+//   val result = RType.inTermsOf[Base[Level1[String,Boolean],Int]](inst.getClass)
+//   println(result.show())
+
+  val result = RType.inTermsOf[Wow[Boolean]](Class.forName("co.blocke.dotty_reflection.Wowow"))
   println(result.show())
 
-  println("done.")
+
+// seems to work
+   // val rt = RType.of[Base[Level1[String,Boolean],Int]]
+   // val p = Path( List(
+   //    TraitPathElement("co.blocke.dotty_reflection.Base", "a"),
+   //    TraitPathElement("co.blocke.dotty_reflection.Level1", "u"),
+   //    OptionPathElement(),
+   //    SeqPathElement()
+   // ))
+   // println(p.nav(rt))
+
+   println("done.")
 
   /*
   

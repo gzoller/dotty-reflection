@@ -2,13 +2,21 @@ package co.blocke.dotty_reflection
 
 import scala.quoted._
 import impl._
+import info._
 import scala.tasty.Reflection
 
 /** A materializable type */
 trait RType extends Serializable:
   val name: String         /** typically the fully-qualified class name */
   lazy val infoClass: Class[_]  /** the JVM class of this type */
+
+  // Take a parameterized type's normal type 'T' and map it to the declared type 'X'
   def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = this
+
+  // Find paths to given type symbols
+  def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    (Map.empty[TypeSymbol,Path], findSyms) // (themThatsFound, themThatsStillLost)
+
   // def toType(reflect: Reflection): reflect.Type = reflect.Type(infoClass)
 
   def show(

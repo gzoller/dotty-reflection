@@ -2,6 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 import scala.tasty.Reflection
+import impl._
 
 case class TraitInfo protected[dotty_reflection](
     name: String, 
@@ -11,6 +12,27 @@ case class TraitInfo protected[dotty_reflection](
   ) extends RType: 
 
   lazy val infoClass: Class[_] = Class.forName(name)
+
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    val interestingFields = referenceTrait.map{ refTrait =>
+       fields.filter(f => refTrait.fields.map(_.name).contains(f.name))
+    }.getOrElse(fields)
+    interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
+      val (found, notFound) = acc
+      if notFound.nonEmpty then
+        f.fieldType match {
+          case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+            // This field's type is one of the sought-after TypeSymbols...
+            val sym = ts.name.asInstanceOf[TypeSymbol]
+            (found + (sym -> notFound(sym).push(TraitPathElement(name,f.name))), notFound - sym)
+          case _ =>
+            // Or it's not...
+            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.push(TraitPathElement(name,f.name)) ))
+            (found ++ themThatsFound, themThatsStillLost.map( (k,v) => k -> findSyms(k) ))
+        }
+      else
+        (found, notFound)
+      }
 
   // override def toType(reflect: Reflection): reflect.Type = 
   //   import reflect.{_, given _}

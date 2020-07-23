@@ -1,6 +1,9 @@
 package co.blocke.dotty_reflection
 package info
 
+import impl._
+
+
 /** Arity 1 Collections, e.g. List, Set, Seq */
 case class SeqLikeInfo protected[dotty_reflection](
   name: String,
@@ -8,6 +11,15 @@ case class SeqLikeInfo protected[dotty_reflection](
 ) extends RType with CollectionRType:
 
   lazy val infoClass: Class[_] = Class.forName(name)
+
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    elementType match {
+      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+        val sym = ts.name.asInstanceOf[TypeSymbol]
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(SeqPathElement()) ), findSyms - sym)
+      case other => 
+        other.findPaths(findSyms.map( (k,v) => k -> v.push(SeqPathElement()) ))
+    }
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _elementType match {
