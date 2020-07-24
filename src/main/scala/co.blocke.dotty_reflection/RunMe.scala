@@ -26,12 +26,29 @@ object RunMe extends App:
   // val inst: Base[Level1[String,Boolean],Long] = BaseClass(L1Class("foo",true), 3L)
   // val result = RType.inTermsOf[Base[Level1[String,Boolean],Long]](inst.getClass)
 
-//   val inst: Base[Level1[String,Boolean],Int] = BaseClass(L1Class("foo",Some(List(true))), 3)
-//   val result = RType.inTermsOf[Base[Level1[String,Boolean],Int]](inst.getClass)
-//   println(result.show())
-
-  val result = RType.inTermsOf[Wow[Boolean]](Class.forName("co.blocke.dotty_reflection.Wowow"))
+  val inst: Base[Level1[String,Boolean],Int] = BaseClass(L1Class("foo",Some(List(true))), 3)
+  val result = RType.inTermsOf[Base[Level1[String,Boolean],Int]](inst.getClass)
   println(result.show())
+
+  /*
+  (Map(
+     X -> Path(
+        TraitPathElement(co.blocke.dotty_reflection.Base,a), 
+        TraitPathElement(co.blocke.dotty_reflection.Level1,t)
+      )
+     Z -> Path(
+        TraitPathElement(co.blocke.dotty_reflection.Base,a), 
+        TraitPathElement(co.blocke.dotty_reflection.Level1,u), 
+        OptionPathElement(), 
+        SeqPathElement()
+      )
+     Y -> Path(
+        TraitPathElement(co.blocke.dotty_reflection.Base,b)
+      )
+  */
+
+//   val result = RType.inTermsOf[Wow[Boolean]](Class.forName("co.blocke.dotty_reflection.Wowow"))
+//   println(result.show())
 
 
 // seems to work

@@ -42,15 +42,16 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
     }.getOrElse(fields)
     interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
       val (found, notFound) = acc
+      val nameForPath = referenceTrait.map(_.name).getOrElse(name)
       if notFound.nonEmpty then
         f.fieldType match {
           case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
             // This field's type is one of the sought-after TypeSymbols...
             val sym = ts.name.asInstanceOf[TypeSymbol]
-            (found + (sym -> notFound(sym).push(TraitPathElement(name,f.name))), notFound - sym)
+            (found + (sym -> notFound(sym).push(TraitPathElement(nameForPath,f.name))), notFound - sym)
           case _ =>
             // Or it's not...
-            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.push(TraitPathElement(name,f.name)) ))
+            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.push(TraitPathElement(nameForPath,f.name)) ))
             (found ++ themThatsFound, themThatsStillLost.map( (k,v) => k -> findSyms(k) ))
         }
       else
