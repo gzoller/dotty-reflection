@@ -197,9 +197,9 @@ class ScalaTasty extends munit.FunSuite:
     |   fields:
     |      (0) a: Intersection:
     |         left--Intersection:
-    |            left--TraitInfo(co.blocke.dotty_reflection.InterA)
-    |            right--TraitInfo(co.blocke.dotty_reflection.InterB)
-    |         right--TraitInfo(co.blocke.dotty_reflection.InterC)
+    |            left--TraitInfo(co.blocke.dotty_reflection.InterA) with fields:
+    |            right--TraitInfo(co.blocke.dotty_reflection.InterB) with fields:
+    |         right--TraitInfo(co.blocke.dotty_reflection.InterC) with fields:
     |""".stripMargin)
   }
 

@@ -97,7 +97,8 @@ object TastyReflection extends NonCaseClassReflection:
           case a @ AppliedType(t,tob) => 
             // First see if we have some sort of collection or other "wrapped" type
             val foundType: Option[RType] = extractors.ExtractorRegistry.extractors.collectFirst {
-              case e if e.matches(reflect)(classSymbol) => e.extractInfo(reflect)(t, tob, classSymbol)   
+              case e if e.matches(reflect)(classSymbol) => 
+                e.extractInfo(reflect)(t, tob, classSymbol)
             }
             foundType.getOrElse {
               // Nope--we've got a parameterized class or trait here
@@ -174,6 +175,7 @@ object TastyReflection extends NonCaseClassReflection:
                   paramMap.getOrElse(
                     f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol],
                     RType.unwindType(reflect)(f.tree.asInstanceOf[ValDef].tpt.tpe).resolveTypeParams(paramMap)
+                    // TODO: resolveTypeParam for Class and Trait!  Not 100% sure how that works tho...
                   )
                 }
               val typeSym = 
@@ -189,22 +191,14 @@ object TastyReflection extends NonCaseClassReflection:
               actualParamTypes.toArray,
               paramTypeSymbols.toArray
             )
-          case _ =>   // TODO
+          case _ => 
             // non-parameterized trait
-            // val traitFields = symbol.tree.asInstanceOf[ClassDef].body.collect {
-            //   case valDef: ValDef =>
-            //     val typeSymbol = valDef.tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol]
-            //     val fieldType = scala.util.Try{
-            //       RType.unwindType(reflect)(t.memberType(valDef.symbol))
-            //     }.toOption.getOrElse{
-            //       TypeSymbolInfo(valDef.name)
-            //     } match {
-            //       case tsi: TypeSymbolInfo => paramMap(typeSymbol)
-            //       case other => other
-            //     }
-            //     ScalaFieldInfo(-1, valDef.name, fieldType, Map.empty[String,Map[String,String]], None, Some(typeSymbol), true)
-            // }
-            TraitInfo(className, Nil.toArray)
+            val traitFields = symbol.tree.asInstanceOf[ClassDef].body.collect {
+              case valDef: ValDef =>
+                val fieldType = RType.unwindType(reflect)(typeRef.memberType(valDef.symbol))
+                ScalaFieldInfo(-1, valDef.name, fieldType, Map.empty[String,Map[String,String]], None, None, true)
+            }
+            TraitInfo(className, traitFields.toArray)
         }
 
     else if symbol.flags.is(reflect.Flags.Enum) then // Found top-level enum (i.e. not part of a class), e.g. member of a collection

@@ -16,6 +16,33 @@ case class UnionInfo protected[dotty_reflection] (
     case e: SelfRefRType => e.resolve
     case e => e
   }
+  
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    var needsCopy = false
+    val left = _leftType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        needsCopy = true
+        paramMap(ts.name.asInstanceOf[TypeSymbol])
+      case pt: impl.PrimitiveType => 
+        _leftType
+      case other => 
+        needsCopy = true
+        other.resolveTypeParams(paramMap)
+    }
+    val right = _rightType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        needsCopy = true
+        paramMap(ts.name.asInstanceOf[TypeSymbol])
+      case pt: impl.PrimitiveType => 
+        _rightType
+      case other => 
+        needsCopy = true
+        other.resolveTypeParams(paramMap)
+    }
+    if needsCopy then
+      this.copy(_leftType = left, _rightType = right)
+    else
+      this
 
   lazy val infoClass: Class[_] = impl.Clazzes.AnyClazz
 

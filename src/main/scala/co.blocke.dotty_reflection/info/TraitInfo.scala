@@ -34,13 +34,13 @@ case class TraitInfo protected[dotty_reflection](
         (found, notFound)
       }
 
-  // override def toType(reflect: Reflection): reflect.Type = 
-  //   import reflect.{_, given _}
-  //   if actualParameterTypes.nonEmpty then
-  //     val args = actualParameterTypes.map(_.toType(reflect).asInstanceOf[reflect.Type]).toList
-  //     AppliedType(Type(infoClass), args)
-  //   else
-  //     reflect.Type(infoClass)
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    if actualParameterTypes.nonEmpty then
+      val args = actualParameterTypes.map(_.toType(reflect).asInstanceOf[reflect.Type]).toList
+      AppliedType(Type(infoClass), args)
+    else
+      reflect.Type(infoClass)
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

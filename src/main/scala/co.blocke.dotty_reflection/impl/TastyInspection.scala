@@ -17,71 +17,31 @@ class TastyInspection[T](clazz: Class[_], inTermsOf: Option[TraitInfo] = None) e
     import reflect.{_, given _}
 
     val pre = RType.unwindType(reflect)( Type(clazz) )
+    // println("PRE: "+pre.show())
+    // println("======")
+    // println("ITO: "+inTermsOf.get.show())
 
     inTermsOf match {
       case Some(ito) =>
-        println("HEY: "+ito)
-        println("-=-=-=-=-=-=-")
-        println("PRE: "+pre)
+        /* Ok, so InTermsOf a trait is a complex process.  Going in we have fully known types for the trait.
+         * 1) We do a pre-scan of the class to find out where the type symbols are.
+         * 2) We think of the pre-scanned class in terms of (same fields) as the given trait (re-framed scan)
+         * 3) From this re-framed scan we traverse it to find the paths to each needed type symbol
+         * 4) We apply the paths to the known trait to get the RType of each type symbol
+         * 5) Convert the RType to a reflect.Type so we can build the final AppliedType for clazz with the
+         *     proper/known types.
+         */
+        val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+        val (symPaths, unfoundSyms) = pre.findPaths(clazzSyms.map( sym => (sym->Path(Nil)) ).toMap, Some(ito))
 
-        val findSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]).map( sym => (sym->Path(Nil)) ).toMap
-        println("TYPES: "+pre.findPaths(findSyms, Some(ito)))
+        val args: List[reflect.Type] = clazzSyms.map( _ match {
+          case sym if unfoundSyms.contains(sym) => Type(classOf[Any])
+          case sym => symPaths(sym).nav(ito).getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")).toType(reflect)
+          })
 
-        // We have to pre-reflect the class to get the position of all the type parameters.
-        // These are then mapped against the given inTermsOf TraitInfo via a fancy visitor.
-        // Finally once we know the actual "exploded" actual types, we can construct the args
-        // list and build the correct AppliedType.
-
-
-        // Hard-wiring this works!  Now we need to computationally resolve these types from reflected Tree.
-        val args = List(Type(classOf[String]),Type(classOf[Boolean]),Type(classOf[Int]))
-
-        // val args = ito.actualParameterTypes.map{ p =>
-        //    val t = p.toType(reflect).asInstanceOf[reflect.Type]
-        //    println("   arg: "+t.show)
-        //    t
-        // }.toList
-
-        // PROBLEM:: Resolved is wrong!
-        // It produced: co.blocke.dotty_reflection.BaseClass[co.blocke.dotty_reflection.Level1[java.lang.String, scala.Boolean], scala.Int]
-        // Should be  : co.blocke.dotty_reflection.BaseClass[java.lang.String, scala.Boolean, scala.Int]
-        println("===============< Resolved")
-        println(AppliedType(Type(clazz), args).show)
-        println("=========================\n")
-        // .... This explodes ....
-        println(RType.unwindType(reflect)( AppliedType(Type(clazz), args) ))
-        println("=========================\n")
-        UnknownInfo("oops")
-        // inspected = RType.unwindType(reflect)( AppliedType(Type(clazz), args) )
+        inspected = RType.unwindType(reflect)( AppliedType(Type(clazz), args) )
 
       // Easy case... no inTermsOf... just reflect on the class.
       case None      =>
         inspected = pre
     }
-
-
-    /*
-trait T5[X, Y] { val thing1: X; val thing2: Y }
-trait T10[X, Y] { val x: X; val y: Y }
-trait T11[W, Z] { val w: W; val z: Z }
-case class TBlah1[A, B](w: A, z: B) extends T11[A, B]
-case class TBar7[A, B](thing1: A, thing2: B) extends T5[A, B]
-case class TFoo6[A, B, C, D](x: T11[C, T5[D, A]], y: B) extends T10[T11[C, T5[D, A]], B]
-
-
-   arg: AppliedType(
-     TypeRef(ThisType(TypeRef(NoPrefix,module class dotty_reflection)),trait T11),
-     List(
-       TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Int), 
-       AppliedType(
-         TypeRef(ThisType(TypeRef(NoPrefix,module class dotty_reflection)),trait T5),
-         List(
-           TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Double), 
-           TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Char)
-         )
-       )
-     )
-   )
-
-   arg: TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String)
-    */

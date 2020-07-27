@@ -2,6 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 import scala.util.Try
+import impl._
 
 case class TryInfo protected[dotty_reflection](
   name: String,
@@ -13,6 +14,22 @@ case class TryInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    tryType match {
+      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+        val sym = ts.name.asInstanceOf[TypeSymbol]
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(TryPathElement()) ), findSyms - sym)
+      case other => 
+        other.findPaths(findSyms.map( (k,v) => k -> v.push(TryPathElement()) ))
+    }
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _tryType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_tryType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_tryType = other.resolveTypeParams(paramMap))
+    }
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

@@ -1,6 +1,7 @@
 package co.blocke.dotty_reflection
 
 import co.blocke.reflect._
+import scala.util.Try
 
 // Basic Tasty class
 case class Person(name: String, age: Int, other: Int | Boolean)
@@ -201,6 +202,17 @@ trait T11[W, Z] { val w: W; val z: Z }
 case class TBlah1[A, B](w: A, z: B) extends T11[A, B]
 case class TBar7[A, B](thing1: A, thing2: B) extends T5[A, B]
 case class TFoo6[A, B, C, D](x: T11[C, T5[D, A]], y: B) extends T10[T11[C, T5[D, A]], B]
+
+trait Level1[T,U] { val t: T; val u: Option[List[U]] }
+trait Base[A,B] { val a: A; val b: B }
+case class L1Class[X,Y]( t: X, u: Option[List[Y]] ) extends Level1[X,Y]
+case class BaseClass[X, Y, Z]( a: Level1[X,Z], b: Y ) extends Base[Level1[X,Z],Y]
+
+trait TryIt[X,Y]{ val x: Try[X]; val y: Try[Option[Y]] }
+case class TryItC[A,B]( x: Try[A], y: Try[Option[B]]) extends TryIt[A,B]
+
+trait MapIt[X,Y,S,T]{ val x: Map[X,Option[Y]]; val s: Array[S]; val t: Array[List[T]] }
+case class MapItC[A,B,W,U]( x: Map[A,Option[B]], s: Array[W], t: Array[List[U]]) extends MapIt[A,B,W,U]
 
 // Non-Case Scala class handling
 class FoomNC(val a: Int, val b: String) {

@@ -17,7 +17,7 @@ trait RType extends Serializable:
   def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     (Map.empty[TypeSymbol,Path], findSyms) // (themThatsFound, themThatsStillLost)
 
-  // def toType(reflect: Reflection): reflect.Type = reflect.Type(infoClass)
+  def toType(reflect: Reflection): reflect.Type = reflect.Type(infoClass)
 
   def show(
     tab: Int = 0,

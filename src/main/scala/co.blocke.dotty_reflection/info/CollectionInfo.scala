@@ -9,18 +9,8 @@ case class SeqLikeInfo protected[dotty_reflection](
   name: String,
   _elementType: RType
 ) extends RType with CollectionRType:
-
   lazy val infoClass: Class[_] = Class.forName(name)
-
-  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    elementType match {
-      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
-        val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(SeqPathElement()) ), findSyms - sym)
-      case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.push(SeqPathElement()) ))
-    }
-
+      
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _elementType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
@@ -43,6 +33,51 @@ case class MapLikeInfo protected[dotty_reflection](
 
   lazy val infoClass: Class[_] = Class.forName(name)
 
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    val (stage1Found, stage1Unfound) = elementType match {
+      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+        val sym = ts.name.asInstanceOf[TypeSymbol]
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(MapKeyPathElement()) ), findSyms - sym)
+      case other => 
+        other.findPaths(findSyms.map( (k,v) => k -> v.push(MapKeyPathElement()) ))
+    }
+    val (stage2Found, stage2Unfound) = elementType2 match {
+      case ts: TypeSymbolInfo if stage1Unfound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+        val sym = ts.name.asInstanceOf[TypeSymbol]
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> stage1Unfound(sym).push(MapValuePathElement()) ), findSyms - sym)
+      case other => 
+        other.findPaths(stage1Unfound.map( (k,v) => k -> v.push(MapValuePathElement()) ))
+    }
+    (stage1Found ++ stage2Found, stage2Unfound)
+    
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    var needsCopy = false
+    val eKey = _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        needsCopy = true
+        paramMap(ts.name.asInstanceOf[TypeSymbol])
+      case pt: impl.PrimitiveType => 
+        _elementType
+      case other => 
+        needsCopy = true
+        other.resolveTypeParams(paramMap)
+    }
+    val eVal = _elementType2 match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        needsCopy = true
+        paramMap(ts.name.asInstanceOf[TypeSymbol])
+      case pt: impl.PrimitiveType => 
+        _elementType2
+      case other => 
+        needsCopy = true
+        other.resolveTypeParams(paramMap)
+    }
+    if needsCopy then
+      this.copy(_elementType = eKey, _elementType2 = eVal)
+    else
+      this
+
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
@@ -64,16 +99,22 @@ case class MapLikeInfo protected[dotty_reflection](
 case class ArrayInfo protected[dotty_reflection](
   name: String,
   _elementType: RType
-) extends RType:
-
+) extends RType with CollectionRType:
   lazy val infoClass: Class[_] = Class.forName(name)
+      
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_elementType = other.resolveTypeParams(paramMap))
+    }
 
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
 
-  def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
+  override def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"array of " + elementType.show(newTab,name :: seenBefore,true)
 
@@ -84,8 +125,15 @@ case class JavaSetInfo protected[dotty_reflection](
   _orderedTypeParameters: List[TypeSymbol],
   _elementType: RType
 ) extends RType with CollectionRType:
-
   lazy val infoClass: Class[_] = Class.forName(name)
+      
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_elementType = other.resolveTypeParams(paramMap))
+    }
+
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
@@ -98,28 +146,43 @@ case class JavaListInfo protected[dotty_reflection](
   _orderedTypeParameters: List[TypeSymbol],
   _elementType: RType
 ) extends RType with CollectionRType:
-
   lazy val orderedTypeParameters = _orderedTypeParameters
   lazy val infoClass: Class[_] = Class.forName(name)
+      
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_elementType = other.resolveTypeParams(paramMap))
+    }
+
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
 
 /** Java Array */
 case class JavaArrayInfo protected[dotty_reflection](
   _elementType: RType
-) extends RType:
+) extends RType with CollectionRType:
 
   val name: String = mangleArrayClassName(_elementType)
   lazy val infoClass: Class[_] = Class.forName(name)
+      
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_elementType = other.resolveTypeParams(paramMap))
+    }
 
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
 
-  def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
+  override def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"array of " + elementType.show(newTab,name :: seenBefore,true)
 
@@ -131,10 +194,19 @@ case class JavaQueueInfo protected[dotty_reflection](
   _elementType: RType
 ) extends RType with CollectionRType:
   lazy val infoClass: Class[_] = Class.forName(name)
+      
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_elementType = other.resolveTypeParams(paramMap))
+    }
+
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
 
 /** Java Stack dirivative */
 case class JavaStackInfo protected[dotty_reflection](
@@ -143,10 +215,19 @@ case class JavaStackInfo protected[dotty_reflection](
   _elementType: RType
 ) extends RType with CollectionRType:
   lazy val infoClass: Class[_] = Class.forName(name)
+      
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(_elementType = other.resolveTypeParams(paramMap))
+    }
+
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
 
 /** Java Map dirivative */
 case class JavaMapInfo protected[dotty_reflection](
@@ -156,6 +237,7 @@ case class JavaMapInfo protected[dotty_reflection](
   _elementType2: RType
 ) extends RType with CollectionRType:
   lazy val infoClass: Class[_] = Class.forName(name)
+  
   lazy val elementType: RType = _elementType match {
     case e: SelfRefRType => e.resolve
     case e => e
@@ -164,6 +246,50 @@ case class JavaMapInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    val (stage1Found, stage1Unfound) = elementType match {
+      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+        val sym = ts.name.asInstanceOf[TypeSymbol]
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(MapKeyPathElement()) ), findSyms - sym)
+      case other => 
+        other.findPaths(findSyms.map( (k,v) => k -> v.push(MapKeyPathElement()) ))
+    }
+    val (stage2Found, stage2Unfound) = elementType2 match {
+      case ts: TypeSymbolInfo if stage1Unfound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+        val sym = ts.name.asInstanceOf[TypeSymbol]
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> stage1Unfound(sym).push(MapValuePathElement()) ), findSyms - sym)
+      case other => 
+        other.findPaths(stage1Unfound.map( (k,v) => k -> v.push(MapValuePathElement()) ))
+    }
+    (stage1Found ++ stage2Found, stage2Unfound)
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    var needsCopy = false
+    val eKey = _elementType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        needsCopy = true
+        paramMap(ts.name.asInstanceOf[TypeSymbol])
+      case pt: impl.PrimitiveType => 
+        _elementType
+      case other => 
+        needsCopy = true
+        other.resolveTypeParams(paramMap)
+    }
+    val eVal = _elementType2 match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        needsCopy = true
+        paramMap(ts.name.asInstanceOf[TypeSymbol])
+      case pt: impl.PrimitiveType => 
+        _elementType2
+      case other => 
+        needsCopy = true
+        other.resolveTypeParams(paramMap)
+    }
+    if needsCopy then
+      this.copy(_elementType = eKey, _elementType2 = eVal)
+    else
+      this
 
   override def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

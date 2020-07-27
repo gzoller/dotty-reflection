@@ -19,6 +19,14 @@ case class TupleExtractor() extends TypeInfoExtractor[TupleInfo]:
     tob: List[reflect.TypeOrBounds], 
     symbol: reflect.Symbol): RType =
 
-    val elementTypes = tob.map( oneTob => RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.Type]) ).toArray
-    TupleInfo(t.classSymbol.get.fullName, elementTypes)
+    val elementTypes = 
+      tob.map{ oneTob =>
+        val oneTobType = oneTob.asInstanceOf[reflect.Type]
+        if oneTobType.typeSymbol.flags.is(reflect.Flags.Param) then
+          TypeSymbolInfo(oneTobType.typeSymbol.name)
+        else
+          RType.unwindType(reflect)(oneTobType)
+      }
+
+    TupleInfo(t.classSymbol.get.fullName, elementTypes.toArray)
 

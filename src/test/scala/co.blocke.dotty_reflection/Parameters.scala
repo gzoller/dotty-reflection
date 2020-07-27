@@ -4,6 +4,7 @@ import munit._
 import info._
 import impl.PrimitiveType._
 import java.util.Optional
+import scala.util.Try
 
 class Parameters extends munit.FunSuite:
 
@@ -72,7 +73,11 @@ class Parameters extends munit.FunSuite:
     |      fields:
     |         (0) a: scala.Int
     |         (1) b: java.lang.String
-    |]
+    |] with fields:
+    |   id[X]: ScalaCaseClassInfo(co.blocke.dotty_reflection.WithDefault):
+    |   fields:
+    |      (0) a: scala.Int
+    |      (1) b: java.lang.String
     |""".stripMargin)
   }
   
@@ -101,10 +106,10 @@ class Parameters extends munit.FunSuite:
     assertEquals( result.show(), """Intersection:
     |   left--TraitInfo(co.blocke.dotty_reflection.Stackable) actualParamTypes: [
     |         T: scala.Int
-    |      ]
+    |      ] with fields:
     |   right--TraitInfo(co.blocke.dotty_reflection.Floatable) actualParamTypes: [
     |         U: java.lang.String
-    |      ]
+    |      ] with fields:
     |""".stripMargin)
   }
 
@@ -213,7 +218,8 @@ class Parameters extends munit.FunSuite:
     |   fields:
     |      (0) a: TraitInfo(co.blocke.dotty_reflection.TypeShell) actualParamTypes: [
     |            X: scala.Int
-    |         ]
+    |         ] with fields:
+    |            x[X]: scala.Int
     |""".stripMargin)
   }
 
@@ -225,7 +231,8 @@ class Parameters extends munit.FunSuite:
     |         left--scala.Int
     |         right--TraitInfo(co.blocke.dotty_reflection.TypeShell) actualParamTypes: [
     |               X: java.lang.String
-    |            ]
+    |            ] with fields:
+    |               x[X]: java.lang.String
     |""".stripMargin)
   }
 
@@ -247,16 +254,60 @@ class Parameters extends munit.FunSuite:
   test("Nested trait substitutions") {
     val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
     val result = RType.inTermsOf[T10[T11[Int, T5[Double, Char]], String]]( inst.getClass )
-    println(result.show())
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.TFoo6):
     |   fields:
     |      (0) x: TraitInfo(co.blocke.dotty_reflection.T11) actualParamTypes: [
-    |         scala.Int
-    |         TraitInfo(co.blocke.dotty_reflection.T5) actualParamTypes: [
-    |            scala.Double
-    |            scala.Char
-    |         ]
-    |      ]
+    |            W: scala.Int
+    |            Z: TraitInfo(co.blocke.dotty_reflection.T5) actualParamTypes: [
+    |                  X: scala.Double
+    |                  Y: scala.Char
+    |               ] with fields:
+    |                  thing1[X]: scala.Double
+    |                  thing2[Y]: scala.Char
+    |         ] with fields:
+    |            w[W]: scala.Int
+    |            z[Z]: TraitInfo(co.blocke.dotty_reflection.T5) actualParamTypes: [
+    |               X: scala.Double
+    |               Y: scala.Char
+    |            ] with fields:
+    |               thing1[X]: scala.Double
+    |               thing2[Y]: scala.Char
     |      (1)[B] y: java.lang.String
+    |""".stripMargin)
+  }
+
+  test("With nested Option and List") {
+    val inst: Base[Level1[String,Boolean],Int] = BaseClass(L1Class("foo",Some(List(true))), 3)
+    val result = RType.inTermsOf[Base[Level1[String,Boolean],Int]](inst.getClass)
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.BaseClass):
+    |   fields:
+    |      (0) a: TraitInfo(co.blocke.dotty_reflection.Level1) actualParamTypes: [
+    |            T: java.lang.String
+    |            U: scala.Boolean
+    |         ] with fields:
+    |            t[T]: java.lang.String
+    |            u: Option of SeqLikeInfo(scala.collection.immutable.List): scala.Boolean
+    |      (1)[Y] b: scala.Int
+    |""".stripMargin)
+  }
+
+  test("With nested Try") {
+    val result = RType.inTermsOf[TryIt[Int,Double]](Class.forName("co.blocke.dotty_reflection.TryItC"))
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.TryItC):
+    |   fields:
+    |      (0) x: Try of scala.Int
+    |      (1) y: Try of Option of scala.Double
+    |""".stripMargin)
+  }
+
+  test("With nested Map and Array") {
+    val result = RType.inTermsOf[MapIt[Int,Double,String,Boolean]](Class.forName("co.blocke.dotty_reflection.MapItC"))
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.MapItC):
+    |   fields:
+    |      (0) x: MapLikeInfo(scala.collection.immutable.Map):
+    |         scala.Int
+    |         Option of scala.Double
+    |      (1) s: array of java.lang.String
+    |      (2) t: array of SeqLikeInfo(scala.collection.immutable.List): scala.Boolean
     |""".stripMargin)
   }
