@@ -12,7 +12,9 @@ case class ClassPathElement(name: String, fieldName: String) extends PathElement
     rt.flatMap(_ match {
       case c: ScalaCaseClassInfo if c.name == name => Some(c)
       case c: ScalaClassInfo if c.name == name => Some(c)
-      case _ => None
+      case c =>
+        println("HERE: "+c.getClass.getName+" = "+c.name) 
+        None
     }).flatMap(_.fields.find(_.name == fieldName).map(_.fieldType))
 
 

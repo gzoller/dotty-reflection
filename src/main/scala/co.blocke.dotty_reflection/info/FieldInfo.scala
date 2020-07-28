@@ -14,6 +14,8 @@ trait FieldInfo extends Serializable:
   def valueOf[T](target: T): Object
   def reIndex(i: Int): FieldInfo
 
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo
+
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} 
@@ -38,6 +40,13 @@ case class ScalaFieldInfo(
   def constructorClass: Class[_] = constructorClassFor(fieldType)
 
   def reIndex(i: Int): FieldInfo = this.copy(index = i)
+
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo = 
+    fieldType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(fieldType = other.resolveTypeParams(paramMap))
+    }
 
   lazy val defaultValue: Option[Object] = defaultValueAccessorName.map{ (companionClass, accessor) =>
     val companion = Class.forName(companionClass)
@@ -72,4 +81,10 @@ case class JavaFieldInfo(
   def valueOf[T](target: T): Object = valueAccessor.invoke(target)
   def setValue[T](target: T, theValue: Object) = valueSetter.invoke(target, theValue)
   def reIndex(i: Int): FieldInfo = this.copy(index = i)
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo = 
+    fieldType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(fieldType = other.resolveTypeParams(paramMap))
+    }
 

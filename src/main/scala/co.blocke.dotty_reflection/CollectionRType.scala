@@ -3,7 +3,7 @@ package co.blocke.dotty_reflection
 import impl._
 import info._
 
-/** Marker trait for all Scala/Java collection *except* Arrays, which are a special case */
+/** Marker trait for all Scala/Java collections */
 trait CollectionRType:
   self: RType =>
 

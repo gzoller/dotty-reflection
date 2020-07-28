@@ -58,6 +58,10 @@ At this point the core Tasty inspection is done, and it inspects quite a lot of 
 
 See unit tests for detailed examples of usage.
 
+
+### Limitations
+* No support for inTermsOf() and prameters in Intersection or Untion types (```val t: X|Y``` or ```val u: X&Y```).  This is because union/intersection types don't appear to be implemented as full classes in Scala so when inTermsOf() uses Java reflection to examine the given class, it comes up completely blank!  There's nothing to dive into and resolve the type symbols to their correct types from the given trait.
+
 ### Acknowledgements
 
 I wish to thank three people who have helped make this library possible, with their patient explanations and help on gitter and in code reviews.  Learning the Dotty reflection internals was a learning curve for me and these guys really helped me through it:

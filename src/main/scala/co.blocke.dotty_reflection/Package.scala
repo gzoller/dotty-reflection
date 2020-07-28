@@ -6,10 +6,10 @@ import impl._
 opaque type TypeSymbol = String 
 
 /** A union type is resolved to AnyRef, which isn't helpful.  This is a marker class name to differentiate a union type */
-val UNION_CLASS = "__union_type__"
+val UNION_CLASS = "Union"
 
 /** An intersection type is resolved to AnyRef, which isn't helpful.  This is a marker class name to differentiate a union type */
-val INTERSECTION_CLASS = "__intersection_type__"
+val INTERSECTION_CLASS = "Intersection"
 
 class ReflectException(msg: String) extends Exception(msg)
 

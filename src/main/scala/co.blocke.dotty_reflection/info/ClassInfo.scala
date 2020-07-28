@@ -44,19 +44,38 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
       val (found, notFound) = acc
       val nameForPath = referenceTrait.map(_.name).getOrElse(name)
       if notFound.nonEmpty then
+        val pathElement = 
+          if referenceTrait.isDefined then
+            TraitPathElement(nameForPath, f.name)
+          else
+            ClassPathElement(nameForPath, f.name)
         f.fieldType match {
           case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
             // This field's type is one of the sought-after TypeSymbols...
             val sym = ts.name.asInstanceOf[TypeSymbol]
-            (found + (sym -> notFound(sym).push(TraitPathElement(nameForPath,f.name))), notFound - sym)
+            (found + (sym -> notFound(sym).push(pathElement)), notFound - sym)
           case _ =>
             // Or it's not...
-            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.push(TraitPathElement(nameForPath,f.name)) ))
+            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.push(pathElement) ))
             (found ++ themThatsFound, themThatsStillLost.map( (k,v) => k -> findSyms(k) ))
         }
       else
         (found, notFound)
       }
+
+  // def _copy( newFields: Array[FieldInfo] ): ScalaClassInfoBase
+
+  // override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+  //   println("-------> RESOLVING!")
+  //   val newFields = fields.map{ f =>
+  //     f.fieldType match {
+  //       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+  //       case pt: impl.PrimitiveType => f
+  //       case other => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = other.resolveTypeParams(paramMap))
+  //     }
+  //   }
+  //   println(s"After $name: "+newFields.toList)
+  //   this._copy(newFields)
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
@@ -89,6 +108,8 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
+  // def _copy( newFields: Array[FieldInfo] ): ScalaClassInfoBase = this.copy(_fields = newFields)
+
 
 //------------------------------------------------------------
 
@@ -106,6 +127,7 @@ case class ScalaClassInfo protected[dotty_reflection] (
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
+  // def _copy( newFields: Array[FieldInfo] ): ScalaClassInfoBase = this.copy(_fields = newFields)
 
   override def show(tab:Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

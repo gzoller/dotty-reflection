@@ -6,7 +6,7 @@ case class UnionInfo protected[dotty_reflection] (
   val name: String,
   val _leftType: RType,
   val _rightType: RType
-  ) extends RType:
+  ) extends RType with LeftRightRType:
 
   lazy val leftType: RType = _leftType match {
     case e: SelfRefRType => e.resolve
@@ -17,37 +17,6 @@ case class UnionInfo protected[dotty_reflection] (
     case e => e
   }
   
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
-    var needsCopy = false
-    val left = _leftType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
-        needsCopy = true
-        paramMap(ts.name.asInstanceOf[TypeSymbol])
-      case pt: impl.PrimitiveType => 
-        _leftType
-      case other => 
-        needsCopy = true
-        other.resolveTypeParams(paramMap)
-    }
-    val right = _rightType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
-        needsCopy = true
-        paramMap(ts.name.asInstanceOf[TypeSymbol])
-      case pt: impl.PrimitiveType => 
-        _rightType
-      case other => 
-        needsCopy = true
-        other.resolveTypeParams(paramMap)
-    }
-    if needsCopy then
-      this.copy(_leftType = left, _rightType = right)
-    else
-      this
+  def _copy( left: RType, right: RType ) = this.copy(_leftType = left, _rightType = right)
 
   lazy val infoClass: Class[_] = impl.Clazzes.AnyClazz
-
-  def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
-    val newTab = {if supressIndent then tab else tab+1}
-    {if(!supressIndent) tabs(tab) else ""} + "Union:\n"
-    + tabs(newTab)+ "left--" + leftType.show(newTab+1,name :: seenBefore,true)
-    + tabs(newTab)+ "right--" + rightType.show(newTab+1,name :: seenBefore,true)
