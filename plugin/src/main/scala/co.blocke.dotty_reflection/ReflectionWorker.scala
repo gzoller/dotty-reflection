@@ -15,6 +15,10 @@ import dotty.tools.dotc.transform.Pickler
  *  This saves 2-6 sec of "priming" time when reflecting on a class using Tasty Inspection (runtime).
  */
 
+ /* NOTE: This code is not used at all.  It's left here as a reference on how to create a Dotty compiler plugin that
+    will generate and add an annotation to a class during the compilation process.  Might be handy someday!
+  */
+
 class ReflectionWorker extends StandardPlugin {
   val name: String = "reflectionWorker"
   override val description: String = "heavy-lift reflection worker"

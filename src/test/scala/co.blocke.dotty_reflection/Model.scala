@@ -214,6 +214,11 @@ case class TryItC[A,B]( x: Try[A], y: Try[Option[B]]) extends TryIt[A,B]
 trait MapIt[X,Y,S,T]{ val x: Map[X,Option[Y]]; val s: Array[S]; val t: Array[List[T]] }
 case class MapItC[A,B,W,U]( x: Map[A,Option[B]], s: Array[W], t: Array[List[U]]) extends MapIt[A,B,W,U]
 
+case class CClass[X](x:List[X])
+class PClass[Y](val y:List[Y])
+trait ClassistBase[T,U]{ val t: CClass[T]; val u: PClass[U] }
+case class ClassistC[A,B](t: CClass[A], u: PClass[B]) extends ClassistBase[A,B]
+
 // Non-Case Scala class handling
 class FoomNC(val a: Int, val b: String) {
   @FieldAnno(idx=5) var blah: Boolean = false

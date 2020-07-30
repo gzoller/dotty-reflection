@@ -311,3 +311,17 @@ class Parameters extends munit.FunSuite:
     |      (2) t: array of SeqLikeInfo(scala.collection.immutable.List): scala.Boolean
     |""".stripMargin)
   }
+
+  test("With nested case class and non-case class") {
+    val result = RType.inTermsOf[ClassistBase[Int,Short]](Class.forName("co.blocke.dotty_reflection.ClassistC"))
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.ClassistC):
+    |   fields:
+    |      (0) t: ScalaCaseClassInfo(co.blocke.dotty_reflection.CClass):
+    |         fields:
+    |            (0) x: SeqLikeInfo(scala.collection.immutable.List): scala.Int
+    |      (1) u: ScalaClassInfo(co.blocke.dotty_reflection.PClass):
+    |         fields:
+    |            (0) y: SeqLikeInfo(scala.collection.immutable.List): scala.Short
+    |         non-constructor fields:
+    |""".stripMargin)
+  }

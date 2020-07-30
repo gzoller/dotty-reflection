@@ -4,16 +4,18 @@ import impl._
 import scala.util.Try
 
 case class Foom[X](x:List[X])
-// trait Foom[X]{ val x: X }
-trait SomeBase[T]{ val t: Foom[T] }
-case class SomeThing[A](t: Foom[A]) extends SomeBase[A]
+class Foom2[Y](val y:List[Y])
+trait SomeBase[T,U]{ val t: Foom[T]; val u: Foom2[U] }
+case class SomeThing[A,B](t: Foom[A], u: Foom2[B]) extends SomeBase[A,B]
+
+
 
 
 
 object RunMe extends App:
 
 
-  val result = RType.inTermsOf[SomeBase[Int]](Class.forName("co.blocke.dotty_reflection.SomeThing"))
+  val result = RType.inTermsOf[SomeBase[Int,Short]](Class.forName("co.blocke.dotty_reflection.SomeThing"))
   println(result.show())
 
   println("done.")
