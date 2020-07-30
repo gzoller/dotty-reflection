@@ -27,7 +27,19 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
   lazy val annotations = _annotations
   lazy val mixins = _mixins
   lazy val infoClass: Class[_] = Class.forName(name)
+  lazy val typeParams = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
 
+  override def toType(reflect: scala.tasty.Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    val actualParameterTypes = fields.collect{
+      case f if f.originalSymbol.isDefined => f.originalSymbol.get -> f.fieldType.toType(reflect).asInstanceOf[Type]
+    }.toMap
+    if typeParams.nonEmpty then
+      val args = typeParams.map(sym => actualParameterTypes.getOrElse(sym,PrimitiveType.Scala_Any.toType(reflect).asInstanceOf[Type])).toList
+      AppliedType(Type(infoClass), args)
+    else
+      reflect.Type(infoClass)
+ 
   // Fields may be self-referencing, so we need to unwind this...
   lazy val fields = _fields.map( f => f.fieldType match {
     case s: SelfRefRType => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = s.resolve)

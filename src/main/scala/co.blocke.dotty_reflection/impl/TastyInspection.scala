@@ -36,7 +36,8 @@ class TastyInspection[T](clazz: Class[_], inTermsOf: Option[TraitInfo] = None) e
 
         val args: List[reflect.Type] = clazzSyms.map( _ match {
           case sym if unfoundSyms.contains(sym) => Type(classOf[Any])
-          case sym => symPaths(sym).nav(ito).getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")).toType(reflect)
+          case sym => 
+            symPaths(sym).nav(ito).getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")).toType(reflect)
           })
 
         inspected = RType.unwindType(reflect)( AppliedType(Type(clazz), args) )

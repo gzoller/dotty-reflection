@@ -216,8 +216,13 @@ case class MapItC[A,B,W,U]( x: Map[A,Option[B]], s: Array[W], t: Array[List[U]])
 
 case class CClass[X](x:List[X])
 class PClass[Y](val y:List[Y])
-trait ClassistBase[T,U]{ val t: CClass[T]; val u: PClass[U] }
-case class ClassistC[A,B](t: CClass[A], u: PClass[B]) extends ClassistBase[A,B]
+case class CClassLevel2[Z](z: Z)
+trait ClassistBase[T,U]{ val t: CClass[CClassLevel2[T]]; val u: PClass[U] }
+case class ClassistC[A,B](t: CClass[CClassLevel2[A]], u: PClass[B]) extends ClassistBase[A,B]
+
+// Inverted
+trait ClassistBaseInv[T,U]{ val t: CClass[T]; val u: PClass[U] }
+case class ClassistCInv[A,B](t: CClass[A], u: PClass[B]) extends ClassistBaseInv[A,B]
 
 // Non-Case Scala class handling
 class FoomNC(val a: Int, val b: String) {
