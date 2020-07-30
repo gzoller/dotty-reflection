@@ -8,6 +8,8 @@ case class Foom[X](x:List[X])
 trait SomeBase[T]{ val t: Foom[T] }
 case class SomeThing[A](t: Foom[A]) extends SomeBase[A]
 
+
+
 object RunMe extends App:
 
 

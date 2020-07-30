@@ -16,7 +16,7 @@ class TastyInspection[T](clazz: Class[_], inTermsOf: Option[TraitInfo] = None) e
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{_, given _}
 
-    val pre = RType.unwindType(reflect)( Type(clazz) )
+    val pre = RType.unwindType(reflect)( Type(clazz), inTermsOf.isEmpty )
     // println("PRE: "+pre.show())
     // println("======")
     // println("ITO: "+inTermsOf.get.show())

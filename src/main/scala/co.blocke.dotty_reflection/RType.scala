@@ -70,7 +70,7 @@ object RType:
     Expr( unwindType(qctx.tasty)(typeOf[T]) )
 
     
-  protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type): RType =
+  protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type, resolveTypeSyms: Boolean = true): RType =
     import reflect.{_, given _}
 
     val className = aType.asInstanceOf[TypeRef] match {
@@ -83,10 +83,10 @@ object RType:
         // Any is a special case... It may just be an "Any", or something else, like a opaque type alias.
         // In either event, we don't want to cache the result.
         if className == "scala.Any" then
-          TastyReflection.reflectOnType(reflect)(aType)
+          TastyReflection.reflectOnType(reflect)(aType, resolveTypeSyms)
         else
           cache.put(aType, SelfRefRType(className)) // TODO! paramList.toArray))
-          val reflectedRtype = TastyReflection.reflectOnType(reflect)(aType)
+          val reflectedRtype = TastyReflection.reflectOnType(reflect)(aType, resolveTypeSyms)
           cache.put(aType, reflectedRtype)
           reflectedRtype
       }

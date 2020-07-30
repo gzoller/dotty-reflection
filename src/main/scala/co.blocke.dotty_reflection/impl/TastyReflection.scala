@@ -11,7 +11,7 @@ import scala.util.Try
 
 object TastyReflection extends NonCaseClassReflection:
 
-  def reflectOnType(reflect: Reflection)(aType: reflect.Type): RType = 
+  def reflectOnType(reflect: Reflection)(aType: reflect.Type, resolveTypeSyms: Boolean): RType = 
     import reflect.{_, given _}
 
     scala.util.Try {
@@ -81,7 +81,7 @@ object TastyReflection extends NonCaseClassReflection:
               case cs => 
                 // Primitive type test:
                 PrimitiveType.values.find(_.name == className).getOrElse{
-                  reflectOnClass(reflect)(typeRef)
+                  reflectOnClass(reflect)(typeRef, resolveTypeSyms)
                 }
             }
 
@@ -95,7 +95,6 @@ object TastyReflection extends NonCaseClassReflection:
           // Parameterized Types (classes, traits, & collections)
           //----------------------------------------
           case a @ AppliedType(t,tob) => 
-            println("Applied! "+t+" --> "+tob)
             // First see if we have some sort of collection or other "wrapped" type
             val foundType: Option[RType] = extractors.ExtractorRegistry.extractors.collectFirst {
               case e if e.matches(reflect)(classSymbol) => 
@@ -103,7 +102,7 @@ object TastyReflection extends NonCaseClassReflection:
             }
             foundType.getOrElse {
               // Nope--we've got a parameterized class or trait here
-              reflectOnClass(reflect)(a.asInstanceOf[TypeRef])
+              reflectOnClass(reflect)(a.asInstanceOf[TypeRef], resolveTypeSyms)
             }
         
           case x => 
@@ -116,7 +115,7 @@ object TastyReflection extends NonCaseClassReflection:
     }
 
 
-  def reflectOnClass(reflect: Reflection)(typeRef: reflect.TypeRef): RType = 
+  def reflectOnClass(reflect: Reflection)(typeRef: reflect.TypeRef, resolveTypeSyms: Boolean): RType = 
     import reflect.{_, given _}
 
     val className = typeRef.classSymbol.get.fullName
@@ -157,11 +156,16 @@ object TastyReflection extends NonCaseClassReflection:
         typeRef match {
           case a @ AppliedType(t,tob) =>  // parameterized trait
             val actualParamTypes = tob.map{ oneTob => 
-              scala.util.Try {
-                RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])
+              scala.util.Try{ 
+                if resolveTypeSyms then
+                  RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])
+                else if oneTob.asInstanceOf[reflect.TypeRef].typeSymbol.flags.is(Flags.Param)
+                  TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
+                else
+                  RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef], false)
               }.toOption.getOrElse{
                 TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
-              }
+              }   
             }
             val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
             val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
@@ -170,8 +174,19 @@ object TastyReflection extends NonCaseClassReflection:
               val fieldType = 
                 // A lot of complex messiness to sew down the mapped type:  Foo[T]( val x: List[T]) where we call Foo[W] from a higher class,
                 // so T -> W.  We need resolveTypeParams to sew down for deeper nested types like List.  Ugh.
-                scala.util.Try {
-                  RType.unwindType(reflect)(typeRef.memberType(f))
+                scala.util.Try{ 
+                  if resolveTypeSyms then
+                    RType.unwindType(reflect)(typeRef.memberType(f))
+                  else 
+                    f.tree match {
+                      case vd: ValDef if vd.tpt.tpe.typeSymbol.flags.is(Flags.Param) =>
+                        paramMap.getOrElse(
+                          vd.tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol],
+                          RType.unwindType(reflect)(vd.tpt.tpe).resolveTypeParams(paramMap)
+                        )
+                      case _ => 
+                        RType.unwindType(reflect)(typeRef.memberType(f), false)
+                    }
                 }.toOption.getOrElse{
                   paramMap.getOrElse(
                     f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol],
@@ -240,7 +255,7 @@ object TastyReflection extends NonCaseClassReflection:
       // Get superclass' field annotations--if any
       val dad = classDef.parents.headOption match {
         case Some(tt: TypeTree) if !isValueClass && tt.tpe.classSymbol.get.fullName != "java.lang.Object" => 
-          reflectOnClass(reflect)(tt.tpe.asInstanceOf[TypeRef]) match {
+          reflectOnClass(reflect)(tt.tpe.asInstanceOf[TypeRef], resolveTypeSyms) match {
             case ci: ClassInfo => Some(ci) // Any kind of class
             case _ => None // e.g. Unknown
           }
@@ -273,71 +288,35 @@ object TastyReflection extends NonCaseClassReflection:
       }
 
       val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
-      // println("=== Symbols === "+paramTypeSymbols)
+      val actualParamTypes = tob.map{ oneTob => 
+        scala.util.Try{ 
+          if resolveTypeSyms then
+            RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])
+          else if oneTob.asInstanceOf[reflect.TypeRef].typeSymbol.flags.is(Flags.Param)
+            TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
+          else
+            RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef], false)
+        }.toOption.getOrElse{
+          TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
+        }   
+      }
+      val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
 
       if symbol.flags.is(reflect.Flags.Case) then
         // === Case Classes ===
         val caseFields = classDef.constructor.paramss.head.zipWithIndex.map{ (valDef, idx) => 
           val fieldType = scala.util.Try{ 
-            // println(s"$className field: "+valDef)
-            // println( "            ::::: "+valDef.tpt.symbol)
-            println( "            ----- "+RType.unwindType(reflect)(valDef.tpt.tpe))
-            // RType.unwindType(reflect)(valDef.tpt.tpe)
-            RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx))) 
+            if resolveTypeSyms then
+              RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx))) 
+            else if valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.flags.is(Flags.Param)
+              TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
+            else
+              RType.unwindType(reflect)(valDef.tpt.tpe, false)
           }.toOption.getOrElse{
             TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
           }
-          reflectOnField(reflect)(fieldType, valDef, idx, dad, fieldDefaultMethods) 
-        }
-        // println(s"$className: "+caseFields)
-        /*
-        println(className)
-        // println(">>>>> "+classDef.constructor.paramss)
-        val caseFields = classDef.constructor.paramss.head.zipWithIndex.map{ (valDef, idx) => 
-          val fieldType = scala.util.Try{ 
-            // println("   whatzzit: "+valDef.tpt.tpe)
-            // println("             "+typeRef.memberType(valDef.tpt.tpe.typeSymbol))
-            // println("---")
-            // println("             "+RType.unwindType(reflect)(valDef.tpt.tpe) )
-            // println("             "+RType.unwindType(reflect)(typeRef.memberType(valDef.tpt.tpe.typeSymbol)) )
-            // RType.unwindType(reflect)(typeRef.memberType(valDef.tpt.tpe.typeSymbol)) 
-
-            // RType.unwindType(reflect)(valDef.tpt.tpe) 
-            // RType.unwindType(reflect)(symbol.caseFields(idx).tree.asInstanceOf[ValDef].tpt.tpe) 
-
-            RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx).tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol)) 
-          }.toOption.getOrElse{
-            TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
-          }
-          // println("   Field Type ==> "+fieldType)
-          val reflectedField = reflectOnField(reflect)(fieldType, valDef, idx, dad, fieldDefaultMethods) 
-          // reflectedField.fieldType match {
-          //   case s:SeqLikeInfo => println("   Seq: "+s.elementType.getClass.getName)
-          // }
-          reflectedField
-          /*
-          if typeSymbols.isEmpty then
-            reflectedField
-          else
-            val actualParamTypes = tob.map{ oneTob => 
-              scala.util.Try {
-                RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])
-              }.toOption.getOrElse{
-                TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
-              }
-            }
-            if actualParamTypes.head == PrimitiveType.Java_Object then
-              println("    TOB: "+tob)
-              println("    TypeSoFar: "+fieldType)
-              println("    Reflected: "+reflectedField)
-            println("Actual param types: "+actualParamTypes)
-            val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
-            println("Symbols: "+paramTypeSymbols)
-            val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
-            reflectedField.resolveTypeParams(paramMap)
-            */
-        }
-        */
+          reflectOnField(reflect)(fieldType, valDef, idx, dad, fieldDefaultMethods).resolveTypeParams( paramMap )
+        }       
 
         ScalaCaseClassInfo(
           className, 
