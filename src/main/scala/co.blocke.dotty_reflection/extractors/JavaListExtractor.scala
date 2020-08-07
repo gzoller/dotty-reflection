@@ -5,11 +5,12 @@ import impl._
 import Clazzes._
 import info._ 
 import scala.tasty.Reflection
+import scala.util.Try
 
 case class JavaListExtractor() extends TypeInfoExtractor[JavaListInfo]:
 
   def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = 
-    Class.forName(symbol.fullName) <:< JListClazz
+    Try( Class.forName(symbol.fullName) <:< JListClazz ).toOption.getOrElse(false)
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 

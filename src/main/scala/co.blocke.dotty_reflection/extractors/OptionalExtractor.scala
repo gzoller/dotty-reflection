@@ -5,16 +5,17 @@ import impl._
 import Clazzes._
 import info._ 
 import scala.tasty.Reflection
+import scala.util.Try
 
 case class OptionalExtractor() extends TypeInfoExtractor[JavaOptionalInfo]:
 
   def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = 
-    Class.forName(symbol.fullName) =:= OptionalClazz
+    Try( Class.forName(symbol.fullName) =:= OptionalClazz ).toOption.getOrElse(false)
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    symbol: reflect.Symbol): RType = 
+    symbol: reflect.Symbol): RType =
       val clazz = Class.forName(symbol.fullName)
       val elementType = tob.head.asInstanceOf[reflect.Type]
       val isTypeParam = elementType.typeSymbol.flags.is(reflect.Flags.Param)

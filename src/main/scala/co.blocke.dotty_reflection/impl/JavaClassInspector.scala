@@ -13,7 +13,7 @@ import Clazzes._
  *  ScalaClassInspector by default.
  */
 object JavaClassInspector:
-  def inspectClass(c: Class[?]): RType =
+  def inspectClass(c: Class[?], paramTypes: scala.Array[RType]): RType =
     // We must detect and handle any top-level Java collections or they'll be "dumbed-down" to JavaClassInfo, which isn't what we want.
     // (Not worried about the type parameters of the collections here--they'll be populated in the sewTypeParams() method later)
     c match {
@@ -25,7 +25,7 @@ object JavaClassInspector:
       case _ =>
         val annos:List[Annotation] = c.getAnnotations.toList
         val allAnnos = annos.map(a => parseAnno(a)).toMap
-        JavaClassInfoProxy(c.getName, parseFields(c).toArray, allAnnos)
+        JavaClassInfoProxy(c.getName, parseFields(c).toArray, allAnnos, typeParamSymbols(c).zip(paramTypes).toMap)
     }
 
   private def parseAnno( annoClass: Annotation): (String,Map[String,String]) = 
@@ -52,7 +52,6 @@ object JavaClassInspector:
 
           JavaFieldInfo(0,fieldName, fieldType, fieldAnnos, getter, setter, None)
       }.toList.zipWithIndex.map{
-            // }.toList.filterNot(_.annotations.contains(IGNORE)).zipWithIndex.map{
         (f,i) => f.copy(index = i)
       }
 
@@ -78,20 +77,16 @@ object JavaClassInspector:
             JavaSetInfo(c.getName, inspectType(mainTypeParams, p.getActualTypeArguments.head))
           case c =>
             val params = p.getActualTypeArguments.toList
+            println("HERE: "+params)
             UnknownInfo("Boom")
             // Reflector.reflectOnClassWithParams(c, params.map(pt => RType.of(pt.asInstanceOf[Class[_]])))
         }
       case v: TypeVariable[_] => TypeSymbolInfo(v.getName)
       case w: WildcardType => throw new ReflectException("Wildcard types not currently supported in reflection library")
-      /*
-      case other if other.isInstanceOf[Class[_]] => 
+      case other => 
         other.asInstanceOf[Class[_]] match {
-          case c if c.isArray => JavaArrayInfo(c, inspectType(mainTypeParams, c.getComponentType))
-          // case n if(mainTypeParams contains fieldType) => TypeSymbolInfo(n)  // <--- This seems broken!  Not sure what the intent was
-          case c if c.isEnum => JavaEnumInfo(c.getName, c)
-          case c => Reflector.reflectOnClass(c)
+          case c if c.isArray => JavaArrayInfo(inspectType(mainTypeParams, c.getComponentType))
+          case c if c.isEnum => JavaEnumInfo(c.getName)
+          case c => RType.of(c)
         }
-        */
-      case u =>
-        throw new ReflectException("Unknown Java type "+u)  // This isn't a Class so we can't use UnknownInfo here
     }

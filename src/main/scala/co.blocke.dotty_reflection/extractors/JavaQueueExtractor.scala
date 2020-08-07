@@ -5,11 +5,12 @@ import impl._
 import Clazzes._
 import info._ 
 import scala.tasty.Reflection
+import scala.util.Try
 
 case class JavaQueueExtractor() extends TypeInfoExtractor[JavaQueueInfo]:
 
   def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = 
-    Class.forName(symbol.fullName) <:< JQueueClazz
+    Try( Class.forName(symbol.fullName) <:< JQueueClazz ).toOption.getOrElse(false)
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 

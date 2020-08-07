@@ -163,9 +163,9 @@ case class ScalaClassInfo protected[dotty_reflection] (
 /** Java class reflection has a special problem... we need the class file, which isn't available during compilation (i.e. inside a macro).
  *  The best we can do is capture the name of the class and materialize/reflect on the class outside of the macro, lazy-like.
  */
-case class JavaClassInfo protected[dotty_reflection] ( name: String ) extends ClassInfo:
+case class JavaClassInfo protected[dotty_reflection] ( name: String, paramTypes: Array[RType] ) extends ClassInfo:
   lazy val infoClass: Class[_] = Class.forName(name)
-  private lazy val proxy = impl.JavaClassInspector.inspectClass(infoClass).asInstanceOf[JavaClassInfoProxy]
+  private lazy val proxy = impl.JavaClassInspector.inspectClass(infoClass, paramTypes).asInstanceOf[JavaClassInfoProxy]
   lazy val fields = proxy.fields
   lazy val typeMembers:           Array[TypeMemberInfo]           = proxy.typeMembers
   lazy val annotations:           Map[String, Map[String,String]] = proxy.annotations
@@ -190,7 +190,8 @@ case class JavaClassInfo protected[dotty_reflection] ( name: String ) extends Cl
 case class JavaClassInfoProxy protected[dotty_reflection] (
     name:                   String,
     _fields:                Array[FieldInfo],
-    _annotations:           Map[String, Map[String,String]]
+    _annotations:           Map[String, Map[String,String]],
+    paramMap:               Map[TypeSymbol, RType]
   ) extends RType:
 
   lazy val annotations = _annotations
@@ -209,10 +210,13 @@ case class JavaClassInfoProxy protected[dotty_reflection] (
  
 
   // Fields may be self-referencing, so we need to unwind this...
-  lazy val fields = _fields.map( f => f.fieldType match {
-    case s: SelfRefRType => f.asInstanceOf[JavaFieldInfo].copy(fieldType = s.resolve)
-    case s => f
-  })
+  lazy val fields = _fields.map{ f => 
+    val fieldType = f.fieldType match {
+      case s: SelfRefRType => f.asInstanceOf[JavaFieldInfo].copy(fieldType = s.resolve)
+      case s => f
+    }
+    fieldType.resolveTypeParams(paramMap)
+  }
 
   val typeMembers: Array[TypeMemberInfo] = Nil.toArray  // unused for Java classes but needed on ClassInfo
 
