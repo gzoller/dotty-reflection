@@ -222,16 +222,12 @@ object TastyReflection extends NonCaseClassReflection:
       val enumValues = enumClassSymbol.children.map(_.name)
       ScalaEnumInfo(symbol.fullName, enumValues)
 
-    /* TODO
     // === Java Class ===
     // User-written Java classes will have the source file.  Java library files will have <no file> for source
     else if symbol.pos.sourceFile.toString.endsWith(".java") || symbol.pos.sourceFile.toString == "<no file>" then
       // Reflecting Java classes requires the materialized Class, which may be available (e.g. Java collections) or not (e.g. user-written class).
-      // See if we can get it...  If not create a proxy.
-      scala.util.Try {
-        JavaClassInspector.inspectJavaClass(Class.forName(symbol.fullName), paramMap)
-      }.toOption.getOrElse(JavaClassInfo(symbol.fullName, paramMap))
-    */
+      // So for now just burp forth a proxy and we'll resovle the details at runtime.
+      JavaClassInfo(symbol.fullName)
 
     // === Scala Classes ===
     else if symbol.isClassDef then

@@ -32,7 +32,6 @@ case class MapExtractor() extends TypeInfoExtractor[MapLikeInfo]:
       else
         RType.unwindType(reflect)(tob(1).asInstanceOf[reflect.Type])
 
-    val tparms = MapClazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
     MapLikeInfo(
       t.classSymbol.get.fullName,
       leftRType,

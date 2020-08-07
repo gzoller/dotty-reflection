@@ -298,3 +298,14 @@ def [T](s: ScalaCaseClassInfo).constructWith(args: List[Object]): T = s.infoClas
 //   val asBuilt = s.infoClass.getConstructors.head.newInstance().asInstanceOf[T]
 //   s.fields.map(f => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(asBuilt, args(f.index)))
 //   asBuilt
+
+
+// Java Collections
+case class JColl(
+  a: java.util.List[Int],
+  b: java.util.Optional[java.util.ArrayList[Int]],
+  c: java.util.Stack[String],
+  d: java.util.Queue[Map[Int,String]],
+  e: java.util.Set[Boolean],
+  f: java.util.Map[Int, String]
+)

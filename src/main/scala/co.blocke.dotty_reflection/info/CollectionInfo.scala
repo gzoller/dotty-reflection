@@ -122,7 +122,6 @@ case class ArrayInfo protected[dotty_reflection](
 /** Java Set dirivative */
 case class JavaSetInfo protected[dotty_reflection](
   name: String,
-  _orderedTypeParameters: List[TypeSymbol],
   _elementType: RType
 ) extends RType with CollectionRType:
   lazy val infoClass: Class[_] = Class.forName(name)
@@ -143,10 +142,8 @@ case class JavaSetInfo protected[dotty_reflection](
 /** Java List dirivative */
 case class JavaListInfo protected[dotty_reflection](
   name: String,
-  _orderedTypeParameters: List[TypeSymbol],
   _elementType: RType
 ) extends RType with CollectionRType:
-  lazy val orderedTypeParameters = _orderedTypeParameters
   lazy val infoClass: Class[_] = Class.forName(name)
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
@@ -190,7 +187,6 @@ case class JavaArrayInfo protected[dotty_reflection](
 /** Java Queue dirivative */
 case class JavaQueueInfo protected[dotty_reflection](
   name: String,
-  _orderedTypeParameters: List[TypeSymbol],
   _elementType: RType
 ) extends RType with CollectionRType:
   lazy val infoClass: Class[_] = Class.forName(name)
@@ -211,7 +207,6 @@ case class JavaQueueInfo protected[dotty_reflection](
 /** Java Stack dirivative */
 case class JavaStackInfo protected[dotty_reflection](
   name: String,
-  _orderedTypeParameters: List[TypeSymbol],
   _elementType: RType
 ) extends RType with CollectionRType:
   lazy val infoClass: Class[_] = Class.forName(name)
@@ -232,7 +227,6 @@ case class JavaStackInfo protected[dotty_reflection](
 /** Java Map dirivative */
 case class JavaMapInfo protected[dotty_reflection](
   name: String,
-  _orderedTypeParameters: List[TypeSymbol],
   _elementType: RType,
   _elementType2: RType
 ) extends RType with CollectionRType:
