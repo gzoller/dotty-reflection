@@ -294,10 +294,10 @@ case class Drawer[T]( id: Int, nextInChain: Option[Drawer[T]], thing: T)
 // Implicit Method adds.. (extension methods)
 import info._
 def [T](s: ScalaCaseClassInfo).constructWith(args: List[Object]): T = s.infoClass.getConstructors.head.newInstance(args:_*).asInstanceOf[T]
-// def [T](s: JavaClassInfo).constructWith(args: List[Object]): T = 
-//   val asBuilt = s.infoClass.getConstructors.head.newInstance().asInstanceOf[T]
-//   s.fields.map(f => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(asBuilt, args(f.index)))
-//   asBuilt
+def [T](s: JavaClassInfo).constructWith(args: List[Object]): T = 
+  val asBuilt = s.infoClass.getConstructors.head.newInstance().asInstanceOf[T]
+  s.fields.map(f => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(asBuilt, args(f.index)))
+  asBuilt
 
 
 // Java Collections

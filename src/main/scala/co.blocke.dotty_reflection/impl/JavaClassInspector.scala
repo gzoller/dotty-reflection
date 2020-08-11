@@ -15,7 +15,7 @@ import Clazzes._
 object JavaClassInspector:
   def inspectClass(c: Class[?], paramTypes: scala.Array[RType]): RType =
     // We must detect and handle any top-level Java collections or they'll be "dumbed-down" to JavaClassInfo, which isn't what we want.
-    // (Not worried about the type parameters of the collections here--they'll be populated in the sewTypeParams() method later)
+    // (Not worried about the type parameters of the collections here--they'll be populated in the resolveTypeParams() method later)
     c match {
       case z if z =:= OptionalClazz => OptionalExtractor().emptyInfo(z)
       case z if z <:< JListClazz    => JavaListExtractor().emptyInfo(z)
@@ -56,9 +56,10 @@ object JavaClassInspector:
       }
 
   private def inspectType(mainTypeParams: List[TypeVariable[_]], fieldType: JType): RType =
+
     fieldType match {
-      // case g: GenericArrayType => 
-      //   JavaArrayInfo(classOf[Array], inspectType(mainTypeParams, g.getGenericComponentType))
+      case g: GenericArrayType => 
+        JavaArrayInfo(inspectType(mainTypeParams, g.getGenericComponentType))
 
       // All this stuff gets triggered if there are Java collections *in a Java class*.  They don't get triggered
       // if we're inspecting a top-level collection, i.e. a Java collection that is a member of a Scala class.
@@ -76,12 +77,13 @@ object JavaClassInspector:
           case c if c <:< JSetClazz =>
             JavaSetInfo(c.getName, inspectType(mainTypeParams, p.getActualTypeArguments.head))
           case c =>
-            val params = p.getActualTypeArguments.toList
-            println("HERE: "+params)
-            UnknownInfo("Boom")
-            // Reflector.reflectOnClassWithParams(c, params.map(pt => RType.of(pt.asInstanceOf[Class[_]])))
+            val params = p.getActualTypeArguments.toList.map(t => RType.of(t.asInstanceOf[Class[_]]))
+            val raw = RType.of(c)
+            val paramMap = typeParamSymbols(c).zip(params).toMap
+            raw.resolveTypeParams(paramMap)
         }
       case v: TypeVariable[_] => TypeSymbolInfo(v.getName)
+      case p if PrimitiveType.unapply(p.asInstanceOf[Class[_]].getName()).isDefined => PrimitiveType.unapply(p.asInstanceOf[Class[_]].getName()).get
       case w: WildcardType => throw new ReflectException("Wildcard types not currently supported in reflection library")
       case other => 
         other.asInstanceOf[Class[_]] match {

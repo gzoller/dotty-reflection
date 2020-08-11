@@ -163,9 +163,9 @@ case class ScalaClassInfo protected[dotty_reflection] (
 /** Java class reflection has a special problem... we need the class file, which isn't available during compilation (i.e. inside a macro).
  *  The best we can do is capture the name of the class and materialize/reflect on the class outside of the macro, lazy-like.
  */
-case class JavaClassInfo protected[dotty_reflection] ( name: String, paramTypes: Array[RType] ) extends ClassInfo:
+case class JavaClassInfo protected[dotty_reflection] ( name: String, paramTypes: Array[RType], _proxy: Option[JavaClassInfoProxy] = None ) extends ClassInfo:
   lazy val infoClass: Class[_] = Class.forName(name)
-  private lazy val proxy = impl.JavaClassInspector.inspectClass(infoClass, paramTypes).asInstanceOf[JavaClassInfoProxy]
+  private lazy val proxy = _proxy.getOrElse(impl.JavaClassInspector.inspectClass(infoClass, paramTypes).asInstanceOf[JavaClassInfoProxy])
   lazy val fields = proxy.fields
   lazy val typeMembers:           Array[TypeMemberInfo]           = proxy.typeMembers
   lazy val annotations:           Map[String, Map[String,String]] = proxy.annotations
@@ -174,6 +174,10 @@ case class JavaClassInfo protected[dotty_reflection] ( name: String, paramTypes:
   def field(name: String): Option[JavaFieldInfo] = fieldsByName.get(name)
 
   private lazy val fieldsByName = fields.map(f => (f.name, f.asInstanceOf[JavaFieldInfo])).toMap
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
+    val newProxy = this.proxy.copy(_fields = fields.map( f => f.resolveTypeParams(paramMap) ))
+    this.copy(_proxy = Some(newProxy))
 
   def show(tab:Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
