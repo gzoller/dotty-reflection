@@ -276,6 +276,7 @@ class Parameters extends munit.FunSuite:
     |""".stripMargin)
   }
 
+
   test("With nested Option and List") {
     val inst: Base[Level1[String,Boolean],Int] = BaseClass(L1Class("foo",Some(List(true))), 3)
     val result = RType.inTermsOf[Base[Level1[String,Boolean],Int]](inst.getClass)

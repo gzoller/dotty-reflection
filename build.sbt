@@ -1,6 +1,6 @@
 name := "dotty-reflection"
 organization in ThisBuild := "co.blocke"
-val dottyVersion =  "0.25.0-RC2"
+val dottyVersion =  "0.26.0-RC1" //"0.25.0-RC2"
 
 lazy val root = project
   .in(file("."))
@@ -35,7 +35,7 @@ lazy val dependencies =
   new {
     val dottyCompiler = "ch.epfl.lamp" %% "dotty-compiler" % dottyVersion
     val dottyInspection = "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion
-    val munit = "org.scalameta" %% "munit" % "0.7.9" % Test
+    val munit = "org.scalameta" %% "munit" % "0.7.11" % Test
   }
 
 lazy val commonDependencies = Seq(

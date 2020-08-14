@@ -62,8 +62,15 @@ object RType:
     tc.inspect("", List(clazz.getName))
     tc.inspected
 
+  inline def inTermsOf(clazz: Class[_], baseTrait: TraitInfo): RType =
+    val tc = new TastyInspection(clazz, Some(baseTrait))
+    tc.inspect("", List(clazz.getName))
+    tc.inspected
+
   // pre-loaded with known language primitive types
-  private val cache = new java.util.concurrent.ConcurrentHashMap[Object, RType]()
+  private val cache = scala.collection.mutable.Map.empty[String,RType]
+  // private val cache = scala.collection.mutable.Map.empty[Object,RType] //new java.util.concurrent.ConcurrentHashMap[Object, RType]()
+  def cacheSize = cache.size
   
   def ofImpl[T]()(implicit qctx: QuoteContext, ttype: scala.quoted.Type[T]): Expr[RType] = 
     import qctx.tasty.{_, given _}
@@ -78,16 +85,31 @@ object RType:
       case OrType(_,_)  => UNION_CLASS
       case normal       => normal.classSymbol.get.fullName
     }
+
     this.synchronized {
-      Option(cache.get(aType)).getOrElse{ 
-        // Any is a special case... It may just be an "Any", or something else, like a opaque type alias.
-        // In either event, we don't want to cache the result.
+      val tName = typeName(reflect)(aType)
+      cache.getOrElse(tName, { 
         if className == "scala.Any" then
           TastyReflection.reflectOnType(reflect)(aType, resolveTypeSyms)
         else
-          cache.put(aType, SelfRefRType(className)) // TODO! paramList.toArray))
-          val reflectedRtype = TastyReflection.reflectOnType(reflect)(aType, resolveTypeSyms)
-          cache.put(aType, reflectedRtype)
-          reflectedRtype
-      }
+          cache.put(tName, SelfRefRType(className))
+          val reflectedRType = TastyReflection.reflectOnType(reflect)(aType, resolveTypeSyms)
+          cache.put(tName, reflectedRType)
+          // println(s"Cache (${cache.size}) put [$tName] -> "+reflectedRType)
+          reflectedRType
+      })
+    }
+
+  def typeName(reflect: Reflection)( aType: reflect.Type): String =
+    import reflect.{_, given _}
+    val name = aType.asInstanceOf[TypeRef] match {
+      case sym if aType.typeSymbol.flags.is(Flags.Param) => sym.name
+      case AppliedType(t,tob) => typeName(reflect)(t) + tob.map( oneTob => typeName(reflect)(oneTob.asInstanceOf[TypeRef])).mkString("[",",","]")
+      case AndType(left, right) => INTERSECTION_CLASS + "[" + typeName(reflect)(left.asInstanceOf[TypeRef]) + "," + typeName(reflect)(right.asInstanceOf[TypeRef]) + "]"
+      case OrType(left, right) => UNION_CLASS + "[" + typeName(reflect)(left.asInstanceOf[TypeRef]) + "," + typeName(reflect)(right.asInstanceOf[TypeRef]) + "]"
+      case _ => aType.classSymbol.get.fullName
+    }
+    name match {
+      case ENUM_CLASSNAME => aType.asInstanceOf[TypeRef].qualifier.asInstanceOf[reflect.TermRef].termSymbol.moduleClass.fullName
+      case tn => tn
     }
