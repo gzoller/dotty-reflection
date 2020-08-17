@@ -279,3 +279,10 @@ class ScalaTasty extends munit.FunSuite:
     |            (1) parent: Option of ScalaCaseClassInfo(co.blocke.dotty_reflection.Shape) (self-ref recursion)
     |""".stripMargin)
   }
+
+  test("Ensure caching (equals) works") {
+    val r0 = RType.of[Int]
+    val r1 = RType.of[Int]
+    assert(r0 == r1)
+    assert(r0.equals(r1))
+  }

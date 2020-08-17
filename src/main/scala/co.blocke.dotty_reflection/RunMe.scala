@@ -1,31 +1,21 @@
 package co.blocke.dotty_reflection
 import impl._
 
-object Fruit extends Enumeration {
-  val Apple, Orange, Banana = Value
-}
-object Size extends Enumeration {
-  val Small, Medium, Large = Value
+
+trait Basis[T] {
+  val a: Int
+  val b: String
+  val c: T
 }
 
-case class Stuff(a: Map[Fruit.Value,Fruit.Value])
+case class Thingy[T]( a: Int, b: String, c: T) extends Basis[T]
+
 
 object RunMe extends App:
 
-  val r0 = RType.of[Int]
-  val r1 = RType.of[Int]
 
-  // println(r0.show())
-  println(r0 == r1)
-  println(r0.equals(r1))
+  println(RType.inTermsOf[Basis[List[Boolean]]](Class.forName("co.blocke.dotty_reflection.Thingy")))
 
-  // PROBELM:  Even tho r0 and r1 refer to the same thing, they're non-equal, i.e. 2 different memory addresses == "not the same object"
-  println("R0: "+System.identityHashCode(r0))
-  println("R1: "+System.identityHashCode(r1))
-
-  println("-----------")
-
-  println("R0: "+r0.hashCode)
-  println("R1: "+r1.hashCode)
+  println(RType.of[Basis[List[Boolean]]])
 
   println("done.")
