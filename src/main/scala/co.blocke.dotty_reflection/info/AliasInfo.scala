@@ -7,6 +7,7 @@ case class AliasInfo protected[dotty_reflection] (
   ) extends RType:
 
     val name: String = definedType.drop(definedType.lastIndexOf('.')+1)
+    val fullName = name
 
     lazy val infoClass = unwrappedType.infoClass
 

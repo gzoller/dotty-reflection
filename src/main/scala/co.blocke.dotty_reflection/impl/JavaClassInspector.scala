@@ -13,7 +13,7 @@ import Clazzes._
  *  ScalaClassInspector by default.
  */
 object JavaClassInspector:
-  def inspectClass(c: Class[?], paramTypes: scala.Array[RType]): RType =
+  def inspectClass(c: Class[?], fullName: String, paramTypes: scala.Array[RType]): RType =
     // We must detect and handle any top-level Java collections or they'll be "dumbed-down" to JavaClassInfo, which isn't what we want.
     // (Not worried about the type parameters of the collections here--they'll be populated in the resolveTypeParams() method later)
     c match {
@@ -59,7 +59,8 @@ object JavaClassInspector:
 
     fieldType match {
       case g: GenericArrayType => 
-        JavaArrayInfo(inspectType(mainTypeParams, g.getGenericComponentType))
+        val elementType = inspectType(mainTypeParams, g.getGenericComponentType)
+        JavaArrayInfo(mangleArrayClassName(elementType), elementType)
 
       // All this stuff gets triggered if there are Java collections *in a Java class*.  They don't get triggered
       // if we're inspecting a top-level collection, i.e. a Java collection that is a member of a Scala class.
@@ -87,7 +88,9 @@ object JavaClassInspector:
       case w: WildcardType => throw new ReflectException("Wildcard types not currently supported in reflection library")
       case other => 
         other.asInstanceOf[Class[_]] match {
-          case c if c.isArray => JavaArrayInfo(inspectType(mainTypeParams, c.getComponentType))
+          case c if c.isArray => 
+            val elementType = inspectType(mainTypeParams, c.getComponentType)
+            JavaArrayInfo(mangleArrayClassName(elementType), elementType)
           case c if c.isEnum => JavaEnumInfo(c.getName)
           case c => RType.of(c)
         }

@@ -4,6 +4,7 @@ package impl
 import Clazzes._
 
 enum PrimitiveType(val name: String, val _infoClass: Class[_]) extends RType:
+  val fullName = name
   lazy val infoClass: Class[_] = _infoClass
 
   case Scala_Boolean extends PrimitiveType("scala.Boolean", BooleanClazz)

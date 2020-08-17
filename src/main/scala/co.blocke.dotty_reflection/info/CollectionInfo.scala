@@ -9,6 +9,8 @@ case class SeqLikeInfo protected[dotty_reflection](
   name: String,
   _elementType: RType
 ) extends RType with CollectionRType:
+
+  val fullName = name + "[" + _elementType.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
@@ -31,6 +33,7 @@ case class MapLikeInfo protected[dotty_reflection](
   _elementType2: RType
 ) extends RType with CollectionRType:
 
+  val fullName = name + "[" + _elementType.fullName + "," + _elementType2.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
@@ -100,6 +103,8 @@ case class ArrayInfo protected[dotty_reflection](
   name: String,
   _elementType: RType
 ) extends RType with CollectionRType:
+
+  val fullName = name + "[" + _elementType.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
@@ -124,6 +129,8 @@ case class JavaSetInfo protected[dotty_reflection](
   name: String,
   _elementType: RType
 ) extends RType with CollectionRType:
+
+  val fullName = name + "[" + _elementType.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
@@ -144,6 +151,8 @@ case class JavaListInfo protected[dotty_reflection](
   name: String,
   _elementType: RType
 ) extends RType with CollectionRType:
+
+  val fullName = name + "[" + _elementType.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
@@ -161,10 +170,11 @@ case class JavaListInfo protected[dotty_reflection](
 
 /** Java Array */
 case class JavaArrayInfo protected[dotty_reflection](
+  name: String,
   _elementType: RType
 ) extends RType with CollectionRType:
-
-  val name: String = mangleArrayClassName(_elementType)
+ 
+  val fullName = name + "[" + _elementType.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
@@ -189,6 +199,8 @@ case class JavaQueueInfo protected[dotty_reflection](
   name: String,
   _elementType: RType
 ) extends RType with CollectionRType:
+
+  val fullName = name + "[" + _elementType.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
@@ -209,6 +221,8 @@ case class JavaStackInfo protected[dotty_reflection](
   name: String,
   _elementType: RType
 ) extends RType with CollectionRType:
+
+  val fullName = name + "[" + _elementType.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
@@ -230,6 +244,8 @@ case class JavaMapInfo protected[dotty_reflection](
   _elementType: RType,
   _elementType2: RType
 ) extends RType with CollectionRType:
+
+  val fullName = name + "[" + _elementType.fullName + "," + _elementType2.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
   
   lazy val elementType: RType = _elementType match {

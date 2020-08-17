@@ -9,6 +9,7 @@ case class TryInfo protected[dotty_reflection](
   _tryType: RType
 ) extends RType:
 
+  val fullName: String = name + "[" + _tryType.fullName  + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
   lazy val tryType: RType = _tryType match {
     case e: SelfRefRType => e.resolve

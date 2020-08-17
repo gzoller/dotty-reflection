@@ -11,7 +11,7 @@ import scala.util.Try
 
 object TastyReflection extends NonCaseClassReflection:
 
-  def reflectOnType(reflect: Reflection)(aType: reflect.Type, resolveTypeSyms: Boolean): RType = 
+  def reflectOnType(reflect: Reflection)(aType: reflect.Type, fullName: String, resolveTypeSyms: Boolean): RType = 
     import reflect.{_, given _}
 
     scala.util.Try {
@@ -81,7 +81,7 @@ object TastyReflection extends NonCaseClassReflection:
               case cs => 
                 // Primitive type test:
                 PrimitiveType.values.find(_.name == className).getOrElse{
-                  reflectOnClass(reflect)(typeRef, resolveTypeSyms)
+                  reflectOnClass(reflect)(typeRef, RType.typeName(reflect)(typeRef), resolveTypeSyms)
                 }
             }
 
@@ -102,7 +102,7 @@ object TastyReflection extends NonCaseClassReflection:
             }
             foundType.getOrElse {
               // Nope--we've got a parameterized class or trait here
-              reflectOnClass(reflect)(a.asInstanceOf[TypeRef], resolveTypeSyms, tob)
+              reflectOnClass(reflect)(a.asInstanceOf[TypeRef], RType.typeName(reflect)(a), resolveTypeSyms, tob)
             }
         
           case x => 
@@ -115,7 +115,7 @@ object TastyReflection extends NonCaseClassReflection:
     }
 
 
-  def reflectOnClass(reflect: Reflection)(typeRef: reflect.TypeRef, resolveTypeSyms: Boolean, appliedTob: List[reflect.TypeOrBounds] =  Nil): RType = 
+  def reflectOnClass(reflect: Reflection)(typeRef: reflect.TypeRef, fullName: String, resolveTypeSyms: Boolean, appliedTob: List[reflect.TypeOrBounds] =  Nil): RType = 
     import reflect.{_, given _}
 
     val className = typeRef.classSymbol.get.fullName
@@ -227,7 +227,7 @@ object TastyReflection extends NonCaseClassReflection:
     else if symbol.pos.sourceFile.toString.endsWith(".java") || symbol.pos.sourceFile.toString == "<no file>" then
       // Reflecting Java classes requires the materialized Class, which may be available (e.g. Java collections) or not (e.g. user-written class).
       // So for now just burp forth a proxy and we'll resovle the details at runtime.
-      JavaClassInfo(symbol.fullName, appliedTob.map( at => RType.unwindType(reflect)(at.asInstanceOf[TypeRef])).toArray )
+      JavaClassInfo(symbol.fullName, symbol.fullName, appliedTob.map( at => RType.unwindType(reflect)(at.asInstanceOf[TypeRef])).toArray )
 
     // === Scala Classes ===
     else if symbol.isClassDef then
@@ -251,7 +251,7 @@ object TastyReflection extends NonCaseClassReflection:
       // Get superclass' field annotations--if any
       val dad = classDef.parents.headOption match {
         case Some(tt: TypeTree) if !isValueClass && tt.tpe.classSymbol.get.fullName != "java.lang.Object" => 
-          reflectOnClass(reflect)(tt.tpe.asInstanceOf[TypeRef], resolveTypeSyms) match {
+          reflectOnClass(reflect)(tt.tpe.asInstanceOf[TypeRef], RType.typeName(reflect)(tt.tpe), resolveTypeSyms) match {
             case ci: ClassInfo => Some(ci) // Any kind of class
             case _ => None // e.g. Unknown
           }
@@ -315,7 +315,8 @@ object TastyReflection extends NonCaseClassReflection:
         }       
 
         ScalaCaseClassInfo(
-          className, 
+          className,
+          fullName,
           typeMembers.toArray, 
           caseFields.toArray, 
           classAnnos, 
@@ -341,7 +342,8 @@ object TastyReflection extends NonCaseClassReflection:
           tob,
           classDef, 
           dad,
-          className, 
+          className,
+          fullName,
           fieldDefaultMethods,
           typeMembers.toArray,
           caseFields.toArray, 

@@ -35,19 +35,3 @@ case class JavaSetExtractor() extends TypeInfoExtractor[JavaSetInfo]:
       clazz.getName, 
       TypeSymbolInfo(clazz.getTypeParameters.toList.head.getName)
     )
-
-    /*
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
-      t: reflect.Type, 
-      tob: List[reflect.TypeOrBounds], 
-      className: String, 
-      clazz: Class[_], 
-      typeInspector: ScalaClassInspectorLike
-    ): RType =
-
-    JavaListInfo(
-            className, 
-            clazz,
-            clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-            typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))
-            */

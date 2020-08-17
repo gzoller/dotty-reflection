@@ -15,6 +15,7 @@ case class ScalaOptionInfo protected[dotty_reflection](
   _optionParamType: RType
 ) extends OptionInfo:
 
+  val fullName: String = name + "[" + _optionParamType.fullName  + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
   lazy val optionParamType: RType = _optionParamType match {
     case e: SelfRefRType => e.resolve
@@ -47,6 +48,7 @@ case class JavaOptionalInfo protected[dotty_reflection](
   _optionParamType: RType
 ) extends OptionInfo:
 
+  val fullName: String = name + "[" + _optionParamType.fullName  + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
   lazy val optionParamType: RType = _optionParamType match {
     case e: SelfRefRType => e.resolve

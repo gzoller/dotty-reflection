@@ -33,7 +33,7 @@ case class JavaMapExtractor() extends TypeInfoExtractor[JavaMapInfo]:
           RType.unwindType(reflect)(tob(1).asInstanceOf[reflect.Type])
   
       JavaMapInfo(
-        clazz.getName, 
+        clazz.getName,
         leftRType,
         rightRType
       )
@@ -44,19 +44,3 @@ case class JavaMapExtractor() extends TypeInfoExtractor[JavaMapInfo]:
       TypeSymbolInfo(clazz.getTypeParameters.toList.apply(0).getName),
       TypeSymbolInfo(clazz.getTypeParameters.toList.apply(1).getName)
     )
-
-    /*
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
-      t: reflect.Type, 
-      tob: List[reflect.TypeOrBounds], 
-      className: String, 
-      clazz: Class[_], 
-      typeInspector: ScalaClassInspectorLike
-    ): RType =
-
-    JavaListInfo(
-            className, 
-            clazz,
-            clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-            typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))
-            */

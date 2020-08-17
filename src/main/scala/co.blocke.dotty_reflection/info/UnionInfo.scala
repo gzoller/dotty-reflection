@@ -3,11 +3,12 @@ package info
 
 
 case class UnionInfo protected[dotty_reflection] (
-  val name: String,
-  val _leftType: RType,
-  val _rightType: RType
+  name: String,
+  _leftType: RType,
+  _rightType: RType
   ) extends RType with LeftRightRType:
 
+  val fullName: String = name + "[" + _leftType.fullName + "," + _rightType.fullName + "]"
   lazy val leftType: RType = _leftType match {
     case e: SelfRefRType => e.resolve
     case e => e

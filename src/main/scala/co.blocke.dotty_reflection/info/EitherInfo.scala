@@ -7,6 +7,8 @@ case class EitherInfo protected[dotty_reflection](
   _rightType: RType
 ) extends RType with LeftRightRType: 
 
+  val fullName: String = name + "[" + _leftType.fullName + "," + _rightType.fullName + "]"
+
   lazy val infoClass: Class[_] = Class.forName(name)
 
   lazy val leftType: RType = _leftType match {

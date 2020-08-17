@@ -6,6 +6,8 @@ case class TupleInfo protected[dotty_reflection](
   _tupleTypes: Array[RType]
 ) extends RType:
 
+  val fullName: String = name + _tupleTypes.map(_.fullName).toList.mkString("[",",","]")
+
   lazy val infoClass: Class[_] = Class.forName(name)
 
   // Elements may be self-referencing, so we need to unwind this...

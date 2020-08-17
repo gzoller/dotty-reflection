@@ -4,7 +4,6 @@ package info
 import impl._
 
 trait ClassInfo extends RType: 
-  val name:                       String
   lazy val fields:                Array[FieldInfo]
   lazy val typeMembers:           Array[TypeMemberInfo]
   lazy val annotations:           Map[String, Map[String,String]]
@@ -15,6 +14,7 @@ trait ClassInfo extends RType:
 
 abstract class ScalaClassInfoBase protected[dotty_reflection] (
     name:                   String,
+    fullName:               String,
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
@@ -75,20 +75,6 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
         (found, notFound)
       }
 
-  // def _copy( newFields: Array[FieldInfo] ): ScalaClassInfoBase
-
-  // override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
-  //   println("-------> RESOLVING!")
-  //   val newFields = fields.map{ f =>
-  //     f.fieldType match {
-  //       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-  //       case pt: impl.PrimitiveType => f
-  //       case other => f.asInstanceOf[ScalaFieldInfo].copy(fieldType = other.resolveTypeParams(paramMap))
-  //     }
-  //   }
-  //   println(s"After $name: "+newFields.toList)
-  //   this._copy(newFields)
-
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase 
@@ -109,18 +95,17 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
 
 case class ScalaCaseClassInfo protected[dotty_reflection] (
     name:                   String,
+    fullName:               String,
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
     _mixins:                List[String],
     isValueClass:           Boolean
-  ) extends ScalaClassInfoBase(name, _typeMembers, _fields, _annotations, _mixins, isValueClass):
+  ) extends ScalaClassInfoBase(name, fullName, _typeMembers, _fields, _annotations, _mixins, isValueClass):
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
-
-  // def _copy( newFields: Array[FieldInfo] ): ScalaClassInfoBase = this.copy(_fields = newFields)
 
 
 //------------------------------------------------------------
@@ -128,18 +113,18 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
 
 case class ScalaClassInfo protected[dotty_reflection] (
     name:                   String,
+    fullName:               String,
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],  // constructor fields
     nonConstructorFields:   Array[ScalaFieldInfo],
     _annotations:           Map[String, Map[String,String]],
     _mixins:                List[String],
     isValueClass:           Boolean
-  ) extends ScalaClassInfoBase(name, _typeMembers, _fields, _annotations, _mixins, isValueClass):
+  ) extends ScalaClassInfoBase(name, fullName, _typeMembers, _fields, _annotations, _mixins, isValueClass):
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
-  // def _copy( newFields: Array[FieldInfo] ): ScalaClassInfoBase = this.copy(_fields = newFields)
 
   override def show(tab:Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -163,9 +148,14 @@ case class ScalaClassInfo protected[dotty_reflection] (
 /** Java class reflection has a special problem... we need the class file, which isn't available during compilation (i.e. inside a macro).
  *  The best we can do is capture the name of the class and materialize/reflect on the class outside of the macro, lazy-like.
  */
-case class JavaClassInfo protected[dotty_reflection] ( name: String, paramTypes: Array[RType], _proxy: Option[JavaClassInfoProxy] = None ) extends ClassInfo:
+case class JavaClassInfo protected[dotty_reflection] ( 
+    name: String, 
+    fullName: String,
+    paramTypes: Array[RType], 
+    _proxy: Option[JavaClassInfoProxy] = None 
+  ) extends ClassInfo:
   lazy val infoClass: Class[_] = Class.forName(name)
-  private lazy val proxy = _proxy.getOrElse(impl.JavaClassInspector.inspectClass(infoClass, paramTypes).asInstanceOf[JavaClassInfoProxy])
+  private lazy val proxy = _proxy.getOrElse(impl.JavaClassInspector.inspectClass(infoClass, fullName, paramTypes).asInstanceOf[JavaClassInfoProxy])
   lazy val fields = proxy.fields
   lazy val typeMembers:           Array[TypeMemberInfo]           = proxy.typeMembers
   lazy val annotations:           Map[String, Map[String,String]] = proxy.annotations
@@ -177,7 +167,12 @@ case class JavaClassInfo protected[dotty_reflection] ( name: String, paramTypes:
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
     val newProxy = this.proxy.copy(_fields = fields.map( f => f.resolveTypeParams(paramMap) ))
-    this.copy(_proxy = Some(newProxy))
+    val newFullName =
+      if proxy.paramMap.nonEmpty then
+        name + "[" + "stuff here" + "]" // TODO
+      else
+        name
+    this.copy(_proxy = Some(newProxy), fullName = newFullName)
 
   def show(tab:Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -198,6 +193,7 @@ case class JavaClassInfoProxy protected[dotty_reflection] (
     paramMap:               Map[TypeSymbol, RType]
   ) extends RType:
 
+  val fullName = name
   lazy val annotations = _annotations
   lazy val infoClass: Class[_] = Class.forName(name)
 

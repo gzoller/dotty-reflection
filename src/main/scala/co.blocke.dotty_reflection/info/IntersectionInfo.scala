@@ -3,10 +3,12 @@ package info
 
 
 case class IntersectionInfo protected[dotty_reflection](
-  val name: String,
-  val _leftType: RType,
-  val _rightType: RType
+  name: String,
+  _leftType: RType,
+  _rightType: RType
   ) extends RType with LeftRightRType:
+
+    val fullName: String = name + "[" + _leftType.fullName + "," + _rightType.fullName + "]"
 
     lazy val infoClass: Class[_] = impl.Clazzes.AnyClazz
 

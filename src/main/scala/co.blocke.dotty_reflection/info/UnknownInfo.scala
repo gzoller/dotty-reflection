@@ -9,6 +9,7 @@ package info
   * other application an UnknownInfo might be a serious problem.
   */
 case class UnknownInfo(name: String) extends RType:
+  val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name)\n"

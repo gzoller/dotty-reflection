@@ -8,6 +8,9 @@ import scala.tasty.Reflection
 /** A materializable type */
 trait RType extends Serializable:
   val name: String         /** typically the fully-qualified class name */
+  val fullName: String
+  override def hashCode: Int = fullName.hashCode
+  override def equals(obj: Any) = this.hashCode == obj.hashCode
   lazy val infoClass: Class[_]  /** the JVM class of this type */
 
   // Take a parameterized type's normal type 'T' and map it to the declared type 'X'
@@ -36,6 +39,7 @@ trait RType extends Serializable:
  *  When one of these is encountered in the wild, just re-Reflect on the infoClass and you'll get the non-SelfRef (i.e. normal) RType
  */
 case class SelfRefRType(name: String) extends RType:
+  val fullName = name
   lazy val infoClass = Class.forName(name)
   def resolve = RType.of(infoClass)
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = s"SelfRefRType of $name" 
@@ -90,16 +94,18 @@ object RType:
       val tName = typeName(reflect)(aType)
       cache.getOrElse(tName, { 
         if className == "scala.Any" then
-          TastyReflection.reflectOnType(reflect)(aType, resolveTypeSyms)
+          TastyReflection.reflectOnType(reflect)(aType, tName, resolveTypeSyms)
         else
           cache.put(tName, SelfRefRType(className))
-          val reflectedRType = TastyReflection.reflectOnType(reflect)(aType, resolveTypeSyms)
+          val reflectedRType = TastyReflection.reflectOnType(reflect)(aType, tName, resolveTypeSyms)
           cache.put(tName, reflectedRType)
           // println(s"Cache (${cache.size}) put [$tName] -> "+reflectedRType)
           reflectedRType
       })
     }
 
+  // Need a full name inclusive of type parameters and correcting for Enumeration's class name erasure.
+  // This name is used for RType.equals so caching works.
   def typeName(reflect: Reflection)( aType: reflect.Type): String =
     import reflect.{_, given _}
     val name = aType.asInstanceOf[TypeRef] match {

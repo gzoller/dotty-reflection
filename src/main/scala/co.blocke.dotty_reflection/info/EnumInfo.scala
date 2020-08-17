@@ -18,6 +18,7 @@ case class ScalaEnumInfo protected[dotty_reflection](
   name: String,
   values: List[String]
 ) extends EnumInfo: 
+  val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
 
   private lazy val ordinalMethod = infoClass.getMethod("ordinal")
@@ -33,6 +34,7 @@ case class ScalaEnumerationInfo protected[dotty_reflection](
   name: String,
   values: List[String]
 ) extends EnumInfo:
+  val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
 
   private lazy val withNameMethod = infoClass.getMethod("withName", classOf[String])
@@ -44,8 +46,9 @@ case class ScalaEnumerationInfo protected[dotty_reflection](
 
 
 case class JavaEnumInfo protected[dotty_reflection](
-  name: String
+  name: String,
 ) extends RType: 
+  val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 

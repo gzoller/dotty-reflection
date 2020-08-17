@@ -11,6 +11,11 @@ case class TraitInfo protected[dotty_reflection](
     paramSymbols: Array[TypeSymbol] = Array.empty[TypeSymbol],
   ) extends RType: 
 
+  val fullName: String = 
+    if actualParameterTypes.size > 0 then
+      name + actualParameterTypes.map(_.fullName).toList.mkString("[",",","]")
+    else
+      name
   lazy val infoClass: Class[_] = Class.forName(name)
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
@@ -64,6 +69,7 @@ case class SealedTraitInfo protected(
     children: Array[RType]
   ) extends RType:
 
+  val fullName: String = name + children.map(_.fullName).toList.mkString("[",",","]")
   lazy val infoClass: Class[_] = Class.forName(name)
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 

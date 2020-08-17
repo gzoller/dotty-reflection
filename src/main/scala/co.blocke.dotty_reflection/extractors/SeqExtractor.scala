@@ -29,7 +29,7 @@ case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
         RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
 
     SeqLikeInfo(
-      t.classSymbol.get.fullName, 
+      t.classSymbol.get.fullName,
       listOfRType
     )
     

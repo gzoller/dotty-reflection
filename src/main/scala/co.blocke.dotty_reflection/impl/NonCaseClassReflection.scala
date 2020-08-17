@@ -15,6 +15,7 @@ trait NonCaseClassReflection:
     classDef:              reflect.ClassDef,
     superClass:            Option[ClassInfo],
     name:                  String,
+    fullName:              String,
     fieldDefaultMethods:   Map[Int, (String,String)],
     typeMembers:           Array[TypeMemberInfo],
     fields:                Array[FieldInfo],
@@ -157,6 +158,7 @@ trait NonCaseClassReflection:
 
     ScalaClassInfo(
       name,
+      fullName,
       typeMembers.toArray,
       fields,
       nonConstructorFields,
