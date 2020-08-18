@@ -2,6 +2,7 @@ package co.blocke.dotty_reflection
 
 import impl._
 import info._
+import scala.tasty.Reflection
 
 /** Marker trait for all Scala/Java left/right types (either, intersection, union) */
 trait LeftRightRType:
@@ -9,6 +10,10 @@ trait LeftRightRType:
 
   lazy val leftType: RType
   lazy val rightType: RType
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    AppliedType(Type(self.infoClass), List(leftType.toType(reflect), rightType.toType(reflect)))
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     val (leftFound, leftUnfound) = leftType match {

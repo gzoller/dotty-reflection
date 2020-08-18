@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 import impl._
-
+import scala.tasty.Reflection
 
 /** Arity 1 Collections, e.g. List, Set, Seq */
 case class SeqLikeInfo protected[dotty_reflection](
@@ -35,6 +35,10 @@ case class MapLikeInfo protected[dotty_reflection](
 
   val fullName = name + "[" + _elementType.fullName + "," + _elementType2.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    AppliedType(Type(infoClass), List(elementType.toType(reflect), elementType2.toType(reflect)))
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     val (stage1Found, stage1Unfound) = elementType match {
@@ -256,6 +260,10 @@ case class JavaMapInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    AppliedType(Type(infoClass), List(elementType.toType(reflect), elementType2.toType(reflect)))
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     val (stage1Found, stage1Unfound) = elementType match {

@@ -1,6 +1,8 @@
 package co.blocke.dotty_reflection
 package info
 
+import scala.tasty.Reflection
+
 case class TupleInfo protected[dotty_reflection](
   name: String,
   _tupleTypes: Array[RType]
@@ -15,6 +17,10 @@ case class TupleInfo protected[dotty_reflection](
     case s: SelfRefRType => s.resolve
     case s => s
   })
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    AppliedType(Type(infoClass), tupleTypes.toList.map( _.toType(reflect) ))
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     var needsCopy = false

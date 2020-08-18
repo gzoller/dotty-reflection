@@ -4,6 +4,7 @@ package info
 import java.lang.reflect._
 import java.util.Optional
 import impl._
+import scala.tasty.Reflection
 
 
 trait OptionInfo extends RType:
@@ -21,6 +22,10 @@ case class ScalaOptionInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    AppliedType(Type(infoClass), List(optionParamType.toType(reflect)))
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     optionParamType match {
@@ -54,6 +59,10 @@ case class JavaOptionalInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    AppliedType(Type(infoClass), List(optionParamType.toType(reflect)))
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _optionParamType match {

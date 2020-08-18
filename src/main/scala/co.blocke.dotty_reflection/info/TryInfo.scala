@@ -3,6 +3,7 @@ package info
 
 import scala.util.Try
 import impl._
+import scala.tasty.Reflection
 
 case class TryInfo protected[dotty_reflection](
   name: String,
@@ -15,6 +16,10 @@ case class TryInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    AppliedType(Type(infoClass), List(tryType.toType(reflect)))
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     tryType match {

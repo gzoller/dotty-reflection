@@ -2,12 +2,17 @@ package co.blocke.dotty_reflection
 
 import impl._
 import info._
+import scala.tasty.Reflection
 
 /** Marker trait for all Scala/Java collections */
 trait CollectionRType:
   self: RType =>
 
   lazy val elementType: RType
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    AppliedType(Type(self.infoClass), List(elementType.toType(reflect)))
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     elementType match {
