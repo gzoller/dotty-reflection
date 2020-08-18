@@ -309,3 +309,11 @@ case class JColl(
   e: java.util.Set[Boolean],
   f: java.util.Map[Int, String]
 )
+
+// InTermsOf substitution
+trait Basis[T] {
+  val a: Int
+  val b: String
+  val c: T
+}
+case class Thingy[T]( a: Int, b: String, c: T) extends Basis[T]

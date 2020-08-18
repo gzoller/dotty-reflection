@@ -342,3 +342,15 @@ class Parameters extends munit.FunSuite:
     |         non-constructor fields:
     |""".stripMargin)
   }
+
+  test("InTermsOf deep type substitution") {
+    val result = RType.inTermsOf[Basis[List[Option[Int|Boolean]]]](Class.forName("co.blocke.dotty_reflection.Thingy"))
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Thingy):
+    |   fields:
+    |      (0) a: scala.Int
+    |      (1) b: java.lang.String
+    |      (2)[T] c: SeqLikeInfo(scala.collection.immutable.List): Option of Union:
+    |         left--scala.Int
+    |         right--scala.Boolean
+    |""".stripMargin)
+  }
