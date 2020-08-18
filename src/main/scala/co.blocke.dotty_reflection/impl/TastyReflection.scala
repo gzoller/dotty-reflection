@@ -244,9 +244,7 @@ object TastyReflection extends NonCaseClassReflection:
         }).toMap)
       }.toMap
 
-      val isValueClass = classDef.parents.collectFirst {
-        case t:TypeTree if t.tpe.typeSymbol.name == "AnyVal" => t
-      }.isDefined
+      val isValueClass = typeRef.baseClasses.contains(Symbol.classSymbol("scala.AnyVal"))
 
       // Get superclass' field annotations--if any
       val dad = classDef.parents.headOption match {
