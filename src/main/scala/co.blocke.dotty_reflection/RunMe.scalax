@@ -1,0 +1,18 @@
+package co.blocke.dotty_reflection
+import impl._
+
+trait T1[X] { val x: X }
+case class VC1(s: String) extends AnyVal
+case class Foo1[A](x: A, b: Int)
+
+
+object RunMe extends App:
+
+  println(RType.of[Foo1[VC1]])
+  println("------------")
+  println(RType.inTermsOf[T1[VC1]](Class.forName("co.blocke.dotty_reflection.Foo1")))
+
+  // println(RType.of[Basis[Int|String]])
+
+
+  println("done.")

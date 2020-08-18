@@ -4,65 +4,53 @@ package info
 /** Something to smooth the differences between the 2.x Enumeration class and the 3.x Enum class
  */
 trait EnumInfo extends RType:
-  val infoClass: Class[_]
-  lazy val values: List[Any]
+  lazy val infoClass: Class[_]
+  val values: List[String]
   def ordinal(s: String): Int
   def valueOf(s: String): Any
   def valueOf(i: Int): Any
-  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
+  def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
-    {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s" with values [${values.map(_.toString).mkString(",")}]\n"
+    {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name) with values [${values.map(_.toString).mkString(",")}]\n"
 
 
 case class ScalaEnumInfo protected[dotty_reflection](
   name: String,
-  infoClass: Class[_]
+  values: List[String]
 ) extends EnumInfo: 
-  val orderedTypeParameters = Nil
+  val fullName = name
+  lazy val infoClass: Class[_] = Class.forName(name)
 
-  private val companion = Class.forName(name+"$")
-  private val companionConst = companion.getDeclaredConstructor()
-  companionConst.setAccessible(true)
-  private val valuesMethod = companion.getMethod("values")
-  private val ordinalMethod = companion.getMethod("ordinal", classOf[Object])
-  private val companionInstance = companionConst.newInstance()
-  private val valueOfMethod = companion.getMethod("valueOf", classOf[String])
+  private lazy val ordinalMethod = infoClass.getMethod("ordinal")
+  private lazy val valuesMethod  = infoClass.getMethod("values")
+  private lazy val valueOfMethod = infoClass.getMethod("valueOf", classOf[String])
 
-  lazy val values: List[Any] = valuesMethod.invoke(companionInstance).asInstanceOf[Array[_]].toList
-  def ordinal(s: String): Int = 
-    val target = valueOfMethod.invoke(companionInstance, s)
-    ordinalMethod.invoke(companionInstance, target).asInstanceOf[Int]
-  def valueOf(s: String): Any = valueOfMethod.invoke(companionInstance,s)
-  def valueOf(i: Int): Any = values(i)
+  def ordinal(s: String): Int = ordinalMethod.invoke(valueOfMethod.invoke(null, s)).asInstanceOf[Int]
+  def valueOf(s: String): Any = valueOfMethod.invoke(null,s)
+  def valueOf(i: Int): Any = valuesMethod.invoke(null).asInstanceOf[Array[Object]].find(e => ordinalMethod.invoke(e).asInstanceOf[Int] == i).get
 
 
 case class ScalaEnumerationInfo protected[dotty_reflection](
   name: String,
-  infoClass: Class[_]
+  values: List[String]
 ) extends EnumInfo:
-  val orderedTypeParameters = Nil
+  val fullName = name
+  lazy val infoClass: Class[_] = Class.forName(name)
 
-  private val companion = Class.forName(name+"$")
-  private val companionConst = companion.getDeclaredConstructor()
-  companionConst.setAccessible(true)
-  private val valuesMethod = companion.getMethod("values")
-  private val companionInstance = companionConst.newInstance()
-  private val withNameMethod = companion.getMethod("withName", classOf[String])
-  private val applyMethod = companion.getMethod("apply", classOf[Int])
+  private lazy val withNameMethod = infoClass.getMethod("withName", classOf[String])
+  private lazy val applyMethod = infoClass.getMethod("apply", classOf[Int])
 
-  lazy val values: List[Any] = valuesMethod.invoke(companionInstance).asInstanceOf[Set[_]].toList
   def ordinal(s: String): Int = valueOf(s).asInstanceOf[Enumeration#Value].id
-  def valueOf(s: String): Any = withNameMethod.invoke(companionInstance,s)
-  def valueOf(i: Int): Any = applyMethod.invoke(companionInstance,i.asInstanceOf[Object])
+  def valueOf(s: String): Any = withNameMethod.invoke(null,s)
+  def valueOf(i: Int): Any = applyMethod.invoke(null,i.asInstanceOf[Object])
 
 
-  
 case class JavaEnumInfo protected[dotty_reflection](
   name: String,
-  infoClass: Class[_]
 ) extends RType: 
-  val orderedTypeParameters = Nil
+  val fullName = name
+  lazy val infoClass: Class[_] = Class.forName(name)
 
-  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
+  def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName +s"(${infoClass.getName})\n"

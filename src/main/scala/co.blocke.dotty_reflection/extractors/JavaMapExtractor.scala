@@ -5,41 +5,42 @@ import impl._
 import Clazzes._
 import info._ 
 import scala.tasty.Reflection
+import scala.util.Try
 
 case class JavaMapExtractor() extends TypeInfoExtractor[JavaMapInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz <:< JMapClazz
+  def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = 
+    Try( Class.forName(symbol.fullName) <:< JMapClazz ).toOption.getOrElse(false)
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): JavaMapInfo = 
-    val keyParamSymName = clazz.getTypeParameters()(0).getName 
-    val keyParamType = paramMap.getOrElse(
-      keyParamSymName.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(keyParamSymName)
+  def extractInfo(reflect: Reflection)(
+    t: reflect.Type, 
+    tob: List[reflect.TypeOrBounds], 
+    symbol: reflect.Symbol): RType = 
+      val clazz = Class.forName(symbol.fullName)
+
+      val leftType = tob(0).asInstanceOf[reflect.Type]
+      val leftRType = 
+        if leftType.typeSymbol.flags.is(reflect.Flags.Param) then
+          TypeSymbolInfo(tob(0).asInstanceOf[reflect.Type].typeSymbol.name)
+        else
+          RType.unwindType(reflect)(tob(0).asInstanceOf[reflect.Type])
+  
+      val rightType = tob(1).asInstanceOf[reflect.Type]
+      val rightRType = 
+        if rightType.typeSymbol.flags.is(reflect.Flags.Param) then
+          TypeSymbolInfo(tob(1).asInstanceOf[reflect.Type].typeSymbol.name)
+        else
+          RType.unwindType(reflect)(tob(1).asInstanceOf[reflect.Type])
+  
+      JavaMapInfo(
+        clazz.getName,
+        leftRType,
+        rightRType
       )
-    val valueParamSymName = clazz.getTypeParameters()(1).getName 
-    val valueParamType = paramMap.getOrElse(
-      valueParamSymName.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(valueParamSymName)
-      )
+
+  def emptyInfo(clazz: Class[_]): JavaMapInfo = 
     JavaMapInfo(
       clazz.getName, 
-      clazz, 
-      clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-      keyParamType,
-      valueParamType
-      )
-
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
-      t: reflect.Type, 
-      tob: List[reflect.TypeOrBounds], 
-      className: String, 
-      clazz: Class[_], 
-      typeInspector: ScalaClassInspectorLike
-    ): RType =
-
-    JavaMapInfo(
-      className, 
-      clazz,
-      clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-      typeInspector.inspectType(reflect, paramMap)(tob(0).asInstanceOf[reflect.TypeRef]),
-      typeInspector.inspectType(reflect, paramMap)(tob(1).asInstanceOf[reflect.TypeRef]))
+      TypeSymbolInfo(clazz.getTypeParameters.toList.apply(0).getName),
+      TypeSymbolInfo(clazz.getTypeParameters.toList.apply(1).getName)
+    )

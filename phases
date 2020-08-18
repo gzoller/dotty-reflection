@@ -1,0 +1,21 @@
+[info] typer
+[info] inlinedPositions
+[info] staging
+[info] sbt-deps
+[info] extractSemanticDB
+[info] posttyper
+[info] sbt-api
+[info] SetRootTree
+[info] pickler
+[info] reifyQuotes
+[info] {firstTransform, checkReentrant, elimPackagePrefixes, cookComments, checkStatic, betaReduce, initChecker}
+[info] {elimRepeated, expandSAMs, protectedAccessors, extmethods, cacheAliasImplicits, byNameClosures, hoistSuperArgs, classOf, refchecks}
+[info] {elimOpaque, tryCatchPatterns, patternMatcher, explicitOuter, explicitSelf, stringInterpolatorOpt, crossCast}
+[info] {pruneErasedDefs, inlinePatterns, vcInlineMethods, seqLiterals, intercepted, getters, elimByName, liftTry, collectNullableFields, elimOuterSelect, augmentScala2Traits, resolveSuper, functionXXLForwarders, paramForwarding, genericTuples, letOverApply, arrayConstructors}
+[info] erasure
+[info] {elimErasedValueType, vcElideAllocations, arrayApply, elimPolyFunction, tailrec, completeJavaEnums, mixin, lazyVals, memoize, nonLocalReturns, capturedVars}
+[info] {constructors, functionalInterfaces, instrumentation, getClass}
+[info] {linkScala2Impls, lambdaLift, elimStaticThis, countOuterAccesses}
+[info] {dropOuterAccessors, flatten, renameLifted, transformWildcards, moveStatic, expandPrivate, restoreScopes, selectStatic, junitBootstrappers, collectSuperCalls}
+[info] genSJSIR
+[info] genBCode

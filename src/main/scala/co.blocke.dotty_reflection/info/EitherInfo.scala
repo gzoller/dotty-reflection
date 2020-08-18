@@ -3,12 +3,13 @@ package info
 
 case class EitherInfo protected[dotty_reflection](
   name: String,
-  infoClass: Class[_],
   _leftType: RType,
   _rightType: RType
-) extends RType: 
+) extends RType with LeftRightRType: 
 
-  val orderedTypeParameters = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+  val fullName: String = name + "[" + _leftType.fullName + "," + _rightType.fullName + "]"
+
+  lazy val infoClass: Class[_] = Class.forName(name)
 
   lazy val leftType: RType = _leftType match {
     case e: SelfRefRType => e.resolve
@@ -19,8 +20,6 @@ case class EitherInfo protected[dotty_reflection](
     case e => e
   }
 
-  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
-    val newTab = {if supressIndent then tab else tab+1}
-    {if(!supressIndent) tabs(tab) else ""} + "Either:\n"
-    + tabs(newTab)+ "left--" + leftType.show(newTab+1,true)
-    + tabs(newTab)+ "right--" + rightType.show(newTab+1,true)
+  def _copy( left: RType, right: RType ) = this.copy(_leftType = left, _rightType = right)
+
+

@@ -2,99 +2,109 @@ package co.blocke.dotty_reflection
 
 import munit._
 import info._
-import PrimitiveType._
+import impl.PrimitiveType._
 
 class Collections extends munit.FunSuite:
 
   test("Scala List") {
-    val result = Reflector.reflectOn[Coll1]
+    val result = RType.of[Coll1]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Coll1):
     |   fields:
-    |      (0) a: SeqLikeInfo(scala.collection.immutable.List[A]): java.lang.String""".stripMargin)
+    |      (0) a: SeqLikeInfo(scala.collection.immutable.List): java.lang.String
+    |""".stripMargin)
   }
 
   test("Scala Set") {
-    val result = Reflector.reflectOn[Coll2]
+    val result = RType.of[Coll2]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Coll2):
     |   fields:
-    |      (0) a: SeqLikeInfo(scala.collection.immutable.HashSet[A]): java.lang.String""".stripMargin)
+    |      (0) a: SeqLikeInfo(scala.collection.immutable.HashSet): java.lang.String
+    |""".stripMargin)
   }
 
   test("Scala Map 1") {
-    val result = Reflector.reflectOn[Coll3]
+    val result = RType.of[Coll3]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Coll3):
     |   fields:
-    |      (0) a: MapLikeInfo(scala.collection.immutable.Map[K,V]):
+    |      (0) a: MapLikeInfo(scala.collection.immutable.Map):
     |         java.lang.String
-    |         scala.Float""".stripMargin)  
+    |         scala.Float
+    |""".stripMargin)  
   }
 
   test("Scala Map 2") {
-    val result = Reflector.reflectOn[Coll4]
+    val result = RType.of[Coll4]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Coll4):
     |   fields:
-    |      (0) a: MapLikeInfo(scala.collection.immutable.ListMap[K,V]):
+    |      (0) a: MapLikeInfo(scala.collection.immutable.ListMap):
     |         java.lang.String
-    |         scala.Boolean""".stripMargin)  
+    |         scala.Boolean
+    |""".stripMargin)  
   }
 
   test("Scala mutable List") {
-    val result = Reflector.reflectOn[Coll1m]
+    val result = RType.of[Coll1m]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Coll1m):
     |   fields:
-    |      (0) a: SeqLikeInfo(scala.collection.mutable.ListBuffer[A]): java.lang.String""".stripMargin)
+    |      (0) a: SeqLikeInfo(scala.collection.mutable.ListBuffer): java.lang.String
+    |""".stripMargin)
   }
 
   test("Scala mutable Set") {
-    val result = Reflector.reflectOn[Coll2m]
+    val result = RType.of[Coll2m]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Coll2m):
     |   fields:
-    |      (0) a: SeqLikeInfo(scala.collection.mutable.HashSet[A]): java.lang.String""".stripMargin)
+    |      (0) a: SeqLikeInfo(scala.collection.mutable.HashSet): java.lang.String
+    |""".stripMargin)
   }
 
   test("Scala mutable Map 1") {
-    val result = Reflector.reflectOn[Coll3m]
+    val result = RType.of[Coll3m]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Coll3m):
     |   fields:
-    |      (0) a: MapLikeInfo(scala.collection.mutable.Map[K,V]):
+    |      (0) a: MapLikeInfo(scala.collection.mutable.Map):
     |         java.lang.String
-    |         scala.Float""".stripMargin)
+    |         scala.Float
+    |""".stripMargin)
   }
 
   test("Scala mutable Map 2") {
-    val result = Reflector.reflectOn[Coll4m]
+    val result = RType.of[Coll4m]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Coll4m):
     |   fields:
-    |      (0) a: MapLikeInfo(scala.collection.mutable.ListMap[K,V]):
+    |      (0) a: MapLikeInfo(scala.collection.mutable.ListMap):
     |         java.lang.String
-    |         scala.Boolean""".stripMargin)
+    |         scala.Boolean
+    |""".stripMargin)
   }
 
   test("Nested Collections") {
-    val result = Reflector.reflectOn[NestedColl]
+    val result = RType.of[NestedColl]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.NestedColl):
     |   fields:
-    |      (0) a: MapLikeInfo(scala.collection.immutable.Map[K,V]):
+    |      (0) a: MapLikeInfo(scala.collection.immutable.Map):
     |         java.lang.String
-    |         SeqLikeInfo(scala.collection.immutable.List[A]): Option of scala.Int""".stripMargin)
+    |         SeqLikeInfo(scala.collection.immutable.List): Option of scala.Int
+    |""".stripMargin)
   }
 
   test("Tuples") {
-    val result = Reflector.reflectOn[TupleTurtle[Boolean]]
-    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.TupleTurtle[Z]):
+    val result = RType.of[TupleTurtle[Boolean]]
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.TupleTurtle):
     |   fields:
     |      (0) t: (
     |         scala.Int
     |         scala.Boolean
-    |         SeqLikeInfo(scala.collection.immutable.List[A]): java.lang.String
+    |         SeqLikeInfo(scala.collection.immutable.List): java.lang.String
     |         ScalaCaseClassInfo(co.blocke.dotty_reflection.NormalOption):
     |            fields:
     |               (0) a: Option of scala.Int
-    |         )""".stripMargin)
+    |         )
+    |""".stripMargin)
   }
 
   test("Scala Arrays") {
-    val result = Reflector.reflectOn[WithScalaArray]
+    val result = RType.of[WithScalaArray]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithScalaArray):
     |   fields:
     |      (0) list: array of array of scala.Char
@@ -106,5 +116,6 @@ class Collections extends munit.FunSuite:
     |      (6) x6: array of scala.Int
     |      (7) x7: array of scala.Long
     |      (8) x8: array of scala.Short
-    |      (9) x9: array of java.lang.String""".stripMargin)
+    |      (9) x9: array of java.lang.String
+    |""".stripMargin)
   }

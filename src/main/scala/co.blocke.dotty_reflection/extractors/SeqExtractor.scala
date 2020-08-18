@@ -8,28 +8,28 @@ import scala.tasty.Reflection
 
 case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz <:< SeqClazz || clazz <:< SetClazz
+  def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = 
+    // Try here because non-library symbol won't have a class and will explode.
+    val isSeq = scala.util.Try( SeqClazz.isAssignableFrom( Class.forName(symbol.fullName) ) ).toOption.getOrElse(false)
+    val isSet = scala.util.Try( SetClazz.isAssignableFrom( Class.forName(symbol.fullName) ) ).toOption.getOrElse(false)
+    isSeq || isSet
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): SeqLikeInfo = 
-    val elemParamSymName = clazz.getTypeParameters.toList.head.getName 
-    val elemParamType = paramMap.getOrElse(
-      elemParamSymName.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(elemParamSymName)
-      )
-    SeqLikeInfo(
-      clazz.getName, 
-      clazz, 
-      elemParamType
-      )
 
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
+  def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    className: String, 
-    clazz: Class[_], 
-    typeInspector: ScalaClassInspectorLike): RType =
+    symbol: reflect.Symbol): RType =
+
+    val listOfType = tob.head.asInstanceOf[reflect.Type]
+    val isTypeParam = listOfType.typeSymbol.flags.is(reflect.Flags.Param)
+    val listOfRType = 
+      if isTypeParam then
+        TypeSymbolInfo(tob.head.asInstanceOf[reflect.Type].typeSymbol.name)
+      else
+        RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
 
     SeqLikeInfo(
-            className, 
-            clazz,
-            typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))
+      t.classSymbol.get.fullName,
+      listOfRType
+    )
+    

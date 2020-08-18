@@ -1,15 +1,15 @@
 package co.blocke.dotty_reflection
 package info
 
+import scala.tasty.Reflection
 
 case class UnionInfo protected[dotty_reflection] (
-  val name: String,
-  val _leftType: RType,
-  val _rightType: RType
-  ) extends RType:
+  name: String,
+  _leftType: RType,
+  _rightType: RType
+  ) extends RType with LeftRightRType:
 
-  val orderedTypeParameters: List[TypeSymbol] = Nil
-
+  val fullName: String = name + "[" + _leftType.fullName + "," + _rightType.fullName + "]"
   lazy val leftType: RType = _leftType match {
     case e: SelfRefRType => e.resolve
     case e => e
@@ -19,10 +19,11 @@ case class UnionInfo protected[dotty_reflection] (
     case e => e
   }
 
-  val infoClass: Class[_] = Clazzes.AnyClazz
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    OrType(leftType.toType(reflect), rightType.toType(reflect))
 
-  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
-    val newTab = {if supressIndent then tab else tab+1}
-    {if(!supressIndent) tabs(tab) else ""} + "Union:\n"
-    + tabs(newTab)+ "left--" + leftType.show(newTab+1,true)
-    + tabs(newTab)+ "right--" + rightType.show(newTab+1,true)
+  
+  def _copy( left: RType, right: RType ) = this.copy(_leftType = left, _rightType = right)
+
+  lazy val infoClass: Class[_] = impl.Clazzes.AnyClazz

@@ -3,40 +3,58 @@ package info
 
 import java.lang.reflect.Method
 
-trait FieldInfo:
+trait FieldInfo extends Serializable:
   val index:                Int
   val name:                 String
   val fieldType:            RType
   val originalSymbol:       Option[TypeSymbol]
   val annotations:          Map[String,Map[String,String]]
-  val valueAccessor:        Method
-  val defaultValueAccessor: Option[()=>Object]
+  lazy val defaultValue:    Option[Object]
 
+  def valueOf[T](target: T): Object
   def reIndex(i: Int): FieldInfo
 
-  def show(tab: Int = 0, supressIndent: Boolean = false, modified: Boolean = false): String = 
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo
+
+  def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} 
       + s"(${if !modified then index else '_'})" 
       + {if originalSymbol.isDefined then s"[${originalSymbol.get}]" else ""}
       + s" $name: " 
-      + fieldType.show(newTab,true) 
+      + fieldType.show(newTab,name :: seenBefore,true) 
       + { if annotations.nonEmpty then tabs(newTab) + "annotations: " + annotations.toString + "\n" else "" }
 
 
 case class ScalaFieldInfo(
-  index:                Int,
-  name:                 String,
-  fieldType:            RType,
-  annotations:          Map[String,Map[String,String]],
-  valueAccessor:        Method,
-  defaultValueAccessor: Option[()=>Object],
-  originalSymbol:       Option[TypeSymbol]
+  index:                    Int,
+  name:                     String,
+  fieldType:                RType,
+  annotations:              Map[String,Map[String,String]],
+  defaultValueAccessorName: Option[(String,String)], // (class, method)  //Option[()=>Object],
+  originalSymbol:           Option[TypeSymbol],
+  isNonConstructorField:    Boolean = false
 ) extends FieldInfo:
-  def valueOf(target: Object) = valueAccessor.invoke(target)
+
+  def valueOf[T](target: T) = target.getClass.getMethod(name).invoke(target)
   def constructorClass: Class[_] = constructorClassFor(fieldType)
 
   def reIndex(i: Int): FieldInfo = this.copy(index = i)
+
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo = 
+    fieldType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(fieldType = other.resolveTypeParams(paramMap))
+    }
+
+  lazy val defaultValue: Option[Object] = defaultValueAccessorName.map{ (companionClass, accessor) =>
+    val companion = Class.forName(companionClass)
+    val cons = companion.getDeclaredConstructors()
+    cons(0).setAccessible(true)
+    val companionInst = cons(0).newInstance()
+    companion.getMethod(accessor).invoke(companionInst)
+  }
 
   private def constructorClassFor(t: RType): Class[_] = 
     t match {
@@ -49,7 +67,7 @@ case class ScalaFieldInfo(
       case info => info.infoClass
     }
 
-/* This is also used for Scala plain-class getter/setter fields */
+/* This is also used for plain-class getter/setter fields */
 case class JavaFieldInfo(
   index:           Int,
   name:            String,
@@ -59,6 +77,14 @@ case class JavaFieldInfo(
   valueSetter:     Method,
   originalSymbol:  Option[TypeSymbol]
 ) extends FieldInfo:
-  val defaultValueAccessor = None
+  lazy val defaultValue = None
+  def valueOf[T](target: T): Object = valueAccessor.invoke(target)
+  def setValue[T](target: T, theValue: Object) = valueSetter.invoke(target, theValue)
   def reIndex(i: Int): FieldInfo = this.copy(index = i)
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo = 
+    fieldType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case pt: impl.PrimitiveType => this
+      case other => this.copy(fieldType = other.resolveTypeParams(paramMap))
+    }
 

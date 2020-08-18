@@ -7,10 +7,10 @@ import info._
 import scala.tasty.Reflection
 import scala.util.Try
 
-case class JavaSetExtractor() extends TypeInfoExtractor[JavaSetInfo]:
+case class JavaStackExtractor() extends TypeInfoExtractor[JavaStackInfo]:
 
   def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = 
-    Try( Class.forName(symbol.fullName) <:< JSetClazz ).toOption.getOrElse(false)
+    Try( Class.forName(symbol.fullName) <:< JStackClazz ).toOption.getOrElse(false)
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
@@ -25,13 +25,13 @@ case class JavaSetExtractor() extends TypeInfoExtractor[JavaSetInfo]:
         else
           RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
 
-      JavaSetInfo(
+      JavaStackInfo(
         clazz.getName, 
         elementRType
       )
 
-  def emptyInfo(clazz: Class[_]): JavaSetInfo = 
-    JavaSetInfo(
-      clazz.getName, 
+  def emptyInfo(clazz: Class[_]): JavaStackInfo = 
+    JavaStackInfo(
+      clazz.getName,
       TypeSymbolInfo(clazz.getTypeParameters.toList.head.getName)
     )
