@@ -1,114 +1,134 @@
 package co.blocke.dotty_reflection
 
 import munit._
+import co.blocke.reflect.{ClassAnno,FieldAnno}
 import info._
-import PrimitiveType._
+import impl.PrimitiveType._
+
 
 class JavaNonTasty extends munit.FunSuite:
 
+  test("basic Java collections") {
+    val result = RType.of[JColl]
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.JColl):
+    |   fields:
+    |      (0) a: JavaListInfo(java.util.List): scala.Int
+    |      (1) b: Optional of JavaListInfo(java.util.ArrayList): scala.Int
+    |      (2) c: JavaStackInfo(java.util.Stack): java.lang.String
+    |      (3) d: JavaQueueInfo(java.util.Queue): MapLikeInfo(scala.collection.immutable.Map):
+    |         scala.Int
+    |         java.lang.String
+    |      (4) e: JavaSetInfo(java.util.Set): scala.Boolean
+    |      (5) f: JavaMapInfo(java.util.Map):
+    |         scala.Int
+    |         java.lang.String
+    |""".stripMargin)
+  }
+
   test("reflect basic with capture") {
-    val result = Reflector.reflectOn[co.blocke.reflect.Person]
+    val result = RType.of[co.blocke.reflect.Person]
     assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.Person):
     |   fields:
     |      (0) age: scala.Int
     |      (1) name: java.lang.String
-    |      (2) other: scala.Int""".stripMargin)
+    |      (2) other: scala.Int
+    |""".stripMargin)
     assert(result.asInstanceOf[JavaClassInfo].hasMixin("co.blocke.dotty_reflection.SJCaptureJava"))
   }
 
   test("create Java object") {
-    val p = Reflector.reflectOn[co.blocke.reflect.Person].asInstanceOf[JavaClassInfo]
+    val p = RType.of[co.blocke.reflect.Person].asInstanceOf[JavaClassInfo]
     val person = p.constructWith[co.blocke.reflect.Person](List(35, "Frank", 5))
     assertEquals(person.getName,"Frank")
     assertEquals(person.getAge,35)
     assertEquals(person.getOther,5)
-    assertEquals(p.fields(1).valueAccessor.invoke(person).toString,"Frank")
-    assertEquals(p.fields(0).valueAccessor.invoke(person).asInstanceOf[Int],35)
-    assertEquals(p.fields(2).valueAccessor.invoke(person).asInstanceOf[Int],5)
+    assertEquals(p.fields(1).valueOf(person).toString,"Frank")
+    assertEquals(p.fields(0).valueOf(person).asInstanceOf[Int],35)
+    assertEquals(p.fields(2).valueOf(person).asInstanceOf[Int],5)
   }
 
   test("Verify Java primitives") {
-    val jx = Reflector.reflectOn[co.blocke.reflect.JavaTypes].asInstanceOf[JavaClassInfo]
+    val jx = RType.of[co.blocke.reflect.JavaTypes].asInstanceOf[JavaClassInfo]
     val number: java.lang.Number = java.lang.Integer.valueOf(123).asInstanceOf[java.lang.Number]
     val inst = jx.constructWith[co.blocke.reflect.JavaTypes](List(
       true, false, 5.toByte, 3.toByte, 'x', 'y', 1.2D, 2.3D, 4.5F, 5.6F, 1, 2, 3L, 4L, number, "something", 5.toShort, 6.toShort, "foom"
     ))
 
     val _a = jx.field("jBoolean").get
-    _a.valueSetter.invoke(inst, java.lang.Boolean.valueOf(false))
-    val a = _a.valueAccessor.invoke(inst)
+    _a.setValue(inst, java.lang.Boolean.valueOf(false))
+    val a = _a.valueOf(inst)
 
     val _b = jx.field("jBoolean2").get 
-    _b.valueSetter.invoke(inst, java.lang.Boolean.valueOf(true))
-    val b = _b.valueAccessor.invoke(inst)
+    _b.setValue(inst, java.lang.Boolean.valueOf(true))
+    val b = _b.valueOf(inst)
 
     val _c = jx.field("jByte").get 
-    _c.valueSetter.invoke(inst, java.lang.Byte.valueOf(3.toByte))
-    val c = _c.valueAccessor.invoke(inst)
+    _c.setValue(inst, java.lang.Byte.valueOf(3.toByte))
+    val c = _c.valueOf(inst)
 
     val _d = jx.field("jByte2").get 
-    _d.valueSetter.invoke(inst, java.lang.Byte.valueOf(5.toByte))
-    val d = _d.valueAccessor.invoke(inst)
+    _d.setValue(inst, java.lang.Byte.valueOf(5.toByte))
+    val d = _d.valueOf(inst)
 
     val _e = jx.field("jChar").get 
-    _e.valueSetter.invoke(inst, java.lang.Character.valueOf('y'))
-    val e = _e.valueAccessor.invoke(inst)
+    _e.setValue(inst, java.lang.Character.valueOf('y'))
+    val e = _e.valueOf(inst)
 
     val _f = jx.field("jCharacter").get 
-    _f.valueSetter.invoke(inst, java.lang.Character.valueOf('z'))
-    val f = _f.valueAccessor.invoke(inst)
+    _f.setValue(inst, java.lang.Character.valueOf('z'))
+    val f = _f.valueOf(inst)
 
     val _g = jx.field("jDouble").get 
-    _g.valueSetter.invoke(inst, java.lang.Double.valueOf(2.3D))
-    val g = _g.valueAccessor.invoke(inst)
+    _g.setValue(inst, java.lang.Double.valueOf(2.3D))
+    val g = _g.valueOf(inst)
 
     val _h = jx.field("jDouble2").get 
-    _h.valueSetter.invoke(inst, java.lang.Double.valueOf(1.2D))
-    val h = _h.valueAccessor.invoke(inst)
+    _h.setValue(inst, java.lang.Double.valueOf(1.2D))
+    val h = _h.valueOf(inst)
 
     val _i = jx.field("jFloat").get 
-    _i.valueSetter.invoke(inst, java.lang.Float.valueOf(5.6F))
-    val i = _i.valueAccessor.invoke(inst)
+    _i.setValue(inst, java.lang.Float.valueOf(5.6F))
+    val i = _i.valueOf(inst)
 
     val _j = jx.field("jFloat2").get 
-    _j.valueSetter.invoke(inst, java.lang.Float.valueOf(4.5F))
-    val j = _j.valueAccessor.invoke(inst)
+    _j.setValue(inst, java.lang.Float.valueOf(4.5F))
+    val j = _j.valueOf(inst)
 
     val _k = jx.field("jInt").get 
-    _k.valueSetter.invoke(inst, java.lang.Integer.valueOf(2))
-    val k = _k.valueAccessor.invoke(inst)
+    _k.setValue(inst, java.lang.Integer.valueOf(2))
+    val k = _k.valueOf(inst)
 
     val _l = jx.field("jInteger").get 
-    _l.valueSetter.invoke(inst, java.lang.Integer.valueOf(1))
-    val l = _l.valueAccessor.invoke(inst)
+    _l.setValue(inst, java.lang.Integer.valueOf(1))
+    val l = _l.valueOf(inst)
 
     val _m = jx.field("jLong").get 
-    _m.valueSetter.invoke(inst, java.lang.Long.valueOf(4L))
-    val m = _m.valueAccessor.invoke(inst)
+    _m.setValue(inst, java.lang.Long.valueOf(4L))
+    val m = _m.valueOf(inst)
 
     val _n = jx.field("jLong2").get 
-    _n.valueSetter.invoke(inst, java.lang.Long.valueOf(3L))
-    val n = _n.valueAccessor.invoke(inst)
+    _n.setValue(inst, java.lang.Long.valueOf(3L))
+    val n = _n.valueOf(inst)
 
     val _o = jx.field("jShort").get 
-    _o.valueSetter.invoke(inst, java.lang.Short.valueOf(6.toShort))
-    val o = _o.valueAccessor.invoke(inst)
+    _o.setValue(inst, java.lang.Short.valueOf(6.toShort))
+    val o = _o.valueOf(inst)
 
     val _p = jx.field("jShort2").get 
-    _p.valueSetter.invoke(inst, java.lang.Short.valueOf(5.toShort))
-    val p = _p.valueAccessor.invoke(inst)
+    _p.setValue(inst, java.lang.Short.valueOf(5.toShort))
+    val p = _p.valueOf(inst)
 
     val _q = jx.field("jString").get 
-    _q.valueSetter.invoke(inst, "blather")
-    val q = _q.valueAccessor.invoke(inst)
+    _q.setValue(inst, "blather")
+    val q = _q.valueOf(inst)
 
     val _r = jx.field("jObj").get 
-    _r.valueSetter.invoke(inst, "empty")
-    val r = _r.valueAccessor.invoke(inst)
+    _r.setValue(inst, "empty")
+    val r = _r.valueOf(inst)
 
     val _s = jx.field("jNumber").get 
-    _s.valueSetter.invoke(inst, java.lang.Integer.valueOf(456).asInstanceOf[java.lang.Number])
-    val s = _s.valueAccessor.invoke(inst)
+    _s.setValue(inst, java.lang.Integer.valueOf(456).asInstanceOf[java.lang.Number])
+    val s = _s.valueOf(inst)
 
     assert( a.asInstanceOf[java.lang.Boolean].booleanValue == false && a.getClass.getName == "java.lang.Boolean" )
     assert( b.asInstanceOf[java.lang.Boolean].booleanValue == true && b.getClass.getName == "java.lang.Boolean" )
@@ -133,8 +153,8 @@ class JavaNonTasty extends munit.FunSuite:
 
   test("Detect parameterized Java class") {
     val wp = Class.forName("co.blocke.reflect.ParamAnno")
-    val result = Reflector.reflectOnClass(wp) 
-    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.ParamAnno[T]):
+    val result = RType.of(wp) 
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.ParamAnno):
     |   fields:
     |      (0) age: T
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 2))
@@ -142,44 +162,49 @@ class JavaNonTasty extends munit.FunSuite:
     |         annotations: Map(co.blocke.reflect.Ignore -> Map())
     |      (2) name: java.lang.String
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 1))
-    |   annotations: Map(co.blocke.reflect.ClassAnno -> Map(name -> Foom))""".stripMargin)
+    |   annotations: Map(co.blocke.reflect.ClassAnno -> Map(name -> Foom))
+    |""".stripMargin)
   }
 
   test("Java collection types") {
-    val result = Reflector.reflectOn[co.blocke.reflect.JavaCollections]
+    val result = RType.of[co.blocke.reflect.JavaCollections]
     assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaCollections):
     |   fields:
-    |      (0) hMap: JavaMapInfo(java.util.HashMap[K,V]):
+    |      (0) hMap: JavaMapInfo(java.util.HashMap):
     |         java.lang.String
     |         java.lang.Integer
     |      (1) myArr: array of java.lang.String
-    |      (2) myList: JavaListInfo(java.util.ArrayList[E]): java.lang.String
-    |      (3) myQ: JavaQueueInfo(java.util.concurrent.BlockingQueue[E]): java.lang.String
-    |      (4) myTree: JavaSetInfo(java.util.TreeSet[E]): java.lang.String
-    |      (5) nested: array of JavaListInfo(java.util.List[E]): java.lang.Integer""".stripMargin)
+    |      (2) myList: JavaListInfo(java.util.ArrayList): java.lang.String
+    |      (3) myQ: JavaQueueInfo(java.util.concurrent.BlockingQueue): java.lang.String
+    |      (4) myTree: JavaSetInfo(java.util.TreeSet): java.lang.String
+    |      (5) nested: array of JavaListInfo(java.util.List): java.lang.Integer
+    |""".stripMargin)
   }
 
   test("Nested Java classes") {
-    val result = Reflector.reflectOn[co.blocke.reflect.You]
+    val result = RType.of[co.blocke.reflect.You]
     assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.You):
     |   fields:
     |      (0) sayHey: JavaClassInfo(co.blocke.reflect.Hey):
     |         fields:
-    |            (0) jString: java.lang.String""".stripMargin)
+    |            (0) jString: java.lang.String
+    |""".stripMargin)
   }
 
   test("Java parameterized class top level") {
-    val result = Reflector.reflectOn[co.blocke.reflect.JavaParam[Integer]]
-    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaParam[K]):
+    val result = RType.of[co.blocke.reflect.JavaParam[Integer]]
+    assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaParam):
     |   fields:
-    |      (0) jThing: java.lang.Integer""".stripMargin)
+    |      (0) jThing: java.lang.Integer
+    |""".stripMargin)
   }
 
   test("Java parameterized class field member") {
-    val result = Reflector.reflectOn[co.blocke.reflect.JavaParamHolder]
+    val result = RType.of[co.blocke.reflect.JavaParamHolder]
     assertEquals( result.show(), """JavaClassInfo(co.blocke.reflect.JavaParamHolder):
     |   fields:
-    |      (0) jFoo: JavaClassInfo(co.blocke.reflect.JavaParam[K]):
+    |      (0) jFoo: JavaClassInfo(co.blocke.reflect.JavaParam):
     |         fields:
-    |            (0) jThing: java.lang.Integer""".stripMargin)
+    |            (0) jThing: java.lang.Integer
+    |""".stripMargin)
   }

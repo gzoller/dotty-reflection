@@ -11,31 +11,22 @@ case class TupleExtractor() extends TypeInfoExtractor[TupleInfo]:
 
   val tupleFullName: Regex = """scala.Tuple(\d+)""".r
 
-  def matches(clazz: Class[_]): Boolean = tupleFullName.matches(clazz.getName)
+  def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = tupleFullName.matches(symbol.fullName)
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): TupleInfo = 
-    val tupleTypeSyms = clazz.getTypeParameters.toList.map(_.getName)
-    val tupleParamTypes = tupleTypeSyms.map( et => paramMap.getOrElse(
-      et.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(et)
-      ))
-    TupleInfo(
-      clazz.getName, 
-      clazz, 
-      tupleParamTypes)
 
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
+  def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    className: String, 
-    clazz: Class[_], 
-    typeInspector: ScalaClassInspectorLike): RType =
+    symbol: reflect.Symbol): RType =
 
-    val elementTypes = tob.map( t => typeInspector.inspectType(reflect, paramMap)(t.asInstanceOf[reflect.TypeRef]))
-    // val (elementTypes, elementTypeSymbols) = tob.foldRight( (List.empty[ALL_TYPE], List.empty[Option[TypeSymbol]]) ){ (rawTypeRef, acc) => 
-    // typeInspector.inspectType(reflect)(rawTypeRef.asInstanceOf[reflect.TypeRef]) match {
-    //   case ts: TypeSymbol =>   (acc._1 :+ PrimitiveType.Scala_Any, acc._2 :+ Some(ts))
-    //   case ct: ConcreteType => (acc._1 :+ ct, acc._2 :+ None)
-    //   }
-    // }
-    TupleInfo(className, clazz, elementTypes)
+    val elementTypes = 
+      tob.map{ oneTob =>
+        val oneTobType = oneTob.asInstanceOf[reflect.Type]
+        if oneTobType.typeSymbol.flags.is(reflect.Flags.Param) then
+          TypeSymbolInfo(oneTobType.typeSymbol.name)
+        else
+          RType.unwindType(reflect)(oneTobType)
+      }
+
+    TupleInfo(t.classSymbol.get.fullName, elementTypes.toArray)
+

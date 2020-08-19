@@ -1,6 +1,7 @@
 package co.blocke.dotty_reflection
 
 import co.blocke.reflect._
+import scala.util.Try
 
 // Basic Tasty class
 case class Person(name: String, age: Int, other: Int | Boolean)
@@ -94,7 +95,7 @@ object WeekDay extends Enumeration {
   type WeekDay = Value
   val Monday = Value(1)
   val Tuesday = Value(2)
-  val Wednesday = Value(3)
+  val Wednesday = Value(99)
   val Thursday = Value(4)
   val Friday = Value(5)
   val Saturday = Value(6)
@@ -202,6 +203,27 @@ case class TBlah1[A, B](w: A, z: B) extends T11[A, B]
 case class TBar7[A, B](thing1: A, thing2: B) extends T5[A, B]
 case class TFoo6[A, B, C, D](x: T11[C, T5[D, A]], y: B) extends T10[T11[C, T5[D, A]], B]
 
+trait Level1[T,U] { val t: T; val u: Option[List[U]] }
+trait Base[A,B] { val a: A; val b: B }
+case class L1Class[X,Y]( t: X, u: Option[List[Y]] ) extends Level1[X,Y]
+case class BaseClass[X, Y, Z]( a: Level1[X,Z], b: Y ) extends Base[Level1[X,Z],Y]
+
+trait TryIt[X,Y]{ val x: Try[X]; val y: Try[Option[Y]] }
+case class TryItC[A,B]( x: Try[A], y: Try[Option[B]]) extends TryIt[A,B]
+
+trait MapIt[X,Y,S,T]{ val x: Map[X,Option[Y]]; val s: Array[S]; val t: Array[List[T]] }
+case class MapItC[A,B,W,U]( x: Map[A,Option[B]], s: Array[W], t: Array[List[U]]) extends MapIt[A,B,W,U]
+
+case class CClass[X](x:List[X])
+class PClass[Y](val y:List[Y])
+case class CClassLevel2[Z](z: Z)
+trait ClassistBase[T,U]{ val t: CClass[CClassLevel2[T]]; val u: PClass[U] }
+case class ClassistC[A,B](t: CClass[CClassLevel2[A]], u: PClass[B]) extends ClassistBase[A,B]
+
+// Inverted
+trait ClassistBaseInv[T,U]{ val t: CClass[T]; val u: PClass[U] }
+case class ClassistCInv[A,B](t: CClass[A], u: PClass[B]) extends ClassistBaseInv[A,B]
+
 // Non-Case Scala class handling
 class FoomNC(val a: Int, val b: String) {
   @FieldAnno(idx=5) var blah: Boolean = false
@@ -243,7 +265,7 @@ class InheritSimpleBase(
 
 class InheritSimpleChild(
     val extra:                                  String,
-    @DBKey @Change(name = "uno") override val one:String)
+    @Change(name = "uno") override val one:String)
   extends InheritSimpleBase(one) {
   @DBKey(index = 99) var foo: Int = 39
   @Ignore var bogus: String = ""
@@ -264,6 +286,10 @@ class ParamBase[T](val thing: T) {
 
 class ParamChild[T](override val thing: T) extends ParamBase[T](thing)
 
+// Self-referencing
+case class Shape(id: Int, parent: Option[Shape])
+case class Drawer[T]( id: Int, nextInChain: Option[Drawer[T]], thing: T)
+
 
 // Implicit Method adds.. (extension methods)
 import info._
@@ -272,3 +298,22 @@ def [T](s: JavaClassInfo).constructWith(args: List[Object]): T =
   val asBuilt = s.infoClass.getConstructors.head.newInstance().asInstanceOf[T]
   s.fields.map(f => f.asInstanceOf[JavaFieldInfo].valueSetter.invoke(asBuilt, args(f.index)))
   asBuilt
+
+
+// Java Collections
+case class JColl(
+  a: java.util.List[Int],
+  b: java.util.Optional[java.util.ArrayList[Int]],
+  c: java.util.Stack[String],
+  d: java.util.Queue[Map[Int,String]],
+  e: java.util.Set[Boolean],
+  f: java.util.Map[Int, String]
+)
+
+// InTermsOf substitution
+trait Basis[T] {
+  val a: Int
+  val b: String
+  val c: T
+}
+case class Thingy[T]( a: Int, b: String, c: T) extends Basis[T]

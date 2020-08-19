@@ -5,34 +5,33 @@ import impl._
 import Clazzes._
 import info._ 
 import scala.tasty.Reflection
+import scala.util.Try
 
 case class JavaQueueExtractor() extends TypeInfoExtractor[JavaQueueInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz <:< JQueueClazz
+  def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = 
+    Try( Class.forName(symbol.fullName) <:< JQueueClazz ).toOption.getOrElse(false)
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): JavaQueueInfo = 
-    val elemParamSymName = clazz.getTypeParameters.toList.head.getName 
-    val elemParamType = paramMap.getOrElse(
-      elemParamSymName.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(elemParamSymName)
+  def extractInfo(reflect: Reflection)(
+    t: reflect.Type, 
+    tob: List[reflect.TypeOrBounds], 
+    symbol: reflect.Symbol): RType = 
+      val clazz = Class.forName(symbol.fullName)
+      val elementType = tob.head.asInstanceOf[reflect.Type]
+      val isTypeParam = elementType.typeSymbol.flags.is(reflect.Flags.Param)
+      val elementRType = 
+        if isTypeParam then
+          TypeSymbolInfo(tob.head.asInstanceOf[reflect.Type].typeSymbol.name)
+        else
+          RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
+
+      JavaQueueInfo(
+        clazz.getName, 
+        elementRType
       )
+
+  def emptyInfo(clazz: Class[_]): JavaQueueInfo = 
     JavaQueueInfo(
       clazz.getName, 
-      clazz, 
-      clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-      elemParamType
+      TypeSymbolInfo(clazz.getTypeParameters.toList.head.getName)
     )
-
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
-      t: reflect.Type, 
-      tob: List[reflect.TypeOrBounds], 
-      className: String, 
-      clazz: Class[_], 
-      typeInspector: ScalaClassInspectorLike
-    ): RType =
-
-    JavaQueueInfo(
-          className, 
-          clazz,
-          clazz.getTypeParameters.map(_.getName.asInstanceOf[TypeSymbol]).toList, 
-          typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))

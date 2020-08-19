@@ -8,26 +8,31 @@ import scala.tasty.Reflection
 
 case class EitherExtractor() extends TypeInfoExtractor[EitherInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz =:= EitherClazz
+  def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = symbol.fullName == EitherClazz.getName
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): EitherInfo = 
-    val eitherTypeSyms = clazz.getTypeParameters.toList.map(_.getName)
-    val eitherParamTypes = eitherTypeSyms.map( et => paramMap.getOrElse(
-      et.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(et)
-      ))
-    EitherInfo(clazz.getName, clazz, eitherParamTypes(0), eitherParamTypes(1))
 
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
+  def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    className: String, 
-    clazz: Class[_], 
-    typeInspector: ScalaClassInspectorLike): RType =
-      
-      EitherInfo(
-        className,
-        clazz,
-        typeInspector.inspectType(reflect, paramMap)(tob(0).asInstanceOf[reflect.TypeRef]),
-        typeInspector.inspectType(reflect, paramMap)(tob(1).asInstanceOf[reflect.TypeRef])
-      )
+    symbol: reflect.Symbol): RType =
+
+    val leftType = tob(0).asInstanceOf[reflect.Type]
+    val leftRType = 
+      if leftType.typeSymbol.flags.is(reflect.Flags.Param) then
+        TypeSymbolInfo(tob(0).asInstanceOf[reflect.Type].typeSymbol.name)
+      else
+        RType.unwindType(reflect)(tob(0).asInstanceOf[reflect.Type])
+
+    val rightType = tob(1).asInstanceOf[reflect.Type]
+    val rightRType = 
+      if rightType.typeSymbol.flags.is(reflect.Flags.Param) then
+        TypeSymbolInfo(tob(1).asInstanceOf[reflect.Type].typeSymbol.name)
+      else
+        RType.unwindType(reflect)(tob(1).asInstanceOf[reflect.Type])
+
+    val tparms = EitherClazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+    EitherInfo(
+      t.classSymbol.get.fullName,
+      leftRType,
+      rightRType
+    )

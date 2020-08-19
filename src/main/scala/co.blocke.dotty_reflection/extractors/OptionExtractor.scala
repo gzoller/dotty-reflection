@@ -8,25 +8,23 @@ import scala.tasty.Reflection
 
 case class OptionExtractor() extends TypeInfoExtractor[ScalaOptionInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz =:= OptionClazz
+  def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = symbol.fullName == OptionClazz.getName
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): ScalaOptionInfo =
-    val optionParamSymName = clazz.getTypeParameters.toList.head.getName 
-    val optionParamType = paramMap.getOrElse(
-      optionParamSymName.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(optionParamSymName)
-      )
-    ScalaOptionInfo(
-      clazz.getName, 
-      clazz,
-      optionParamType
-      )
-
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
+  
+  def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    className: String, 
-    clazz: Class[_], 
-    typeInspector: ScalaClassInspectorLike): RType =
+    symbol: reflect.Symbol): RType =
 
-    ScalaOptionInfo(className, clazz, typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef]))
+    val optionOfType = tob.head.asInstanceOf[reflect.Type]
+    val isTypeParam = optionOfType.typeSymbol.flags.is(reflect.Flags.Param)
+    val optionOfRType = 
+      if isTypeParam then
+        TypeSymbolInfo(tob.head.asInstanceOf[reflect.Type].typeSymbol.name)
+      else
+        RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
+
+    ScalaOptionInfo(
+      t.classSymbol.get.fullName, 
+      optionOfRType
+    )

@@ -3,7 +3,11 @@ package co.blocke.dotty_reflection
 import munit._
 import co.blocke.reflect.{ClassAnno,FieldAnno}
 import info._
-import PrimitiveType._
+import impl.PrimitiveType._
+
+
+inline def describe(message: String, color: String = Console.MAGENTA): Unit = println(s"$color$message${Console.RESET}")
+inline def pending = describe("   << Test Pending (below) >>", Console.YELLOW)
 
 class ScalaTasty extends munit.FunSuite:
 
@@ -15,98 +19,119 @@ class ScalaTasty extends munit.FunSuite:
     |      (1) age: scala.Int
     |      (2) other: Union:
     |         left--scala.Int
-    |         right--scala.Boolean""".stripMargin)
+    |         right--scala.Boolean
+    |""".stripMargin)
   }
 
   test("create basic Tasty class") {
-    val p = Reflector.reflectOn[Person]
+    val p = RType.of[Person]
     val person = p.asInstanceOf[ScalaCaseClassInfo].constructWith[Person](List("Frank", 35, 5))
     assertEquals(person, Person("Frank",35,5))
   }
 
   test("handle match types") {
-    val result = Reflector.reflectOn[Definitely] 
+    val result = RType.of[Definitely] 
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Definitely):
     |   fields:
     |      (0) id: scala.Int
-    |      (1) stuff: scala.Char""".stripMargin)
+    |      (1) stuff: scala.Char
+    |""".stripMargin)
   }
   
   test("process mixins") {
-    val m = Reflector.reflectOn[WithMix]
+    val m = RType.of[WithMix]
     assertEquals(m.asInstanceOf[ScalaCaseClassInfo].hasMixin("co.blocke.dotty_reflection.SJCapture"),true)
   }
 
   test("capture field and class annotations") {
-    val result = Reflector.reflectOn[WithAnnotation] 
+    val result = RType.of[WithAnnotation] 
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithAnnotation):
     |   fields:
     |      (0) id: java.lang.String
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))
-    |   annotations: Map(co.blocke.reflect.ClassAnno -> Map(name -> Foom))""".stripMargin)
+    |   annotations: Map(co.blocke.reflect.ClassAnno -> Map(name -> Foom))
+    |""".stripMargin)
   }
 
-  test("handle parameterized class") {
+  // PROBLEM: Too Slow!! 2.x seconds, vs < 0.5 sec before.
+  // The processing in Reflection is too slow... it's called @ runtime for inspection
+  test("handle parameterized class - inspection") {
     val wp = WithParam(1,true)
-    val result = Reflector.reflectOnClass(wp.getClass) 
-    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithParam[T,U]):
+    val result = RType.of(wp.getClass) 
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithParam):
     |   fields:
     |      (0)[T] one: T
-    |      (1)[U] two: U""".stripMargin)
+    |      (1)[U] two: U
+    |""".stripMargin)
+  }
+
+  test("handle parameterized class - reflection") {
+    val result = RType.of[WithParam[Int,Boolean]] 
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithParam):
+    |   fields:
+    |      (0)[T] one: scala.Int
+    |      (1)[U] two: scala.Boolean
+    |""".stripMargin)
   }
 
   test("handle opaque type alias") {
-    val result = Reflector.reflectOn[Employee]
+    val result = RType.of[Employee]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Employee):
     |   fields:
     |      (0) eId: alias EMP_ID defined as scala.Int
-    |      (1) age: scala.Int""".stripMargin)
+    |      (1) age: scala.Int
+    |""".stripMargin)
   }
 
   test("opaque type alias is a union type") {
-    val result = Reflector.reflectOn[OpaqueUnion] 
+    val result = RType.of[OpaqueUnion] 
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.OpaqueUnion):
     |   fields:
     |      (0) id: alias GEN_ID defined as Union:
     |         left--scala.Int
-    |         right--java.lang.String""".stripMargin)
+    |         right--java.lang.String
+    |""".stripMargin)
   }
 
   test("support value classes") {
-    val result = Reflector.reflectOn[Employee2]
+    val result = RType.of[Employee2]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Employee2):
     |   fields:
     |      (0) eId: ScalaCaseClassInfo--Value Class--(co.blocke.dotty_reflection.IdUser):
     |         fields:
     |            (0) id: scala.Int
-    |      (1) age: scala.Int""".stripMargin)
+    |      (1) age: scala.Int
+    |""".stripMargin)
   }
 
   test("detect default values in case class constructor fields") {
-    val result = Reflector.reflectOn[WithDefault]
+    val result = RType.of[WithDefault]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.WithDefault):
     |   fields:
     |      (0) a: scala.Int
-    |      (1) b: java.lang.String""".stripMargin)
+    |      (1) b: java.lang.String
+    |""".stripMargin)
     val wd = result.asInstanceOf[ScalaCaseClassInfo]
-    val newWd = wd.constructWith[WithDefault](List(5,wd.fields(1).defaultValueAccessor.get()))
+    val newWd = wd.constructWith[WithDefault](List(5,wd.fields(1).defaultValue.get))
     assertEquals(newWd, WithDefault(5))
   }
 
   test("plain class support") {
-    val result = Reflector.reflectOn[PlainGood]
+    val result = RType.of[PlainGood]
     assertEquals( result.show(), """ScalaClassInfo(co.blocke.dotty_reflection.PlainGood):
     |   fields:
     |      (0) a: scala.Int
     |      (1) b: java.lang.String
-    |   non-constructor fields:""".stripMargin)
-    interceptMessage[java.lang.Exception]("Class [co.blocke.dotty_reflection.PlainBad]: Non-case class constructor arguments must all be 'val'"){
-      Reflector.reflectOn[PlainBad]
-    }
+    |   non-constructor fields:
+    |""".stripMargin)
+    // Can't test this... happens at runti
+    // interceptMessage[java.lang.Exception]("Class [co.blocke.dotty_reflection.PlainBad]: Non-case class constructor arguments must all be 'val'"){
+    //   RType.of[PlainBad]
+    // }
   }
 
   test("all Scala primitive types") {
-    val result = Reflector.reflectOn[ScalaPrimitives]
+    val result = RType.of[ScalaPrimitives]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.ScalaPrimitives):
     |   fields:
     |      (0) a: scala.Boolean
@@ -118,23 +143,25 @@ class ScalaTasty extends munit.FunSuite:
     |      (6) g: scala.Long
     |      (7) h: scala.Short
     |      (8) i: java.lang.String
-    |      (9) j: scala.Any""".stripMargin)
+    |      (9) j: scala.Any
+    |""".stripMargin)
   }
 
-  test("unknown class") {
-    val result = Reflector.reflectOn[scala.math.BigDecimal]
-    assertEquals( result.show(), """UnknownInfo(scala.math.BigDecimal)""")
+  test("Scala 2.x class") {
+    val result = RType.of[scala.math.BigDecimal]
+    assertEquals( result.show(), "Scala2Info(scala.math.BigDecimal)\n")
   }
 
   test("Try type") {
-    val result = Reflector.reflectOn[TryMe]
+    val result = RType.of[TryMe]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.TryMe):
     |   fields:
-    |      (0) maybe: Try of scala.Boolean""".stripMargin)
+    |      (0) maybe: Try of scala.Boolean
+    |""".stripMargin)
   }
 
   test("sealed trait with case classes") {
-    val result = Reflector.reflectOn[VehicleHolder]
+    val result = RType.of[VehicleHolder]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.VehicleHolder):
     |   fields:
     |      (0) v: SealedTraitInfo(co.blocke.dotty_reflection.Vehicle):
@@ -148,35 +175,38 @@ class ScalaTasty extends munit.FunSuite:
     |                  (1) color: java.lang.String
     |            ScalaCaseClassInfo(co.blocke.dotty_reflection.Plane):
     |               fields:
-    |                  (0) numberOfEngines: scala.Int""".stripMargin)
+    |                  (0) numberOfEngines: scala.Int
+    |""".stripMargin)
   }
 
   test("sealed trait with case objects") {
-    val result = Reflector.reflectOn[FlavorHolder]
+    val result = RType.of[FlavorHolder]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.FlavorHolder):
     |   fields:
     |      (0) f: SealedTraitInfo(co.blocke.dotty_reflection.Flavor):
     |         children:
     |            ObjectInfo(co.blocke.dotty_reflection.Vanilla)
     |            ObjectInfo(co.blocke.dotty_reflection.Chocolate)
-    |            ObjectInfo(co.blocke.dotty_reflection.Bourbon)""".stripMargin)
+    |            ObjectInfo(co.blocke.dotty_reflection.Bourbon)
+    |""".stripMargin)
   }
 
   test("handle intersection types") {
-    val result = Reflector.reflectOn[IntersectionHolder]
+    val result = RType.of[IntersectionHolder]
     assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.IntersectionHolder):
     |   fields:
     |      (0) a: Intersection:
     |         left--Intersection:
-    |            left--TraitInfo(co.blocke.dotty_reflection.InterA)
-    |            right--TraitInfo(co.blocke.dotty_reflection.InterB)
-    |         right--TraitInfo(co.blocke.dotty_reflection.InterC)""".stripMargin)
+    |            left--TraitInfo(co.blocke.dotty_reflection.InterA) with fields:
+    |            right--TraitInfo(co.blocke.dotty_reflection.InterB) with fields:
+    |         right--TraitInfo(co.blocke.dotty_reflection.InterC) with fields:
+    |""".stripMargin)
   }
 
   test("handle Scala non-case classes") {
-    val result = Reflector.reflectOn[FoomNC]
+    val result = RType.of[FoomNC]
     val target = result.show()
-    assertEquals( result.show(0,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.FoomNC):
+    assertEquals( result.show(0,Nil,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.FoomNC):
     |   fields:
     |      (0) a: scala.Int
     |      (1) b: java.lang.String
@@ -186,17 +216,17 @@ class ScalaTasty extends munit.FunSuite:
     |      (_) blah: scala.Boolean
     |         annotations: Map(co.blocke.reflect.FieldAnno -> Map(idx -> 5))
     |      (_) hey: scala.Int
-    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin)
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |""".stripMargin)
   }
 
   test("Inheritance and Annotations") {
-    val result = Reflector.reflectOn[InheritSimpleChild]
-    val target = result.show()
-    assertEquals( result.show(0,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.InheritSimpleChild):
+    val result = RType.of[InheritSimpleChild]
+    assertEquals( result.show(0,Nil,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.InheritSimpleChild):
     |   fields:
     |      (0) extra: java.lang.String
     |      (1) one: java.lang.String
-    |         annotations: Map(co.blocke.reflect.Change -> Map(name -> uno), co.blocke.reflect.DBKey -> Map())
+    |         annotations: Map(co.blocke.reflect.Change -> Map(name -> uno), co.blocke.reflect.DBKey -> Map(index -> 50))
     |   non-constructor fields:
     |      (_) bogus: java.lang.String
     |         annotations: Map(co.blocke.reflect.Ignore -> Map())
@@ -213,15 +243,46 @@ class ScalaTasty extends munit.FunSuite:
     |      (_) two: scala.Int
     |         annotations: Map(co.blocke.reflect.Change -> Map(name -> foobar), co.blocke.reflect.DBKey -> Map(index -> 1))
     |      (_) unused: scala.Double
-    |         annotations: Map(co.blocke.reflect.Ignore -> Map())""".stripMargin)
+    |         annotations: Map(co.blocke.reflect.Ignore -> Map())
+    |""".stripMargin)
   }
 
   test("Inheritance and Parameterized Classes") {
-    val result = Reflector.reflectOn[ParamChild[Boolean]]
-    assertEquals( result.show(0,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.ParamChild[T]):
+    val result = RType.of[ParamChild[Boolean]]
+    assertEquals( result.show(0,Nil,false,true), """ScalaClassInfo(co.blocke.dotty_reflection.ParamChild):
     |   fields:
     |      (0)[T] thing: scala.Boolean
     |   non-constructor fields:
     |      (_)[T] cosa: scala.Boolean
-    |      (_)[T] item: scala.Boolean""".stripMargin)
+    |      (_)[T] item: scala.Boolean
+    |""".stripMargin)
+  }
+
+  test("Self-referencing types (non-parameterized") {
+    val result = RType.of[Shape]
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Shape):
+    |   fields:
+    |      (0) id: scala.Int
+    |      (1) parent: Option of ScalaCaseClassInfo(co.blocke.dotty_reflection.Shape) (self-ref recursion)
+    |""".stripMargin)
+  }
+
+  test("Self-referencing types (parameterized") {
+    val result = RType.of[Drawer[Shape]]
+    assertEquals( result.show(), """ScalaCaseClassInfo(co.blocke.dotty_reflection.Drawer):
+    |   fields:
+    |      (0) id: scala.Int
+    |      (1) nextInChain: Option of ScalaCaseClassInfo(co.blocke.dotty_reflection.Drawer) (self-ref recursion)
+    |      (2)[T] thing: ScalaCaseClassInfo(co.blocke.dotty_reflection.Shape):
+    |         fields:
+    |            (0) id: scala.Int
+    |            (1) parent: Option of ScalaCaseClassInfo(co.blocke.dotty_reflection.Shape) (self-ref recursion)
+    |""".stripMargin)
+  }
+
+  test("Ensure caching (equals) works") {
+    val r0 = RType.of[Int]
+    val r1 = RType.of[Int]
+    assert(r0 == r1)
+    assert(r0.equals(r1))
   }

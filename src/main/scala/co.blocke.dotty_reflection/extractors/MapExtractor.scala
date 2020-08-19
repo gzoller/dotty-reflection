@@ -8,36 +8,32 @@ import scala.tasty.Reflection
 
 case class MapExtractor() extends TypeInfoExtractor[MapLikeInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz <:< MapClazz
+  def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean =
+    // Try here because non-library symbol won't have a class and will explode.
+    scala.util.Try( MapClazz.isAssignableFrom( Class.forName(symbol.fullName) ) ).toOption.getOrElse(false)
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): MapLikeInfo = 
-    val keyParamSymName = clazz.getTypeParameters()(0).getName 
-    val keyParamType = paramMap.getOrElse(
-      keyParamSymName.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(keyParamSymName)
-      )
-    val valueParamSymName = clazz.getTypeParameters()(1).getName 
-    val valueParamType = paramMap.getOrElse(
-      valueParamSymName.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(valueParamSymName)
-      )
-    MapLikeInfo(
-      clazz.getName, 
-      clazz, 
-      keyParamType,
-      valueParamType
-      )
 
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
-      t: reflect.Type, 
-      tob: List[reflect.TypeOrBounds], 
-      className: String, 
-      clazz: Class[_], 
-      typeInspector: ScalaClassInspectorLike
-    ): RType =
+  def extractInfo(reflect: Reflection)(
+    t: reflect.Type, 
+    tob: List[reflect.TypeOrBounds], 
+    symbol: reflect.Symbol): RType =
+
+    val leftType = tob(0).asInstanceOf[reflect.Type]
+    val leftRType = 
+      if leftType.typeSymbol.flags.is(reflect.Flags.Param) then
+        TypeSymbolInfo(tob(0).asInstanceOf[reflect.Type].typeSymbol.name)
+      else
+        RType.unwindType(reflect)(tob(0).asInstanceOf[reflect.Type])
+
+    val rightType = tob(1).asInstanceOf[reflect.Type]
+    val rightRType = 
+      if rightType.typeSymbol.flags.is(reflect.Flags.Param) then
+        TypeSymbolInfo(tob(1).asInstanceOf[reflect.Type].typeSymbol.name)
+      else
+        RType.unwindType(reflect)(tob(1).asInstanceOf[reflect.Type])
 
     MapLikeInfo(
-      className, 
-      clazz,
-      typeInspector.inspectType(reflect, paramMap)(tob(0).asInstanceOf[reflect.TypeRef]),
-      typeInspector.inspectType(reflect, paramMap)(tob(1).asInstanceOf[reflect.TypeRef]))
+      t.classSymbol.get.fullName,
+      leftRType,
+      rightRType
+    )

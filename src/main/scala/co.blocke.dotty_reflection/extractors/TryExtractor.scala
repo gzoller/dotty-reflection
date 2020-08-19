@@ -8,29 +8,23 @@ import scala.tasty.Reflection
 
 case class TryExtractor() extends TypeInfoExtractor[TryInfo]:
 
-  def matches(clazz: Class[_]): Boolean = clazz =:= TryClazz
+  def matches(reflect: Reflection)(symbol: reflect.Symbol): Boolean = symbol.fullName == TryClazz.getName
 
-  def emptyInfo(clazz: Class[_], paramMap: Map[TypeSymbol,RType]): TryInfo = 
-    val tryParamSymName = clazz.getTypeParameters.toList.head.getName 
-    val tryParamType = paramMap.getOrElse(
-      tryParamSymName.asInstanceOf[TypeSymbol], 
-      TypeSymbolInfo(tryParamSymName)
-      )
-    TryInfo(
-      clazz.getName, 
-      clazz, 
-      tryParamType
-      )
-  
-  def extractInfo(reflect: Reflection, paramMap: Map[TypeSymbol,RType])(
+
+  def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    className: String, 
-    clazz: Class[_], 
-    typeInspector: ScalaClassInspectorLike): RType =
+    symbol: reflect.Symbol): RType =
 
-      TryInfo(
-        className,
-        clazz,
-        typeInspector.inspectType(reflect, paramMap)(tob.head.asInstanceOf[reflect.TypeRef])
-      )
+    val tryOfType = tob.head.asInstanceOf[reflect.Type]
+    val isTypeParam = tryOfType.typeSymbol.flags.is(reflect.Flags.Param)
+    val tryOfRType = 
+      if isTypeParam then
+        TypeSymbolInfo(tob.head.asInstanceOf[reflect.Type].typeSymbol.name)
+      else
+        RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
+
+    TryInfo(
+      t.classSymbol.get.fullName,
+      tryOfRType
+    )
