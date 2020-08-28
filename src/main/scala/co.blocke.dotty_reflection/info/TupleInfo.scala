@@ -2,11 +2,13 @@ package co.blocke.dotty_reflection
 package info
 
 import scala.tasty.Reflection
+import Transporter.AppliedRType
+
 
 case class TupleInfo protected[dotty_reflection](
   name: String,
-  _tupleTypes: Array[RType]
-) extends RType:
+  _tupleTypes: Array[Transporter.RType]
+) extends Transporter.RType with Transporter.AppliedRType:
 
   val fullName: String = name + _tupleTypes.map(_.fullName).toList.mkString("[",",","]")
 
@@ -22,17 +24,22 @@ case class TupleInfo protected[dotty_reflection](
     import reflect.{_, given _}
     AppliedType(Type(infoClass), tupleTypes.toList.map( _.toType(reflect) ))
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+  override def isAppliedType: Boolean = 
+    _tupleTypes.map{ _ match {
+      case artL: Transporter.AppliedRType if artL.isAppliedType => true
+      case _ => false
+      }}.foldLeft(false)(_ | _)
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     var needsCopy = false
-    val resolvedTupleTypes = _tupleTypes.map( _ match {
+    val resolvedTupleTypes = _tupleTypes.map( one => one match {
         case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
           needsCopy = true
           paramMap(ts.name.asInstanceOf[TypeSymbol])
-        case pt: impl.PrimitiveType => 
-          pt
-        case other => 
+        case art: AppliedRType if art.isAppliedType => 
           needsCopy = true
-          other.resolveTypeParams(paramMap)
+          one.resolveTypeParams(paramMap)
+        case t => t
       }
     )
     if needsCopy then

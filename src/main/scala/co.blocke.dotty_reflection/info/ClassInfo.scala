@@ -3,7 +3,7 @@ package info
 
 import impl._
 
-trait ClassInfo extends RType: 
+trait ClassInfo extends Transporter.RType: 
   lazy val fields:                Array[FieldInfo]
   lazy val typeMembers:           Array[TypeMemberInfo]
   lazy val annotations:           Map[String, Map[String,String]]
@@ -20,7 +20,7 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
     _annotations:           Map[String, Map[String,String]],
     _mixins:                List[String],
     isValueClass:           Boolean
-  ) extends ClassInfo:
+  ) extends ClassInfo with Transporter.AppliedRType:
 
   // All this laziness is because Java classes use a proxy that isn't resolved until runtime.
   lazy val typeMembers = _typeMembers
@@ -100,12 +100,17 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
     _mixins:                List[String],
+    override val isAppliedType: Boolean,
     isValueClass:           Boolean
   ) extends ScalaClassInfoBase(name, fullName, _typeMembers, _fields, _annotations, _mixins, isValueClass):
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
+    this.copy( _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) ))
+
 
 
 //------------------------------------------------------------
@@ -119,12 +124,16 @@ case class ScalaClassInfo protected[dotty_reflection] (
     nonConstructorFields:   Array[ScalaFieldInfo],
     _annotations:           Map[String, Map[String,String]],
     _mixins:                List[String],
+    override val isAppliedType: Boolean,
     isValueClass:           Boolean
   ) extends ScalaClassInfoBase(name, fullName, _typeMembers, _fields, _annotations, _mixins, isValueClass):
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
+    this.copy( _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) ))
 
   override def show(tab:Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -151,7 +160,7 @@ case class ScalaClassInfo protected[dotty_reflection] (
 case class JavaClassInfo protected[dotty_reflection] ( 
     name: String, 
     fullName: String,
-    paramTypes: Array[RType], 
+    paramTypes: Array[Transporter.RType], 
     _proxy: Option[JavaClassInfoProxy] = None 
   ) extends ClassInfo:
   lazy val infoClass: Class[_] = Class.forName(name)
@@ -165,7 +174,7 @@ case class JavaClassInfo protected[dotty_reflection] (
 
   private lazy val fieldsByName = fields.map(f => (f.name, f.asInstanceOf[JavaFieldInfo])).toMap
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
     val newProxy = this.proxy.copy(_fields = fields.map( f => f.resolveTypeParams(paramMap) ))
     val newFullName =
       if proxy.paramMap.nonEmpty then
@@ -190,8 +199,8 @@ case class JavaClassInfoProxy protected[dotty_reflection] (
     name:                   String,
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
-    paramMap:               Map[TypeSymbol, RType]
-  ) extends RType:
+    paramMap:               Map[TypeSymbol, Transporter.RType]
+  ) extends Transporter.RType:
 
   val fullName = name
   lazy val annotations = _annotations

@@ -11,12 +11,14 @@ import dotty.tools.dotc.ast.Trees.AppliedTypeTree
   
 class TastyInspection[T](clazz: Class[_], inTermsOf: Option[TraitInfo] = None) extends TastyInspector:
 
-  var inspected: RType = UnknownInfo(clazz.getName)
+  var inspected: Transporter.RType = UnknownInfo(clazz.getName)
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{_, given _}
 
     val pre = RType.unwindType(reflect)( Type(clazz), inTermsOf.isEmpty )
+    // val pre = RType.unpackAnno(clazz).getOrElse(RType.unwindType(reflect)( Type(clazz), inTermsOf.isEmpty ))
+    
     // println("PRE: "+pre.show())
     // println("======")
     // println("ITO: "+inTermsOf.get.show())

@@ -15,7 +15,7 @@ case class JavaListExtractor() extends TypeInfoExtractor[JavaListInfo]:
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    symbol: reflect.Symbol): RType = 
+    symbol: reflect.Symbol): Transporter.RType = 
       val clazz = Class.forName(symbol.fullName)
       val listElementType = tob.head.asInstanceOf[reflect.Type]
       val isTypeParam = listElementType.typeSymbol.flags.is(reflect.Flags.Param)

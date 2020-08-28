@@ -7,26 +7,14 @@ lazy val root = project
   .settings(settings)
   .settings(
     name := "reflection_library",
-    doc := null,  // disable dottydoc for now
-    sources in (Compile, doc) := Seq(),
-    Test / parallelExecution := false,
-    libraryDependencies ++= commonDependencies
-  )
-
-  /*  NO INTENTION TO USE!  Left here to show how to build a compiler-plugin.
-lazy val plugin = project
-  .in(file("plugin"))
-  .settings(settings)
-  .settings(
-    name := "reflection_plugin",
     Compile / packageBin / mappings += {
       (baseDirectory.value / "plugin.properties") -> "plugin.properties"
     },
     doc := null,  // disable dottydoc for now
     sources in (Compile, doc) := Seq(),
+    Test / parallelExecution := false,
     libraryDependencies ++= commonDependencies
-  ).dependsOn(library)
-  */
+  )
 
 //==========================
 // Dependencies

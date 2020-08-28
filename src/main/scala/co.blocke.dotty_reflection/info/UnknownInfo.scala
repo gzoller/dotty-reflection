@@ -8,7 +8,7 @@ package info
   * We can make a ScalaJack TypeAdapter for UUID without needing to inspect the type.  For some
   * other application an UnknownInfo might be a serious problem.
   */
-case class UnknownInfo(name: String) extends RType:
+case class UnknownInfo(name: String) extends Transporter.RType:
   val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 

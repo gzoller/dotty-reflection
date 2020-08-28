@@ -16,6 +16,7 @@ trait NonCaseClassReflection:
     superClass:            Option[ClassInfo],
     name:                  String,
     fullName:              String,
+    isAppliedType:         Boolean,
     fieldDefaultMethods:   Map[Int, (String,String)],
     typeMembers:           Array[TypeMemberInfo],
     fields:                Array[FieldInfo],
@@ -164,5 +165,6 @@ trait NonCaseClassReflection:
       nonConstructorFields,
       annotations,
       mixins,
+      isAppliedType,
       isValueClass
     )

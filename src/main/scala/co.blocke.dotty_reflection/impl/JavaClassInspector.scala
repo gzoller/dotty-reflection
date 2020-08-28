@@ -13,7 +13,7 @@ import Clazzes._
  *  ScalaClassInspector by default.
  */
 object JavaClassInspector:
-  def inspectClass(c: Class[?], fullName: String, paramTypes: scala.Array[RType]): RType =
+  def inspectClass(c: Class[?], fullName: String, paramTypes: scala.Array[Transporter.RType]): Transporter.RType =
     // We must detect and handle any top-level Java collections or they'll be "dumbed-down" to JavaClassInfo, which isn't what we want.
     // (Not worried about the type parameters of the collections here--they'll be populated in the resolveTypeParams() method later)
     c match {
@@ -55,7 +55,7 @@ object JavaClassInspector:
         (f,i) => f.copy(index = i)
       }
 
-  private def inspectType(mainTypeParams: List[TypeVariable[_]], fieldType: JType): RType =
+  private def inspectType(mainTypeParams: List[TypeVariable[_]], fieldType: JType): Transporter.RType =
 
     fieldType match {
       case g: GenericArrayType => 

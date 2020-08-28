@@ -3,7 +3,7 @@ package info
 
 /** Something to smooth the differences between the 2.x Enumeration class and the 3.x Enum class
  */
-trait EnumInfo extends RType:
+trait EnumInfo extends Transporter.RType:
   lazy val infoClass: Class[_]
   val values: List[String]
   def ordinal(s: String): Int
@@ -47,7 +47,7 @@ case class ScalaEnumerationInfo protected[dotty_reflection](
 
 case class JavaEnumInfo protected[dotty_reflection](
   name: String,
-) extends RType: 
+) extends Transporter.RType: 
   val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
 

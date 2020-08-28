@@ -4,15 +4,16 @@ package info
 import scala.util.Try
 import impl._
 import scala.tasty.Reflection
+import Transporter.AppliedRType
 
 case class TryInfo protected[dotty_reflection](
   name: String,
-  _tryType: RType
-) extends RType:
+  _tryType: Transporter.RType
+) extends Transporter.RType with Transporter.AppliedRType:
 
   val fullName: String = name + "[" + _tryType.fullName  + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
-  lazy val tryType: RType = _tryType match {
+  lazy val tryType: Transporter.RType = _tryType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
@@ -30,13 +31,13 @@ case class TryInfo protected[dotty_reflection](
         other.findPaths(findSyms.map( (k,v) => k -> v.push(TryPathElement()) ))
     }
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
-    _tryType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_tryType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case pt: impl.PrimitiveType => this
-      case other => this.copy(_tryType = other.resolveTypeParams(paramMap))
-    }
-
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"Try of " + tryType.show(newTab,name :: seenBefore,true)
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
+    _tryType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_tryType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => this.copy(_tryType = _tryType.resolveTypeParams(paramMap))
+      case _ => this
+    }

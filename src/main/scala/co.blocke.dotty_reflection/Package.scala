@@ -17,28 +17,8 @@ val ENUM_CLASSNAME = "scala.Enumeration.Value"
 
 val typesymregx = """.*\.\_\$(.+)$""".r
 
-
-// Need this cache because apparently calling paramSymss mutates states and crashes on repeated calls!
-/*  NOT NEEDED???
-import dotty.tools.dotc.core.Symbols.{Symbol => CoreSymbol}
-private val mm = new java.util.concurrent.ConcurrentHashMap[CoreSymbol, List[CoreSymbol]]
-
-def getTypeParameters(reflect: scala.tasty.Reflection)(symbol: reflect.Symbol): List[CoreSymbol] = 
-  this.synchronized {
-    Option(mm.get(symbol.asInstanceOf[CoreSymbol])).getOrElse{
-      val syms = symbol.primaryConstructor.paramSymss match {
-        case Nil             => Nil
-        case p if p.nonEmpty => p.head.filter(_.isType).map(_.asInstanceOf[CoreSymbol])
-        case _               => Nil
-      }
-      mm.put(symbol.asInstanceOf[CoreSymbol],syms)
-      syms
-    }
-  }
-  */
-
     
-def mangleArrayClassName(tpe: RType): String =
+def mangleArrayClassName(tpe: Transporter.RType): String =
   val mangled = tpe match {
     case _: info.TypeSymbolInfo => "Ljava.lang.Object;"
     case c: info.ArrayInfo => mangleArrayClassName(c.elementType)
