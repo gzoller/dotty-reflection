@@ -75,14 +75,13 @@ object RType:
 
   inline def of(clazz: Class[_]): Transporter.RType = 
     unpackAnno(clazz).getOrElse{
-      val tc = new TastyInspection[Any](clazz)
+      val tc = new TastyInspection(clazz)
       tc.inspect("", List(clazz.getName))
       tc.inspected
     }
 
   inline def inTermsOf[T](clazz: Class[_]): Transporter.RType = 
     val clazzRType = of(clazz)
-    println("RAW: "+clazzRType)
     val ito = of[T].asInstanceOf[info.TraitInfo]
     val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
     val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path(Nil)) ).toMap, Some(ito))
