@@ -18,19 +18,6 @@ import info._
  *  This saves 2-6 sec of "priming" time when reflecting on a class using Tasty Inspection (runtime).
  */
 
-import java.io._
-object Stuff:
-  trait TravelerI extends Serializable:
-    val msg: String
-    def serialize: String =
-      val baos = new ByteArrayOutputStream()
-      val oos = new ObjectOutputStream( baos )
-      oos.writeObject( this )
-      oos.close()
-      java.util.Base64.getEncoder().encodeToString(baos.toByteArray())
-
-case class TravelerG(msg: String) extends Stuff.TravelerI
-
 class ReflectionWorker extends StandardPlugin {
   val name: String = "reflectionWorker"
   override val description: String = "heavy-lift reflection worker"
@@ -50,7 +37,7 @@ class ReflectionWorkerPhase extends PluginPhase {
     if tree.isClassDef && !tree.rhs.symbol.isStatic then  // only look at classes & traits, not objects
       // Reflect on the type (generate an RType), then serialize to string and add the S3Reflection annotation to the class.
       val reflect = dotty.tools.dotc.tastyreflect.ReflectionImpl(ctx)
-      val reflected = RType.unwindType(reflect)(tree.tpe.asInstanceOf[reflect.Type])
+      val reflected = RType.unwindType(reflect)(tree.tpe.asInstanceOf[reflect.Type],false)
       // println("REFLECTED: "+reflected)
       val s3ReflectionClassSymbol = getClassIfDefined("co.blocke.dotty_reflection.S3Reflection")
       val annoArg = NamedArg("rtype".toTermName, Literal(Constant( reflected.serialize )))
