@@ -60,16 +60,19 @@ trait NonCaseClassReflection:
 
     // Include inherited methods (var & def), including inherited!
     val baseAnnos = superClass match {
-      case Some(c: ScalaClassInfo) => c.nonConstructorFields.map( f => f.name -> f.annotations ).toMap
+      case Some(c: ScalaClassInfo) => c.nonConstructorFields.map( f => f.name -> (f.annotations - S3ANNO) ).toMap
       case _ => Map.empty[String,Map[String, Map[String,String]]]
     }
+
+    // val seen = scala.collection.mutable.Set.empty[Symbol]
 
     // FIX: Traverse up ALL the parents, until the first found fieldName is discovered... not just the first parent!
     def upTreeFind(fieldName: String, sym: Symbol): Option[Symbol] = 
       var foundSymbol: Option[Symbol] = None
       breakable {
         symbol.tree.asInstanceOf[ClassDef].parents.foreach{ _ match {
-          case tt: TypeTree => 
+          case tt: TypeTree => //if !seen.contains(tt.tpe.classSymbol.get) =>
+            // seen += tt.tpe.classSymbol.get
             tt.tpe.classSymbol.get.field(fieldName) match {
               case dotty.tools.dotc.core.Symbols.NoSymbol if tt.tpe.classSymbol.get.fullName == "java.lang.Object" => // top of tree 
               case dotty.tools.dotc.core.Symbols.NoSymbol => upTreeFind(fieldName, tt.tpe.classSymbol.get)
@@ -77,7 +80,7 @@ trait NonCaseClassReflection:
                 foundSymbol = Some(found)
                 break
             }
-          case _ => 
+          case _ =>
         }}
       }
       foundSymbol
@@ -93,13 +96,16 @@ trait NonCaseClassReflection:
           symbol.method(setter.name.dropRight(2)) match {
             case Nil => 
               upTreeFind(setter.name.dropRight(2), symbol) match {
-                case Some(getter) => (getter, setter)
+                case Some(getter) => 
+                  (getter, setter)
                 case None =>
                   throw new ReflectException(s"Can't find field getter ${setter.name.dropRight(2)} in class ${symbol.fullName} or its superclass(es).")
               }
-            case getter => (getter.head, setter)
+            case getter => 
+              (getter.head, setter)
           }
-        case getter: Symbol => (getter, setter)
+        case getter: Symbol => 
+          (getter, setter)
       }
     }
 

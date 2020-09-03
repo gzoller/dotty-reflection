@@ -31,17 +31,15 @@ class ReflectionWorkerPhase extends PluginPhase {
   val phaseName = "reflectionWorker"
 
   override val runsAfter = Set(Pickler.name)
-  // override val runsBefore = Set("genSJSIR")  // didn't change outcome!
 
   override def transformTypeDef(tree: TypeDef)(implicit ctx: Context): Tree = 
     if tree.isClassDef && !tree.rhs.symbol.isStatic then  // only look at classes & traits, not objects
       // Reflect on the type (generate an RType), then serialize to string and add the S3Reflection annotation to the class.
       val reflect = dotty.tools.dotc.tastyreflect.ReflectionImpl(ctx)
-      val reflected = RType.unwindType(reflect)(tree.tpe.asInstanceOf[reflect.Type],false)
-      // println("REFLECTED: "+reflected)
+      val unpackedType = tree.tpe.classSymbol.appliedRef.asInstanceOf[reflect.Type]
+      val reflected = RType.unwindType(reflect)(unpackedType,false)
       val s3ReflectionClassSymbol = getClassIfDefined("co.blocke.dotty_reflection.S3Reflection")
       val annoArg = NamedArg("rtype".toTermName, Literal(Constant( reflected.serialize )))
       tree.symbol.addAnnotation(Annotation.apply(s3ReflectionClassSymbol.asInstanceOf[ClassSymbol], annoArg) )
     tree
-
 }

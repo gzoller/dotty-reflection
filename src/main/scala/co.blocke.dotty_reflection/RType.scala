@@ -82,7 +82,20 @@ object RType:
 
   inline def inTermsOf[T](clazz: Class[_]): Transporter.RType = 
     val clazzRType = of(clazz)
-    val ito = of[T].asInstanceOf[info.TraitInfo]
+    val ito = of[T].asInstanceOf[TraitInfo]
+    val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
+    val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path(Nil)) ).toMap, Some(ito))
+
+    // Now nav the symPaths into RType from ito (reference trait) then sew these as arguments into the "naked" parameterized class (applied type)
+    val paramMap = clazzSyms.map( _ match {
+      case sym if unfoundSyms.contains(sym) => (sym -> PrimitiveType.Scala_Any)
+      case sym => (sym -> symPaths(sym).nav(ito).getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")))
+      }).toMap
+
+    clazzRType.resolveTypeParams(paramMap)
+
+  inline def inTermsOf(clazz: Class[_], ito: TraitInfo): Transporter.RType = 
+    val clazzRType = of(clazz)
     val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
     val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path(Nil)) ).toMap, Some(ito))
 
@@ -127,18 +140,18 @@ object RType:
           cache.put(tName, SelfRefRType(className))
           val reflectedRType = TastyReflection.reflectOnType(reflect)(aType, tName, resolveTypeSyms)
           cache.put(tName, reflectedRType)
-          // println(s"Cache (${cache.size}) put [$tName] -> "+reflectedRType)
           reflectedRType
       })
     }
 
   // Need a full name inclusive of type parameters and correcting for Enumeration's class name erasure.
   // This name is used for RType.equals so caching works.
-  def typeName(reflect: Reflection)( aType: reflect.Type): String =
+  def typeName(reflect: Reflection)(aType: reflect.Type): String =
     import reflect.{_, given _}
     val name = aType.asInstanceOf[TypeRef] match {
       case sym if aType.typeSymbol.flags.is(Flags.Param) => sym.name
-      case AppliedType(t,tob) => typeName(reflect)(t) + tob.map( oneTob => typeName(reflect)(oneTob.asInstanceOf[TypeRef])).mkString("[",",","]")
+      case AppliedType(t,tob) => 
+        typeName(reflect)(t) + tob.map( oneTob => typeName(reflect)(oneTob.asInstanceOf[TypeRef])).mkString("[",",","]")
       case AndType(left, right) => INTERSECTION_CLASS + "[" + typeName(reflect)(left.asInstanceOf[TypeRef]) + "," + typeName(reflect)(right.asInstanceOf[TypeRef]) + "]"
       case OrType(left, right) => UNION_CLASS + "[" + typeName(reflect)(left.asInstanceOf[TypeRef]) + "," + typeName(reflect)(right.asInstanceOf[TypeRef]) + "]"
       case _ => aType.classSymbol.get.fullName

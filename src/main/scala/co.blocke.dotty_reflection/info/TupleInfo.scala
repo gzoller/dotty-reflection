@@ -3,6 +3,7 @@ package info
 
 import scala.tasty.Reflection
 import Transporter.AppliedRType
+import impl.{Path, TuplePathElement}
 
 
 case class TupleInfo protected[dotty_reflection](
@@ -46,7 +47,20 @@ case class TupleInfo protected[dotty_reflection](
       this.copy(_tupleTypes = resolvedTupleTypes)
     else
       this
-  
+
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    tupleTypes.zipWithIndex.foldLeft( (Map.empty[TypeSymbol,Path], findSyms) ){ (acc, item) =>
+      val (foundSoFar, notYetFound) = acc
+      item match {
+        case (ts:TypeSymbolInfo, i: Int) if notYetFound.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+          val sym = ts.name.asInstanceOf[TypeSymbol]
+          (foundSoFar + (sym -> notYetFound(sym).push(TuplePathElement(i))), notYetFound - sym)
+        case (other: Transporter.RType, i: Int) =>
+          val (fsf2, nyf2) = other.findPaths( notYetFound.map( (k,v) => k -> v.push(TuplePathElement(i))) )
+          (fsf2 ++ foundSoFar, nyf2)
+      }
+    }
+
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"""(\n${tupleTypes.map(_.show(newTab,name :: seenBefore)).mkString}""" + tabs(tab) + ")\n"

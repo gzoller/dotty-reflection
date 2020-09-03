@@ -1,0 +1,21 @@
+package co.blocke.dotty_reflection
+import impl._
+
+
+trait T1[X] { val x: X }
+case class TFoo1[A](x: A, b: Int) extends T1[A]
+trait T2 { val name: String }
+case class TBar1(name: String) extends T2
+
+
+object RunMe extends App:
+
+  // val inst: T1[Boolean] = TFoo1(false, 19)
+  val c1 = Class.forName("co.blocke.dotty_reflection.TFoo1")
+  println(RType.inTermsOf[T1[Boolean]](c1))
+
+  // val inst: T1[T2] = TFoo1(TBar1("Fred"), 19)
+  val c2 = Class.forName("co.blocke.dotty_reflection.TBar1")
+  println(RType.inTermsOf[T1[T2]](c1))
+
+  println("done.")
