@@ -20,13 +20,13 @@ This project seeks to accomplish two goals:
 
   
 
-#### So what does it actually do???
+#### So what does it actually do?
 
-This library is used to reflect on a class you provide and return high-level abstractions ("Info" classes) describing what was found by diving into the class and pulling out anything "interesting". It does the work of combing through Dotty reflection internals, so you don't have to.
+This library is used to reflect on a class you provide and return high-level abstractions ("Info" classes) describing what was found by diving into the class and pulling out anything interesting. It does the work of combing through Dotty reflection internals, so you don't have to.
 
   
 
-Full disclosure, this project is designed expressly to facilitate migration of ScalaJack, which is a heavy user of Scala runtime reflection, to Dotty, so the things pulled into the abstraction are driven by ScalaJack's needs. That said, there's quite a bit there.
+Full disclosure, this project is designed expressly to facilitate migration of ScalaJack to Dotty, which is a heavy user of Scala runtime reflection, so the things pulled into the abstraction are driven by ScalaJack's needs. That said, there's quite a bit there.
 
   
 
@@ -34,7 +34,7 @@ Full disclosure, this project is designed expressly to facilitate migration of S
 
 * This library is highly-experimental and subject to major change/breakage
 
-* The goal initially is to get this functionality working, not wind awards for beauty. **If you have better ways to do the same thing, please submit a PR!**
+* The goal initially is to get this functionality working, not win awards for beauty. **If you have better ways to do the same thing, please submit a PR!**
 
   
 
@@ -60,57 +60,48 @@ For Tasty Inspection:
 
 import co.blocke.dotty_reflection
 
-  
+case class Thing(a: String)
 
-case  class  Thing(a: String)
-
-  
-
-val  artifact: ConcreteType = RType.of[Thing]
-
-// Concrete type here is typically a ScalaCaseClassInfo or JavaClassInfo but could be something else if you reflected on, say, List[Foo], in which case you'd
-
-// get back a SeqLikeInfo.
-
-  
+val artifact: Transporter.RType = RType.of[Thing] // compile-time type specification
+// In this case returned value would be ScalaCaseClassInfo
 
 // Alternatively, if you have the Class instance:
-
-val  art2: ConcreteType = RType.of(clazz)
+val art2: ConcreteType = RType.of(clazz) // run-time type specification
 
 ```
-
-  
 
 If you want to see a class in terms of a trait (used by ScalaJack's type hint/trait functionality), you can do this:
 
 ```scala
 
-val  rt = RType.inTermsOf[MyTrait](myTraitImplClazz) // where myTraitImplClazz is the class of something that implements MyTrait.
-
-  
+val rt = RType.inTermsOf[MyTrait](myTraitImplClazz) 
+// where myTraitImplClazz is a class that implements MyTrait.
 
 // Parameter substitution works for parameterized types:
-
-val  rt2 = RType.inTermsOf[MyTrait2[Option[String]]](myTraitImplClazz2)
+val rt2 = RType.inTermsOf[MyTrait2[Option[String]]](myTraitImplClazz2)
 
 ```
 
-  
-
-From the top-level ConcreteType you get back, you can navigate into the internals of the class, which are themselves reflected items.
+From the top-level RType you get back, you can navigate into the internals of the class, which are themselves reflected items.
 
   
 
 #### Learning to Drive
 
-Because dotty-reflection uses macros to the fullest extend possible to do the hard work of reflecting on types, that means there is code running during the compile cycle. This will be non-intuitive at first. You may make a change to a class this library is reflecting on, re-run your program, and discover that either the library provides the wrong information or simply crashes with an ugly exception. What that means is that you needed to re-compile the code that triggers a re-running of the macro--this isn't always intuitive and SBT doesn't always figure it out. Maybe a more optimal way can be discovered in the future, but for now, when all else fails, re-compile everything and that often solves any reflection-related exceptions.  This is a "feature" of how macros work.
+Because dotty-reflection uses macros to the fullest extent possible to do the hard work of reflecting on types, there is code running during the compile cycle (the macros). This will be non-intuitive at first. Think of this example:
+```scala
+// File1.scala
+case class Foo(name: String)
 
-  
+// File2.scala
+val fooRType = RType.of[Foo]
+```
+In a non-macro implementation if you update Foo in File1.scala you naturally expect sbt to re-compile this file, and anything that depends on Foo, and the changes will be picked up in your program.  That's NOT necessarily what happens with macros.  Remember the macro is code that is run at cmopile-time.  File2.scala needs to be re-compiled because the RType.of macro needs to be updated if you recompile Foo class.  Unfortunately sbt doesn't pick this up!  If you don't know any better you'll just re-run your program after a change and get a spectacular exception that won't mean much to you.  The solution is you need to also recompile File2.scala.
+
 
 #### A Word about Performance
 
-Compared to pre-Dotty ScalaJack, which used Scala 2.x runtime reflection, dotty-reflection is both much faster, and much slower than before. For classes that can be reflected on at compile-time (anytime you use RType.of[...]) there's a significant performance boost with dotty-reflection. For any time the library must fall back to runtime reflection ("inspection" in Dotty-speak), RType.of(...) or RType.inTermsOf[](), performance becomes alarmingly poor. The reason is that unlike Scala 2.x, which held a lot of reflection information ready-to-go in the compiled class file, Dotty must parse the .tasty file by first reading it using file IO. For a comparison: a macro-readable class (reflection) might process in 2 or 3 milliseconds. A class that needs Dotty inspection (runtime) might be anywhere from 0.2 to 2 full seconds to process. YIKES!  dotty-reflection does cache results, so this performance hit is only the first time you reflect on a runtime class.
+Compared to pre-Dotty ScalaJack, which used Scala 2.x runtime reflection, dotty-reflection is both much faster, and much slower than before. For classes that can be reflected on at compile-time (anytime you use RType.of[...]) there's a significant performance boost with dotty-reflection. Any time the library must fall back to runtime reflection ("inspection" in Dotty-speak), RType.of(...) or RType.inTermsOf[](), performance becomes alarmingly poor. The reason is that unlike Scala 2.x, which held a lot of reflection information ready-to-go in the compiled class file, Dotty must parse the .tasty file by first reading it using file IO. For a comparison: a macro-readable class (reflection) might process in 2 or 3 milliseconds. A class that needs Dotty inspection (runtime) might be anywhere from 0.2 to 2 full seconds to process. YIKES!  dotty-reflection does cache results, so this performance hit is only the first time you reflect on a runtime class.
 
 #### Performance Update!
 Starting with version 0.2.0, there is now an included compiler plug-in that faintly mimics Scala 2's runtime reflection.  Classes compiled with this plugin have reflection information generated as part of the class, so no .tasty file reading is necessary.  YAY!  The results speak for themselves.  Here's a sample of a few of the more complex test cases:
@@ -127,9 +118,9 @@ Starting with version 0.2.0, there is now an included compiler plug-in that fain
 
 To use the compiler plugin, include this line in your build.sbt file:
 ```scala
-addCompilerPlugin("co.blocke" %% "dotty-reflection" % libVersion)
+addCompilerPlugin("co.blocke" %% "dotty-reflection" % CURRENT_VERSION)
 ```
-(where libVersion is 0.2.0 or later)
+(where CURRENT_VERSION is 0.2.0 or later)
 
 So what if you try to use dotty-reflection with a class not compiled with the plugin?  In that case the library simply falls back to .tasty-based runtime inspection.  It'll be a slower the first time a class is encountered, but it will work fine.
  
@@ -237,4 +228,5 @@ This library can handle some pretty tricky trait type resolution (see tests), bu
 #### Release Notes:
 
 0.1.0 -- Macro-enabled reflector
+
 0.2.0 -- Added optional compiler plugin for huge performance lift and true runtime reflection for RType.inTermsOf (used for trait handling in ScalaJack)
