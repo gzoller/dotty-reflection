@@ -4,97 +4,101 @@ package impl
 import info._
 
 trait PathElement:
-  def nav( rt: Option[RType] ): Option[RType]
+  def nav( rt: Transporter.RType ): Transporter.RType
 
 
 case class ClassPathElement(name: String, fieldName: String) extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case c: ScalaCaseClassInfo if c.name == name => Some(c)
-      case c: ScalaClassInfo if c.name == name => Some(c)
-      case c => None
-    }).flatMap(_.fields.find(_.name == fieldName).map(_.fieldType))
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case c: ScalaCaseClassInfo if c.name == name => c.fields.find(_.name == fieldName).map(_.fieldType).getOrElse(UnknownInfo("X"))
+      case c: ScalaClassInfo if c.name == name => c.fields.find(_.name == fieldName).map(_.fieldType).getOrElse(UnknownInfo("X"))
+      case c => UnknownInfo("X")
+    }
 
 
 case class TraitPathElement(name: String, fieldName: String) extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case t: TraitInfo if t.name == name => Some(t)
-      case _ => None
-    }).flatMap(_.fields.find(_.name == fieldName).map(_.fieldType))
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case t: TraitInfo if t.name == name => t.fields.find(_.name == fieldName).map(_.fieldType).getOrElse(UnknownInfo("X"))
+      case c => UnknownInfo("X")
+    }
 
 
 case class OptionPathElement() extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case o: ScalaOptionInfo => Some(o.optionParamType)
-      case _ => None
-    })
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case o: ScalaOptionInfo => o.optionParamType
+      case _ => UnknownInfo("X")
+    }
 
 case class TryPathElement() extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case o: TryInfo => Some(o.tryType)
-      case _ => None
-    })
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case o: TryInfo => o.tryType
+      case _ => UnknownInfo("X")
+    }
 
 case class SeqPathElement() extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case s: CollectionRType => Some(s.elementType)
-      case _ => None
-    })
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case s: CollectionRType => s.elementType
+      case _ => UnknownInfo("X")
+    }
 
 
 case class MapKeyPathElement() extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case m: MapLikeInfo => Some(m.elementType)
-      case m: JavaMapInfo => Some(m.elementType)
-      case _ => None
-    })
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case m: MapLikeInfo => m.elementType
+      case m: JavaMapInfo => m.elementType
+      case _ => UnknownInfo("X")
+    }
 
 
 case class MapValuePathElement() extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case m: MapLikeInfo => Some(m.elementType2)
-      case m: JavaMapInfo => Some(m.elementType2)
-      case _ => None
-    })
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case m: MapLikeInfo => m.elementType2
+      case m: JavaMapInfo => m.elementType2
+      case _ => UnknownInfo("X")
+    }
 
 
 case class TuplePathElement(idx: Int) extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case t: TupleInfo => Some(t.tupleTypes(idx))
-      case _ => None
-    })
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case t: TupleInfo => t.tupleTypes(idx)
+      case _ => UnknownInfo("X")
+    }
 
 
 case class LeftPathElement() extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case e: EitherInfo => Some(e.leftType)
-      case i: IntersectionInfo => Some(i.leftType)
-      case u: UnionInfo => Some(u.leftType)
-      case _ => None
-    })
-
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case e: EitherInfo => e.leftType
+      case i: IntersectionInfo => i.leftType
+      case u: UnionInfo => u.leftType
+      case _ => UnknownInfo("X")
+    }
 
 case class RightPathElement() extends PathElement:
-  def nav( rt: Option[RType] ): Option[RType] = 
-    rt.flatMap(_ match {
-      case e: EitherInfo => Some(e.rightType)
-      case i: IntersectionInfo => Some(i.rightType)
-      case u: UnionInfo => Some(u.rightType)
-      case _ => None
-    })
+  def nav( rt: Transporter.RType ): Transporter.RType = 
+    rt match {
+      case e: EitherInfo => e.rightType
+      case i: IntersectionInfo => i.rightType
+      case u: UnionInfo => u.rightType
+      case _ => UnknownInfo("X")
+    }
 
 // TODO: Java Collection support (likely build into existing)
   
 
 case class Path( p: List[PathElement] ):
-  def nav( rt: RType ): Option[RType] = 
-    p.foldLeft(Some(rt).asInstanceOf[Option[RType]]){ (item, pathElement) => pathElement.nav(item) }
+  // Tail recursion => basically an abortable foldLeft
+  def nav( rt: Transporter.RType, path: List[PathElement] = p ): Option[Transporter.RType] = 
+    rt match {
+      case u: UnknownInfo => None
+      case _ if path.isEmpty => Some(rt)
+      case _ => nav(path.head.nav(rt), path.tail)
+    }
   def push( pe: PathElement ): Path = this.copy( p = this.p :+ pe )

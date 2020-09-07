@@ -15,7 +15,7 @@ case class JavaQueueExtractor() extends TypeInfoExtractor[JavaQueueInfo]:
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    symbol: reflect.Symbol): RType = 
+    symbol: reflect.Symbol): Transporter.RType = 
       val clazz = Class.forName(symbol.fullName)
       val elementType = tob.head.asInstanceOf[reflect.Type]
       val isTypeParam = elementType.typeSymbol.flags.is(reflect.Flags.Param)

@@ -3,7 +3,7 @@ package impl
 
 import Clazzes._
 
-enum PrimitiveType(val name: String, val _infoClass: Class[_]) extends RType:
+enum PrimitiveType(val name: String, val _infoClass: Class[_]) extends Transporter.RType:
   val fullName = name
   lazy val infoClass: Class[_] = _infoClass
 
@@ -35,7 +35,7 @@ enum PrimitiveType(val name: String, val _infoClass: Class[_]) extends RType:
 
 import PrimitiveType._
 object PrimitiveType:
-  def unapply(symName: String): Option[RType] = symName match {
+  def unapply(symName: String): Option[Transporter.RType] = symName match {
     case "boolean"              => Some(Scala_Boolean)
     case "Boolean"              => Some(Scala_Boolean)
     case "scala.Boolean"        => Some(Scala_Boolean)

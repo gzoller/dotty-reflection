@@ -14,7 +14,7 @@ case class TryExtractor() extends TypeInfoExtractor[TryInfo]:
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    symbol: reflect.Symbol): RType =
+    symbol: reflect.Symbol): Transporter.RType =
 
     val tryOfType = tob.head.asInstanceOf[reflect.Type]
     val isTypeParam = tryOfType.typeSymbol.flags.is(reflect.Flags.Param)

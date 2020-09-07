@@ -11,7 +11,7 @@ import scala.util.Try
 
 object TastyReflection extends NonCaseClassReflection:
 
-  def reflectOnType(reflect: Reflection)(aType: reflect.Type, fullName: String, resolveTypeSyms: Boolean): RType = 
+  def reflectOnType(reflect: Reflection)(aType: reflect.Type, fullName: String, resolveTypeSyms: Boolean): Transporter.RType = 
     import reflect.{_, given _}
 
     scala.util.Try {
@@ -24,15 +24,15 @@ object TastyReflection extends NonCaseClassReflection:
             // Intersection Type
             //----------------------------------------
             case AndType(left,right) =>
-              val resolvedLeft: RType = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
-              val resolvedRight: RType = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
+              val resolvedLeft: Transporter.RType = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
+              val resolvedRight: Transporter.RType = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
               IntersectionInfo(INTERSECTION_CLASS, resolvedLeft, resolvedRight)
 
             // Union Type
             //----------------------------------------
             case OrType(left,right) =>
-              val resolvedLeft: RType = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
-              val resolvedRight: RType = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
+              val resolvedLeft: Transporter.RType = RType.unwindType(reflect)(left.asInstanceOf[reflect.TypeRef])
+              val resolvedRight: Transporter.RType = RType.unwindType(reflect)(right.asInstanceOf[reflect.TypeRef])
               UnionInfo(UNION_CLASS, resolvedLeft, resolvedRight)
 
             case u => 
@@ -96,7 +96,7 @@ object TastyReflection extends NonCaseClassReflection:
           //----------------------------------------
           case a @ AppliedType(t,tob) => 
             // First see if we have some sort of collection or other "wrapped" type
-            val foundType: Option[RType] = extractors.ExtractorRegistry.extractors.collectFirst {
+            val foundType: Option[Transporter.RType] = extractors.ExtractorRegistry.extractors.collectFirst {
               case e if e.matches(reflect)(classSymbol) => 
                 e.extractInfo(reflect)(t, tob, classSymbol)
             }
@@ -115,7 +115,7 @@ object TastyReflection extends NonCaseClassReflection:
     }
 
 
-  def reflectOnClass(reflect: Reflection)(typeRef: reflect.TypeRef, fullName: String, resolveTypeSyms: Boolean, appliedTob: List[reflect.TypeOrBounds] =  Nil): RType = 
+  def reflectOnClass(reflect: Reflection)(typeRef: reflect.TypeRef, fullName: String, resolveTypeSyms: Boolean, appliedTob: List[reflect.TypeOrBounds] =  Nil): Transporter.RType = 
     import reflect.{_, given _}
 
     val className = typeRef.classSymbol.get.fullName
@@ -168,7 +168,7 @@ object TastyReflection extends NonCaseClassReflection:
               }   
             }
             val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
-            val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
+            val paramMap: Map[TypeSymbol, Transporter.RType] = paramTypeSymbols.zip(actualParamTypes).toMap
 
             val traitFields = symbol.fields.map { f =>
               val fieldType = 
@@ -294,7 +294,7 @@ object TastyReflection extends NonCaseClassReflection:
           TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
         }   
       }
-      val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
+      val paramMap: Map[TypeSymbol, Transporter.RType] = paramTypeSymbols.zip(actualParamTypes).toMap
 
       if symbol.flags.is(reflect.Flags.Case) then
         // === Case Classes ===
@@ -315,10 +315,13 @@ object TastyReflection extends NonCaseClassReflection:
         ScalaCaseClassInfo(
           className,
           fullName,
+          // {if paramTypeSymbols.nonEmpty then className + actualParamTypes.map(t => t.name).mkString("[",",","]") else fullName},
+          paramTypeSymbols.toArray,
           typeMembers.toArray, 
           caseFields.toArray, 
           classAnnos, 
           classDef.parents.map(_.symbol.fullName), 
+          paramTypeSymbols.nonEmpty,
           isValueClass)
       else
         // === Non-Case Classes ===
@@ -338,10 +341,12 @@ object TastyReflection extends NonCaseClassReflection:
         inspectNonCaseClass(reflect)(
           symbol, 
           tob,
+          paramTypeSymbols.toArray,
           classDef, 
           dad,
           className,
           fullName,
+          paramTypeSymbols.nonEmpty,
           fieldDefaultMethods,
           typeMembers.toArray,
           caseFields.toArray, 
@@ -355,7 +360,7 @@ object TastyReflection extends NonCaseClassReflection:
 
 
   def reflectOnField(reflect: Reflection)(
-    fieldType: RType,
+    fieldType: Transporter.RType,
     valDef: reflect.ValDef, 
     index: Int, 
     dad: Option[ClassInfo],

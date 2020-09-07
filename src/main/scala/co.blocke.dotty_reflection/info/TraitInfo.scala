@@ -3,13 +3,14 @@ package info
 
 import scala.tasty.Reflection
 import impl._
+import Transporter.AppliedRType
 
 case class TraitInfo protected[dotty_reflection](
     name: String, 
     fields: Array[FieldInfo],
-    actualParameterTypes: Array[RType] = Array.empty[RType],
+    actualParameterTypes: Array[Transporter.RType] = Array.empty[Transporter.RType],
     paramSymbols: Array[TypeSymbol] = Array.empty[TypeSymbol],
-  ) extends RType: 
+  ) extends Transporter.RType with Transporter.AppliedRType: 
 
   val fullName: String = 
     if actualParameterTypes.size > 0 then
@@ -17,11 +18,26 @@ case class TraitInfo protected[dotty_reflection](
     else
       name
   lazy val infoClass: Class[_] = Class.forName(name)
+ 
+  override def isAppliedType: Boolean = paramSymbols.nonEmpty
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
+    TraitInfo(
+      name, 
+      fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) ),
+      actualParameterTypes.map( _ match {
+          case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => paramMap(ts.name.asInstanceOf[TypeSymbol])
+          case art: AppliedRType if art.isAppliedType => art.resolveTypeParams(paramMap)
+          case t => t
+        }),
+      paramSymbols
+      )
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    val interestingFields = referenceTrait.map{ refTrait =>
-       fields.filter(f => refTrait.fields.map(_.name).contains(f.name))
-    }.getOrElse(fields)
+    val interestingFields = referenceTrait match {
+      case Some(t:TraitInfo) => fields.filter(f => t.fields.map(_.name).contains(f.name))
+      case _ => fields
+    }
     interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
       val (found, notFound) = acc
       if notFound.nonEmpty then
@@ -58,7 +74,7 @@ case class TraitInfo protected[dotty_reflection](
           "" 
         else 
           val syms = actualParameterTypes.zip(paramSymbols)
-          " actualParamTypes: [\n"+syms.map{ (ap:RType, s:TypeSymbol) => tabs(tab+1) + s.toString+": "+ap.show(tab+2,name :: seenBefore, true) }.mkString + tabs(tab) + "]"
+          " actualParamTypes: [\n"+syms.map{ (ap:Transporter.RType, s:TypeSymbol) => tabs(tab+1) + s.toString+": "+ap.show(tab+2,name :: seenBefore, true) }.mkString + tabs(tab) + "]"
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
       + s"($name)$params with fields:\n"
       + { fields.toList.map(f => tabs(tab+1)+f.name+{if f.originalSymbol.isDefined then "["+f.originalSymbol.get.toString+"]" else ""}+": "+f.fieldType.show(tab+1, Nil, true)).mkString("") }
@@ -66,8 +82,8 @@ case class TraitInfo protected[dotty_reflection](
 
 case class SealedTraitInfo protected(
     name: String, 
-    children: Array[RType]
-  ) extends RType:
+    children: Array[Transporter.RType]
+  ) extends Transporter.RType:
 
   val fullName: String = name + children.map(_.fullName).toList.mkString("[",",","]")
   lazy val infoClass: Class[_] = Class.forName(name)

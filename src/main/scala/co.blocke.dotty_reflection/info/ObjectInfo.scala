@@ -3,7 +3,7 @@ package info
 
 case class ObjectInfo protected[dotty_reflection](
     name: String
-  ) extends RType:
+  ) extends Transporter.RType:
 
   val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)

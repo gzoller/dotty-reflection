@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 
-case class TypeMemberInfo(name: String, typeSymbol: TypeSymbol, memberType: RType) extends RType {
+case class TypeMemberInfo(name: String, typeSymbol: TypeSymbol, memberType: Transporter.RType) extends Transporter.RType {
   val fullName = name
   lazy val infoClass = impl.Clazzes.ObjectClazz
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
