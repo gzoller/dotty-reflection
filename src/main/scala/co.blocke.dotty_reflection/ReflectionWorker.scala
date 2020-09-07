@@ -35,7 +35,8 @@ class ReflectionWorkerPhase extends PluginPhase {
   override def transformTypeDef(tree: TypeDef)(implicit ctx: Context): Tree = 
     if tree.isClassDef && !tree.rhs.symbol.isStatic then  // only look at classes & traits, not objects
       // Reflect on the type (generate an RType), then serialize to string and add the S3Reflection annotation to the class.
-      val reflect = dotty.tools.dotc.tastyreflect.ReflectionImpl(ctx)
+      val reflect = new dotty.tools.dotc.quoted.reflect.ReflectionCompilerInterface(ctx) with scala.tasty.Reflection
+
       val unpackedType = tree.tpe.classSymbol.appliedRef.asInstanceOf[reflect.Type]
       val reflected = RType.unwindType(reflect)(unpackedType,false)
       val s3ReflectionClassSymbol = getClassIfDefined("co.blocke.dotty_reflection.S3Reflection")

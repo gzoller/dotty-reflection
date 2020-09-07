@@ -77,11 +77,13 @@ object RType:
   inline def of[T]: Transporter.RType = ${ ofImpl[T]() }
 
   inline def of(clazz: Class[_]): Transporter.RType = 
-    unpackAnno(clazz).getOrElse{
-      val tc = new TastyInspection(clazz)
-      tc.inspect("", List(clazz.getName))
-      tc.inspected
-    }
+    cache.getOrElse(clazz.getName,
+      unpackAnno(clazz).getOrElse{
+        val tc = new TastyInspection(clazz)
+        tc.inspect("", List(clazz.getName))
+        tc.inspected
+      }
+    )
 
   inline def inTermsOf[T](clazz: Class[_]): Transporter.RType = 
     inTermsOf(clazz, of[T].asInstanceOf[TraitInfo])
@@ -106,7 +108,6 @@ object RType:
 
   // pre-loaded with known language primitive types
   private val cache = scala.collection.mutable.Map.empty[String,Transporter.RType]
-  // private val cache = scala.collection.mutable.Map.empty[Object,RType] //new java.util.concurrent.ConcurrentHashMap[Object, RType]()
   def cacheSize = cache.size
   
   def ofImpl[T]()(implicit qctx: QuoteContext, ttype: scala.quoted.Type[T]): Expr[Transporter.RType] = 

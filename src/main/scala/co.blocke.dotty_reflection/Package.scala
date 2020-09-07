@@ -39,7 +39,7 @@ def mangleArrayClassName(tpe: Transporter.RType): String =
   "[" + mangled
 
 
-extension ListOps on [A,B](xs: List[A]) {
+extension [A,B](xs: List[A]) {
   def findMap( p: (A) => Option[B] ): Option[B] = 
     var these: List[A] = xs
     while (!these.isEmpty) {
