@@ -66,7 +66,7 @@ val artifact: Transporter.RType = RType.of[Thing] // compile-time type specifica
 // In this case returned value would be ScalaCaseClassInfo
 
 // Alternatively, if you have the Class instance:
-val art2: ConcreteType = RType.of(clazz) // run-time type specification
+val art2: myClassRType = RType.of(clazz) // run-time type specification
 
 ```
 
@@ -103,8 +103,8 @@ In a non-macro implementation if you update Foo in File1.scala you naturally exp
 
 Compared to pre-Dotty ScalaJack, which used Scala 2.x runtime reflection, dotty-reflection is both much faster, and much slower than before. For classes that can be reflected on at compile-time (anytime you use RType.of[...]) there's a significant performance boost with dotty-reflection. Any time the library must fall back to runtime reflection ("inspection" in Dotty-speak), RType.of(...) or RType.inTermsOf[](), performance becomes alarmingly poor. The reason is that unlike Scala 2.x, which held a lot of reflection information ready-to-go in the compiled class file, Dotty must parse the .tasty file by first reading it using file IO. For a comparison: a macro-readable class (reflection) might process in 2 or 3 milliseconds. A class that needs Dotty inspection (runtime) might be anywhere from 0.2 to 2 full seconds to process. YIKES!  dotty-reflection does cache results, so this performance hit is only the first time you reflect on a runtime class.
 
-#### Performance Update!
-Starting with version 0.2.0, there is now an included compiler plug-in that faintly mimics Scala 2's runtime reflection.  Classes compiled with this plugin have reflection information generated as part of the class, so no .tasty file reading is necessary.  YAY!  The results speak for themselves.  Here's a sample of a few of the more complex test cases:
+#### Performance Update! ** RECOMMENDED **
+Starting with version 0.2.0, there is now an included compiler plug-in that faintly mimics Scala 2's runtime reflection.  Classes compiled with this plugin have reflection information generated as part of the class, thus avoiding the costly .tasty file IO for runtime reflection and dramatically speeding up RType.of() and inTermsOf() calls.  YAY!  The results speak for themselves.  Here's a sample of a few of the more complex test cases:
 
 |Test| No plugin  |With Plugin  |
 |--|--|--|
@@ -229,4 +229,4 @@ This library can handle some pretty tricky trait type resolution (see tests), bu
 
 0.1.0 -- Macro-enabled reflector
 
-0.2.0 -- Added optional compiler plugin for huge performance lift and true runtime reflection for RType.inTermsOf (used for trait handling in ScalaJack)
+0.2.0 -- Added optional compiler plugin for huge performance lift and true runtime reflection for RType.inTermsOf (used for trait handling in ScalaJack).  Upgraded to Dotty 0.27.0-RC1 and JDK 13
