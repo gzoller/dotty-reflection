@@ -1,18 +1,18 @@
 package co.blocke.dotty_reflection
 import impl._
 
-trait T1[X] { val x: X }
-case class VC1(s: String) extends AnyVal
-case class Foo1[A](x: A, b: Int)
+
+trait Thing[A, B] { val a: A; val b: B }
+case class AThing[Y, X](a: X, b: Y) extends Thing[X, Y]
 
 
 object RunMe extends App:
 
-  println(RType.of[Foo1[VC1]])
-  println("------------")
-  println(RType.inTermsOf[T1[VC1]](Class.forName("co.blocke.dotty_reflection.Foo1")))
+  val c1 = Map( (AThing("a",3), AThing("b",4)) -> "foom")
+  val r = RType.inTermsOf[Map[(Thing[String,Int],Thing[String,Int]),String]](c1.getClass)
+  println(r)
 
-  // println(RType.of[Basis[Int|String]])
-
+  val r2 = RType.of[Map[(Thing[String,Boolean],Thing[String,Boolean]),String]]
+  println(r2)
 
   println("done.")

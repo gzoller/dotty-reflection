@@ -3,13 +3,14 @@ package co.blocke.dotty_reflection
 import impl._
 import info._
 import scala.tasty.Reflection
+import Transporter.AppliedRType
 
 /** Marker trait for all Scala/Java left/right types (either, intersection, union) */
-trait LeftRightRType:
-  self: RType =>
+trait LeftRightRType extends Transporter.AppliedRType:
+  self: Transporter.RType =>
 
-  lazy val leftType: RType
-  lazy val rightType: RType
+  lazy val leftType: Transporter.RType
+  lazy val rightType: Transporter.RType
 
   override def toType(reflect: Reflection): reflect.Type = 
     import reflect.{_, given _}
@@ -32,34 +33,28 @@ trait LeftRightRType:
     }
     (leftFound ++ rightFound, rightUnfound)
 
-  def _copy( left: RType, right: RType ): RType
+  def _copy( left: Transporter.RType, right: Transporter.RType ): Transporter.RType
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
-    var needsCopy = false
-    val left = leftType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
-        needsCopy = true
-        paramMap(ts.name.asInstanceOf[TypeSymbol])
-      case pt: impl.PrimitiveType => 
-        leftType
-      case other => 
-        needsCopy = true
-        other.resolveTypeParams(paramMap)
+  override def isAppliedType: Boolean = 
+    (leftType match {
+      case artL: Transporter.AppliedRType if artL.isAppliedType => true
+      case _ => false
+    }) | (rightType match {
+      case artR: Transporter.AppliedRType if artR.isAppliedType => true
+      case _ => false
+    })
+
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
+    val stage1 = leftType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => _copy(paramMap(ts.name.asInstanceOf[TypeSymbol]), rightType)
+      case art: AppliedRType if art.isAppliedType => _copy(leftType.resolveTypeParams(paramMap), rightType)
+      case _ => this
     }
-    val right = rightType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
-        needsCopy = true
-        paramMap(ts.name.asInstanceOf[TypeSymbol])
-      case pt: impl.PrimitiveType => 
-        rightType
-      case other => 
-        needsCopy = true
-        other.resolveTypeParams(paramMap)
+    rightType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => _copy(stage1.asInstanceOf[LeftRightRType].leftType, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => _copy(stage1.asInstanceOf[LeftRightRType].leftType, rightType.resolveTypeParams(paramMap))
+      case _ => stage1
     }
-    if needsCopy then
-      this._copy(left, right)
-    else
-      this
 
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 

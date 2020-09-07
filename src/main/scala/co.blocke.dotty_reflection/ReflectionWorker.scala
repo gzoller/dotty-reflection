@@ -8,16 +8,15 @@ import dotty.tools.dotc.core.Symbols._
 import dotty.tools.dotc.core.Annotations._
 import dotty.tools.dotc.core.Names._
 import dotty.tools.dotc.plugins.{PluginPhase, StandardPlugin}
-import dotty.tools.dotc.transform.Pickler
+import dotty.tools.dotc.transform.{Pickler,Flatten}
+
+import info._
+
 
 /** Compiler plugin (phase) that will tap into any TypeDefs, and identify any classes being defined.
  *  It will then pre-reflect on thta class and serialized the resultant RType into an annotation.
  *  This saves 2-6 sec of "priming" time when reflecting on a class using Tasty Inspection (runtime).
  */
-
- /* NOTE: This code is not used at all.  It's left here as a reference on how to create a Dotty compiler plugin that
-    will generate and add an annotation to a class during the compilation process.  Might be handy someday!
-  */
 
 class ReflectionWorker extends StandardPlugin {
   val name: String = "reflectionWorker"
@@ -34,10 +33,14 @@ class ReflectionWorkerPhase extends PluginPhase {
   override val runsAfter = Set(Pickler.name)
 
   override def transformTypeDef(tree: TypeDef)(implicit ctx: Context): Tree = 
-    val s3ReflectionClassSymbol = ctx.getClassIfDefined("co.blocke.dotty_reflection.S3Reflection".toTermName)
-    if tree.isClassDef then
-      val annoArg = NamedArg("rtype".toTermName, Literal(Constant("hey-o!")))
+    if tree.isClassDef && !tree.rhs.symbol.isStatic then  // only look at classes & traits, not objects
+      // Reflect on the type (generate an RType), then serialize to string and add the S3Reflection annotation to the class.
+      val reflect = new dotty.tools.dotc.quoted.reflect.ReflectionCompilerInterface(ctx) with scala.tasty.Reflection
+
+      val unpackedType = tree.tpe.classSymbol.appliedRef.asInstanceOf[reflect.Type]
+      val reflected = RType.unwindType(reflect)(unpackedType,false)
+      val s3ReflectionClassSymbol = getClassIfDefined("co.blocke.dotty_reflection.S3Reflection")
+      val annoArg = NamedArg("rtype".toTermName, Literal(Constant( reflected.serialize )))
       tree.symbol.addAnnotation(Annotation.apply(s3ReflectionClassSymbol.asInstanceOf[ClassSymbol], annoArg) )
     tree
-
 }
