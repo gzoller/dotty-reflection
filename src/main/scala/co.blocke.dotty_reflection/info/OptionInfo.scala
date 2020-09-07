@@ -43,9 +43,8 @@ case class ScalaOptionInfo protected[dotty_reflection](
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     _optionParamType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_optionParamType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => 
-        this.copy(_optionParamType = _optionParamType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => ScalaOptionInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => ScalaOptionInfo(name, _optionParamType.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -72,7 +71,7 @@ case class JavaOptionalInfo protected[dotty_reflection](
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     _optionParamType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_optionParamType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_optionParamType = _optionParamType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => JavaOptionalInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => JavaOptionalInfo(name, _optionParamType.resolveTypeParams(paramMap))
       case _ => this
     }

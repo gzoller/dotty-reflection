@@ -22,13 +22,15 @@ case class TraitInfo protected[dotty_reflection](
   override def isAppliedType: Boolean = paramSymbols.nonEmpty
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
-    this.copy( 
-      fields = fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) ),
-      actualParameterTypes = actualParameterTypes.map( _ match {
+    TraitInfo(
+      name, 
+      fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) ),
+      actualParameterTypes.map( _ match {
           case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => paramMap(ts.name.asInstanceOf[TypeSymbol])
           case art: AppliedRType if art.isAppliedType => art.resolveTypeParams(paramMap)
           case t => t
-        })
+        }),
+      paramSymbols
       )
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 

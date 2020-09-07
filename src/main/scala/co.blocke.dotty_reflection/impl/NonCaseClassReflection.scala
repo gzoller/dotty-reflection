@@ -12,6 +12,7 @@ trait NonCaseClassReflection:
   def inspectNonCaseClass(reflect: Reflection)(
     symbol:                reflect.Symbol,
     tob:                   List[reflect.TypeOrBounds],
+    paramSymbols:          Array[TypeSymbol],
     classDef:              reflect.ClassDef,
     superClass:            Option[ClassInfo],
     name:                  String,
@@ -166,6 +167,7 @@ trait NonCaseClassReflection:
     ScalaClassInfo(
       name,
       fullName,
+      paramSymbols,
       typeMembers.toArray,
       fields,
       nonConstructorFields,

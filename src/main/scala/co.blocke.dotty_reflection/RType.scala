@@ -13,7 +13,7 @@ object Transporter:
   /** A materializable type */
   trait RType extends Serializable:
     val name: String         /** typically the fully-qualified class name */
-    val fullName: String
+    val fullName: String     /** fully-qualified name w/type parameters (if AppliedType, else a copy of name) */
     override def hashCode: Int = fullName.hashCode
     override def equals(obj: Any) = this.hashCode == obj.hashCode
     lazy val infoClass: Class[_]  /** the JVM class of this type */
@@ -45,6 +45,9 @@ object Transporter:
       java.util.Base64.getEncoder().encodeToString(baos.toByteArray())
 
   
+  /** Needed because just because something is an AppliedType doesn't mean it has parameters.  For examlpe a case class could be
+   *  an applied type (isAppliedType=true) or not.  A collection is always applied.
+   */
   trait AppliedRType:
     self: Transporter.RType =>
     def isAppliedType: Boolean = true  // can be overridden to false, e.g. Scala class that isn't parameterized
@@ -81,18 +84,7 @@ object RType:
     }
 
   inline def inTermsOf[T](clazz: Class[_]): Transporter.RType = 
-    val clazzRType = of(clazz)
-    val ito = of[T].asInstanceOf[TraitInfo]
-    val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
-    val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path(Nil)) ).toMap, Some(ito))
-
-    // Now nav the symPaths into RType from ito (reference trait) then sew these as arguments into the "naked" parameterized class (applied type)
-    val paramMap = clazzSyms.map( _ match {
-      case sym if unfoundSyms.contains(sym) => (sym -> PrimitiveType.Scala_Any)
-      case sym => (sym -> symPaths(sym).nav(ito).getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")))
-      }).toMap
-
-    clazzRType.resolveTypeParams(paramMap)
+    inTermsOf(clazz, of[T].asInstanceOf[TraitInfo])
 
   inline def inTermsOf(clazz: Class[_], ito: TraitInfo): Transporter.RType = 
     val clazzRType = of(clazz)

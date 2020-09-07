@@ -20,6 +20,6 @@ case class EitherInfo protected[dotty_reflection](
     case e => e
   }
 
-  def _copy( left: Transporter.RType, right: Transporter.RType ) = this.copy(_leftType = left, _rightType = right)
+  def _copy( left: Transporter.RType, right: Transporter.RType ) = EitherInfo(name, left, right)
 
 

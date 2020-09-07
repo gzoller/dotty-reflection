@@ -56,6 +56,7 @@ trait LeftRightRType extends Transporter.AppliedRType:
       case _ => stage1
     }
 
+
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     val simpleName = this.getClass.getSimpleName match {

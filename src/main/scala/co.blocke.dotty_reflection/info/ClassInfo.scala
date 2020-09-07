@@ -12,15 +12,20 @@ trait ClassInfo extends Transporter.RType:
   def hasMixin(mixin: String): Boolean = mixins.contains(mixin)
 
 
-abstract class ScalaClassInfoBase protected[dotty_reflection] (
-    name:                   String,
-    fullName:               String,
-    _typeMembers:           Array[TypeMemberInfo],
-    _fields:                Array[FieldInfo],
-    _annotations:           Map[String, Map[String,String]],
-    _mixins:                List[String],
-    isValueClass:           Boolean
-  ) extends ClassInfo with Transporter.AppliedRType:
+trait ScalaClassInfoBase extends ClassInfo with Transporter.AppliedRType:
+  val name:                   String
+  val paramSymbols:           Array[TypeSymbol]
+  val _typeMembers:           Array[TypeMemberInfo]
+  val _fields:                Array[FieldInfo]
+  val _annotations:           Map[String, Map[String,String]]
+  val _mixins:                List[String]
+  val isValueClass:           Boolean
+
+  override def equals(obj: Any) =
+    obj match {
+      case s: ScalaClassInfoBase if s.fullName == this.fullName => s._fields.toList == this.fields.toList
+      case _ => false
+    }
 
   // All this laziness is because Java classes use a proxy that isn't resolved until runtime.
   lazy val typeMembers = _typeMembers
@@ -97,21 +102,23 @@ abstract class ScalaClassInfoBase protected[dotty_reflection] (
 case class ScalaCaseClassInfo protected[dotty_reflection] (
     name:                   String,
     fullName:               String,
+    paramSymbols:           Array[TypeSymbol],
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
     _mixins:                List[String],
     override val isAppliedType: Boolean,
     isValueClass:           Boolean
-  ) extends ScalaClassInfoBase(name, fullName, _typeMembers, _fields, _annotations, _mixins, isValueClass):
+  ) extends ScalaClassInfoBase: //(name, fullName, _typeMembers, _annotations, _mixins, isValueClass):
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
-    this.copy( _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) ))
-
+    this.copy( 
+      _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) )
+      )
 
 
 //------------------------------------------------------------
@@ -120,6 +127,7 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
 case class ScalaClassInfo protected[dotty_reflection] (
     name:                   String,
     fullName:               String,
+    paramSymbols:           Array[TypeSymbol],
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],  // constructor fields
     nonConstructorFields:   Array[ScalaFieldInfo],
@@ -127,14 +135,17 @@ case class ScalaClassInfo protected[dotty_reflection] (
     _mixins:                List[String],
     override val isAppliedType: Boolean,
     isValueClass:           Boolean
-  ) extends ScalaClassInfoBase(name, fullName, _typeMembers, _fields, _annotations, _mixins, isValueClass):
+  ) extends ScalaClassInfoBase: //(name, fullName, _typeMembers, _annotations, _mixins, isValueClass):
 
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
-    this.copy( _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) ))
+    this.copy( 
+      _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) )
+      )
+
 
   override def show(tab:Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -159,10 +170,10 @@ case class ScalaClassInfo protected[dotty_reflection] (
  *  The best we can do is capture the name of the class and materialize/reflect on the class outside of the macro, lazy-like.
  */
 case class JavaClassInfo protected[dotty_reflection] ( 
-    name: String, 
-    fullName: String,
-    paramTypes: Array[Transporter.RType], 
-    _proxy: Option[JavaClassInfoProxy] = None 
+    name:          String, 
+    fullName:      String,
+    paramTypes:    Array[Transporter.RType], 
+    _proxy:        Option[JavaClassInfoProxy] = None 
   ) extends ClassInfo:
   lazy val infoClass: Class[_] = Class.forName(name)
   private lazy val proxy = _proxy.getOrElse(impl.JavaClassInspector.inspectClass(infoClass, fullName, paramTypes).asInstanceOf[JavaClassInfoProxy])
@@ -177,9 +188,11 @@ case class JavaClassInfo protected[dotty_reflection] (
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
     val newProxy = this.proxy.copy(_fields = fields.map( f => f.resolveTypeParams(paramMap) ))
+    val classParamSyms = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
     val newFullName =
-      if proxy.paramMap.nonEmpty then
-        name + "[" + "stuff here" + "]" // TODO
+      if proxy.paramMap.nonEmpty && classParamSyms.nonEmpty then
+        val typeNames = classParamSyms.map(s => paramMap.get(s).map(_.fullName).orElse(Some(s.toString)).get).mkString("[",",","]")
+        name + typeNames
       else
         name
     this.copy(_proxy = Some(newProxy), fullName = newFullName)

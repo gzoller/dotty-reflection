@@ -44,7 +44,7 @@ case class TupleInfo protected[dotty_reflection](
       }
     )
     if needsCopy then
-      this.copy(_tupleTypes = resolvedTupleTypes)
+      TupleInfo(name, resolvedTupleTypes)
     else
       this
 

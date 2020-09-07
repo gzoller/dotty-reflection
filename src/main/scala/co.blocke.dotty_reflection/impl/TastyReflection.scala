@@ -315,6 +315,8 @@ object TastyReflection extends NonCaseClassReflection:
         ScalaCaseClassInfo(
           className,
           fullName,
+          // {if paramTypeSymbols.nonEmpty then className + actualParamTypes.map(t => t.name).mkString("[",",","]") else fullName},
+          paramTypeSymbols.toArray,
           typeMembers.toArray, 
           caseFields.toArray, 
           classAnnos, 
@@ -339,6 +341,7 @@ object TastyReflection extends NonCaseClassReflection:
         inspectNonCaseClass(reflect)(
           symbol, 
           tob,
+          paramTypeSymbols.toArray,
           classDef, 
           dad,
           className,

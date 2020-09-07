@@ -8,16 +8,18 @@ import scala.tasty.Reflection
 /** Arity 1 Collections, e.g. List, Set, Seq */
 case class SeqLikeInfo protected[dotty_reflection](
   name: String,
-  _elementType: Transporter.RType
+  _elementType: Transporter.RType,
 ) extends Transporter.RType with CollectionRType:
 
-  val fullName = name + "[" + _elementType.fullName + "]"
+  val fullName: String = name + "[" + _elementType.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
       
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
     _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        SeqLikeInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        SeqLikeInfo(name, _elementType.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -60,16 +62,19 @@ case class MapLikeInfo protected[dotty_reflection](
     
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     val stage1 = _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        MapLikeInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]), _elementType2)
+      case art: AppliedRType if art.isAppliedType => 
+        MapLikeInfo(name, _elementType.resolveTypeParams(paramMap), _elementType2)
       case _ => this
     }
     _elementType2 match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => stage1.copy(_elementType2 = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => stage1.copy(_elementType2 = _elementType2.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        MapLikeInfo(name, stage1._elementType, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        MapLikeInfo(name, stage1._elementType, _elementType2.resolveTypeParams(paramMap))
       case _ => stage1
     }
-  
 
   lazy val elementType: Transporter.RType = _elementType match {
     case e: SelfRefRType => e.resolve
@@ -99,8 +104,10 @@ case class ArrayInfo protected[dotty_reflection](
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        ArrayInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        ArrayInfo(name, _elementType.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -125,8 +132,10 @@ case class JavaSetInfo protected[dotty_reflection](
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        JavaSetInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        JavaSetInfo(name, _elementType.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -147,8 +156,10 @@ case class JavaListInfo protected[dotty_reflection](
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        JavaListInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        JavaListInfo(name, _elementType.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -169,8 +180,10 @@ case class JavaArrayInfo protected[dotty_reflection](
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        JavaArrayInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        JavaArrayInfo(name, _elementType.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -195,8 +208,10 @@ case class JavaQueueInfo protected[dotty_reflection](
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        JavaQueueInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        JavaQueueInfo(name, _elementType.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -217,8 +232,10 @@ case class JavaStackInfo protected[dotty_reflection](
       
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        JavaStackInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        JavaStackInfo(name, _elementType.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -270,13 +287,17 @@ case class JavaMapInfo protected[dotty_reflection](
 
   override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
     val stage1 = _elementType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(_elementType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(_elementType = _elementType.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        JavaMapInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]), _elementType2)
+      case art: AppliedRType if art.isAppliedType => 
+        JavaMapInfo(name, _elementType.resolveTypeParams(paramMap), _elementType2)
       case _ => this
     }
     _elementType2 match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => stage1.copy(_elementType2 = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => stage1.copy(_elementType2 = _elementType2.resolveTypeParams(paramMap))
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
+        JavaMapInfo(name, stage1._elementType, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => 
+        JavaMapInfo(name, stage1._elementType, _elementType2.resolveTypeParams(paramMap))
       case _ => stage1
     }
   
