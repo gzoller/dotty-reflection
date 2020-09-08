@@ -20,11 +20,11 @@ jobs:
       - name: Checkout repo
         if: github.event.ref_type == 'tag' && !contains(github.event.ref, 'release')
         uses: actions/checkout@v2
-      - name: Set up JDK 11
+      - name: Set up JDK 13
         if: github.event.ref_type == 'tag' && !contains(github.event.ref, 'release')
         uses: actions/setup-java@v1
         with:
-          java-version: '11.0.1'
+          java-version: '13.0.1'
       - name: Test and Release
         if: github.event.ref_type == 'tag' && !contains(github.event.ref, 'release')
         env:
