@@ -73,3 +73,42 @@ object PrimitiveType:
     case "java.lang.Number"     => Some(Java_Number)
     case _ => None
   }
+
+  def loadCache: Map[String, Transporter.RType] = 
+    Map(
+      "boolean"              -> Scala_Boolean,
+      "Boolean"              -> Scala_Boolean,
+      "scala.Boolean"        -> Scala_Boolean,
+      "java.lang.Boolean"    -> Java_Boolean,
+      "byte"                 -> Scala_Byte,
+      "Byte"                 -> Scala_Byte,
+      "scala.Byte"           -> Scala_Byte,
+      "java.lang.Byte"       -> Java_Byte,
+      "char"                 -> Scala_Char,
+      "Char"                 -> Scala_Char,
+      "scala.Char"           -> Scala_Char,
+      "java.lang.Character"  -> Java_Char,
+      "double"               -> Scala_Double,
+      "Double"               -> Scala_Double,
+      "scala.Double"         -> Scala_Double,
+      "java.lang.Double"     -> Java_Double,
+      "float"                -> Scala_Float,
+      "Float"                -> Scala_Float,
+      "scala.Float"          -> Scala_Float,
+      "java.lang.Float"      -> Java_Float,
+      "int"                  -> Scala_Int,
+      "Int"                  -> Scala_Int,
+      "scala.Int"            -> Scala_Int,
+      "java.lang.Integer"    -> Java_Int,
+      "long"                 -> Scala_Long,
+      "Long"                 -> Scala_Long,
+      "scala.Long"           -> Scala_Long,
+      "java.lang.Long"       -> Java_Long,
+      "short"                -> Scala_Short,
+      "Short"                -> Scala_Short,
+      "scala.Short"          -> Scala_Short,
+      "java.lang.Short"      -> Java_Short,
+      "java.lang.String"     -> Scala_String,
+      "java.lang.Object"     -> Java_Object,
+      "java.lang.Number"     -> Java_Number
+    )

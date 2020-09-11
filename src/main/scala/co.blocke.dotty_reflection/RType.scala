@@ -107,7 +107,7 @@ object RType:
     }
 
   // pre-loaded with known language primitive types
-  private val cache = scala.collection.mutable.Map.empty[String,Transporter.RType]
+  private val cache = scala.collection.mutable.Map.empty[String,Transporter.RType] ++ PrimitiveType.loadCache
   def cacheSize = cache.size
   
   def ofImpl[T]()(implicit qctx: QuoteContext, ttype: scala.quoted.Type[T]): Expr[Transporter.RType] = 
