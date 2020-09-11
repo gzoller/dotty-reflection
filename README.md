@@ -82,7 +82,7 @@ val pet: Pet[Boolean] = Dog("Spot",4,true)
 ```
 When serializing  pet, ScalaJack would generate JSON with a type hint like this:
 ```json
-{"_hint","com.mystuff.Dog","name":"Spot","numLegs":4,"special":true}
+{"_hint":"com.mystuff.Dog","name":"Spot","numLegs":4,"special":true}
 ```
 The hint tells ScalaJack which specific Pet class to materialize upon reading this JSON (we're expecting a Pet).  So... you'll see here we just have a class name in the hint.  How do we know the type of T?  We have to tell it:
 ```scala
