@@ -2,6 +2,16 @@ package co.blocke.dotty_reflection
 package info
 
 import scala.tasty.Reflection
+import java.nio.ByteBuffer
+
+
+object UnionInfo:
+  def fromBytes( bbuf: ByteBuffer ): UnionInfo = 
+    UnionInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
 
 case class UnionInfo protected[dotty_reflection] (
   name: String,
@@ -27,3 +37,9 @@ case class UnionInfo protected[dotty_reflection] (
   def _copy( left: Transporter.RType, right: Transporter.RType ) = this.copy(_leftType = left, _rightType = right)
 
   lazy val infoClass: Class[_] = impl.Clazzes.AnyClazz
+
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( UNION_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _leftType)
+    RTypeByteEngine.write(bbuf, _rightType)

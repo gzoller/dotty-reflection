@@ -2,6 +2,15 @@ package co.blocke.dotty_reflection
 package info
 
 import scala.tasty.Reflection
+import java.nio.ByteBuffer
+
+object IntersectionInfo:
+  def fromBytes( bbuf: ByteBuffer ): IntersectionInfo = 
+    IntersectionInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
 
 case class IntersectionInfo protected[dotty_reflection](
   name: String,
@@ -27,3 +36,9 @@ case class IntersectionInfo protected[dotty_reflection](
       AndType(leftType.toType(reflect), rightType.toType(reflect))  
 
     def _copy( left: Transporter.RType, right: Transporter.RType ) = this.copy(_leftType = left, _rightType = right)
+    
+    def toBytes( bbuf: ByteBuffer ): Unit = 
+      bbuf.put( INTERSECTION_INFO )
+      StringByteEngine.write(bbuf, name)
+      RTypeByteEngine.write(bbuf, _leftType)
+      RTypeByteEngine.write(bbuf, _rightType)

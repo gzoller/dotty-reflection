@@ -6,11 +6,19 @@ import java.util.Optional
 import impl._
 import scala.tasty.Reflection
 import Transporter.AppliedRType
+import java.nio.ByteBuffer
 
 
 trait OptionInfo extends Transporter.RType with Transporter.AppliedRType:
   lazy val optionParamType: Transporter.RType
 
+
+object ScalaOptionInfo:
+  def fromBytes( bbuf: ByteBuffer ): ScalaOptionInfo =
+    ScalaOptionInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
 
 case class ScalaOptionInfo protected[dotty_reflection](
   name: String,
@@ -48,6 +56,18 @@ case class ScalaOptionInfo protected[dotty_reflection](
       case _ => this
     }
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( OPTION_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _optionParamType)
+
+
+object JavaOptionalInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaOptionalInfo =
+    JavaOptionalInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
 
 case class JavaOptionalInfo protected[dotty_reflection](
   name: String,
@@ -75,3 +95,8 @@ case class JavaOptionalInfo protected[dotty_reflection](
       case art: AppliedRType if art.isAppliedType => JavaOptionalInfo(name, _optionParamType.resolveTypeParams(paramMap))
       case _ => this
     }
+
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( OPTIONAL_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _optionParamType)

@@ -1,0 +1,49 @@
+package co.blocke.dotty_reflection
+package bytes
+
+import java.nio.ByteBuffer
+import scala.reflect.ClassTag
+
+
+case class BooleanBytes() extends Bytes[Boolean]:
+  def write( bbuf: ByteBuffer, t: Boolean ): Unit = bbuf.putShort( if t then 1 else 0 )
+  def read( bbuf: ByteBuffer ): Boolean = if bbuf.getShort() == 1 then true else false
+
+case class ByteBytes() extends Bytes[Byte]:
+  def write( bbuf: ByteBuffer, t: Byte ): Unit = bbuf.put( t )
+  def read( bbuf: ByteBuffer ): Byte = bbuf.get()
+
+case class CharBytes() extends Bytes[Char]:
+  def write( bbuf: ByteBuffer, t: Char ): Unit = bbuf.putChar( t )
+  def read( bbuf: ByteBuffer ): Char = bbuf.getChar()
+
+case class DoubleBytes() extends Bytes[Double]:
+  def write( bbuf: ByteBuffer, t: Double ): Unit = bbuf.putDouble( t )
+  def read( bbuf: ByteBuffer ): Double = bbuf.getDouble()
+
+case class FloatBytes() extends Bytes[Float]:
+  def write( bbuf: ByteBuffer, t: Float ): Unit = bbuf.putFloat( t )
+  def read( bbuf: ByteBuffer ): Float = bbuf.getFloat()
+
+case class IntBytes() extends Bytes[Int]:
+  def write( bbuf: ByteBuffer, t: Int ): Unit = bbuf.putInt( t )
+  def read( bbuf: ByteBuffer ): Int = bbuf.getInt()
+
+case class LongBytes() extends Bytes[Long]:
+  def write( bbuf: ByteBuffer, t: Long ): Unit = bbuf.putLong( t )
+  def read( bbuf: ByteBuffer ): Long = bbuf.getLong()
+
+case class ShortBytes() extends Bytes[Short]:
+  def write( bbuf: ByteBuffer, t: Short ): Unit = bbuf.putShort( t )
+  def read( bbuf: ByteBuffer ): Short = bbuf.getShort()
+
+case class StringBytes() extends Bytes[String]:
+  def write( bbuf: ByteBuffer, t: String ): Unit = 
+    bbuf.putInt( t.length )
+    bbuf.put(t.getBytes)
+
+  def read( bbuf: ByteBuffer ): String =
+    val len = bbuf.getInt()
+    val byteArray = new Array[Byte](len)
+    bbuf.get( byteArray, 0, len )
+    new String(byteArray, 0, len)

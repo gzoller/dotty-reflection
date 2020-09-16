@@ -4,7 +4,15 @@ package info
 import scala.tasty.Reflection
 import Transporter.AppliedRType
 import impl.{Path, TuplePathElement}
+import java.nio.ByteBuffer
 
+
+object TupleInfo:
+  def fromBytes( bbuf: ByteBuffer ): TupleInfo = 
+    TupleInfo(
+      StringByteEngine.read(bbuf),
+      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf)
+      )
 
 case class TupleInfo protected[dotty_reflection](
   name: String,
@@ -64,3 +72,8 @@ case class TupleInfo protected[dotty_reflection](
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"""(\n${tupleTypes.map(_.show(newTab,name :: seenBefore)).mkString}""" + tabs(tab) + ")\n"
+
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( TUPLE_INFO )
+    StringByteEngine.write(bbuf, name)
+    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, _tupleTypes)

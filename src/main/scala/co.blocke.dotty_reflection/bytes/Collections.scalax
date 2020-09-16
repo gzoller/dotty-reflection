@@ -1,0 +1,35 @@
+package co.blocke.dotty_reflection
+package bytes
+
+import java.nio.ByteBuffer
+import scala.reflect.ClassTag
+
+
+case class SeqBytes[T:ClassTag]( elementRW: ByteReadWriter[T] ) extends Bytes[Seq[T]]:
+  def write( bbuf: ByteBuffer, t: Seq[T] ): Unit =
+    val sb = StringBytes()
+    sb.write(bbuf, t.getClass.getName)
+    bbuf.putInt( t.length )
+    t.foreach( one => elementRW.write(bbuf, one) )
+  
+  def read( bbuf: ByteBuffer): Seq[T] =
+    val sb = StringBytes()
+    val className = sb.read(bbuf)
+    val len = bbuf.getInt()
+    val clazz = Class.forName(className)
+    val companionClass = Class.forName(clazz.getName+"$")
+    val companionInstance = companionClass.getField("MODULE$").get(companionClass)
+    val builderMethod = companionClass.getMethod("newBuilder")
+    val builder = builderMethod.invoke(companionInstance).asInstanceOf[scala.collection.mutable.Builder[T,Seq[T]]]
+    (0 to len-1).map(_ => builder += elementRW.read(bbuf)).toArray
+    builder.result
+
+
+case class ArrayBytes[T:ClassTag]( elementRW: ByteReadWriter[T] ) extends Bytes[Array[T]]:
+  def write( bbuf: ByteBuffer, t: Array[T] ): Unit =
+    bbuf.putInt( t.length )
+    t.foreach( one => elementRW.write(bbuf, one) )
+  
+  def read( bbuf: ByteBuffer): Array[T] =
+    val len = bbuf.getInt()
+    (0 to len-1).map(_ => elementRW.read(bbuf)).toArray

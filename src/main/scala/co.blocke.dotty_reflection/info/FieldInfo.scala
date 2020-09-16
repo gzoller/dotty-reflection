@@ -3,6 +3,8 @@ package info
 
 import java.lang.reflect.Method
 import Transporter.AppliedRType
+import java.nio.ByteBuffer
+
 
 trait FieldInfo extends Serializable:
   val index:                Int
@@ -26,6 +28,19 @@ trait FieldInfo extends Serializable:
       + fieldType.show(newTab,name :: seenBefore,true) 
       + { if annotations.nonEmpty then tabs(newTab) + "annotations: " + annotations.toString + "\n" else "" }
 
+//------------------------------------------------------------
+
+object ScalaFieldInfo:
+  def fromBytes( bbuf: ByteBuffer ): ScalaFieldInfo =
+    ScalaFieldInfo(
+      bbuf.getInt(),
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf),
+      MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).read(bbuf),
+      OptionByteEngine[Array[String]](ArrayByteEngine[String](StringByteEngine)).read(bbuf).map(found => (found(0),found(1))),
+      OptionByteEngine[String](StringByteEngine).read(bbuf).asInstanceOf[Option[TypeSymbol]],
+      BooleanByteEngine.read(bbuf)
+      )
 
 case class ScalaFieldInfo(
   index:                    Int,
@@ -68,6 +83,30 @@ case class ScalaFieldInfo(
       case info => info.infoClass
     }
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( SCALA_FIELD_INFO )
+    bbuf.putInt(index)
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, fieldType)
+    MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).write(bbuf, annotations)
+    OptionByteEngine[Array[String]](ArrayByteEngine[String](StringByteEngine)).write(bbuf, defaultValueAccessorName.map( dvan => Array(dvan._1, dvan._2)))
+    OptionByteEngine[String](StringByteEngine).write(bbuf, originalSymbol.asInstanceOf[Option[String]])
+    BooleanByteEngine.write(bbuf, isNonConstructorField)
+
+//------------------------------------------------------------
+
+object JavaFieldInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaFieldInfo =
+    JavaFieldInfo(
+      bbuf.getInt(),
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf),
+      MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).read(bbuf),
+      ObjectByteEngine.read(bbuf).asInstanceOf[Method],
+      ObjectByteEngine.read(bbuf).asInstanceOf[Method],
+      OptionByteEngine[String](StringByteEngine).read(bbuf).asInstanceOf[Option[TypeSymbol]]
+      )
+
 /* This is also used for plain-class getter/setter fields */
 case class JavaFieldInfo(
   index:           Int,
@@ -89,3 +128,12 @@ case class JavaFieldInfo(
       case other => this.copy(fieldType = other.resolveTypeParams(paramMap))
     }
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( JAVA_FIELD_INFO )
+    bbuf.putInt(index)
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, fieldType)
+    MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).write(bbuf, annotations)
+    ObjectByteEngine.write(bbuf, valueAccessor)
+    ObjectByteEngine.write(bbuf, valueSetter)
+    OptionByteEngine[String](StringByteEngine).write(bbuf, originalSymbol.asInstanceOf[Option[String]])

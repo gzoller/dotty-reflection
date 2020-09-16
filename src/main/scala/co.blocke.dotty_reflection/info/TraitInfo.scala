@@ -4,6 +4,17 @@ package info
 import scala.tasty.Reflection
 import impl._
 import Transporter.AppliedRType
+import java.nio.ByteBuffer
+
+
+object TraitInfo:
+  def fromBytes( bbuf: ByteBuffer ): TraitInfo = 
+    TraitInfo(
+      StringByteEngine.read(bbuf),
+      ArrayByteEngine[FieldInfo](FieldInfoByteEngine).read(bbuf),
+      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf),
+      ArrayByteEngine[String](StringByteEngine).read(bbuf).map(_.asInstanceOf[TypeSymbol])
+      )
 
 case class TraitInfo protected[dotty_reflection](
     name: String, 
@@ -79,6 +90,21 @@ case class TraitInfo protected[dotty_reflection](
       + s"($name)$params with fields:\n"
       + { fields.toList.map(f => tabs(tab+1)+f.name+{if f.originalSymbol.isDefined then "["+f.originalSymbol.get.toString+"]" else ""}+": "+f.fieldType.show(tab+1, Nil, true)).mkString("") }
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( TRAIT_INFO )
+    StringByteEngine.write(bbuf, name)
+    ArrayByteEngine[FieldInfo](FieldInfoByteEngine).write(bbuf, fields)
+    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, actualParameterTypes)
+    ArrayByteEngine[String](StringByteEngine).write(bbuf, paramSymbols.asInstanceOf[Array[String]])
+
+//------------------------------------------------------------
+
+object SealedTraitInfo:
+  def fromBytes( bbuf: ByteBuffer ): SealedTraitInfo = 
+    SealedTraitInfo(
+      StringByteEngine.read(bbuf),
+      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf)
+      )
 
 case class SealedTraitInfo protected(
     name: String, 
@@ -96,4 +122,10 @@ case class SealedTraitInfo protected(
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
       + s"($name)"
       + {if children.isEmpty then "\n" else ":\n"+ tabs(newTab) + "children:\n" + children.map(_.show(newTab+1,name :: seenBefore)).mkString}
+
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( SEALED_TRAIT_INFO )
+    StringByteEngine.write(bbuf, name)
+    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, children)
+    
   

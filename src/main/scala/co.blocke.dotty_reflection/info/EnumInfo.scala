@@ -1,11 +1,13 @@
 package co.blocke.dotty_reflection
 package info
 
+import java.nio.ByteBuffer
+
 /** Something to smooth the differences between the 2.x Enumeration class and the 3.x Enum class
  */
 trait EnumInfo extends Transporter.RType:
   lazy val infoClass: Class[_]
-  val values: List[String]
+  val values: Array[String]
   def ordinal(s: String): Int
   def valueOf(s: String): Any
   def valueOf(i: Int): Any
@@ -13,10 +15,18 @@ trait EnumInfo extends Transporter.RType:
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName + s"($name) with values [${values.map(_.toString).mkString(",")}]\n"
 
+//---------------------------------------------------------
+
+object ScalaEnumInfo:
+  def fromBytes( bbuf: ByteBuffer ): ScalaEnumInfo = 
+    ScalaEnumInfo(
+      StringByteEngine.read(bbuf),
+      ArrayByteEngine[String](StringByteEngine).read(bbuf)
+      )
 
 case class ScalaEnumInfo protected[dotty_reflection](
   name: String,
-  values: List[String]
+  values: Array[String]
 ) extends EnumInfo: 
   val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
@@ -29,10 +39,23 @@ case class ScalaEnumInfo protected[dotty_reflection](
   def valueOf(s: String): Any = valueOfMethod.invoke(null,s)
   def valueOf(i: Int): Any = valuesMethod.invoke(null).asInstanceOf[Array[Object]].find(e => ordinalMethod.invoke(e).asInstanceOf[Int] == i).get
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( ENUM_INFO )
+    StringByteEngine.write(bbuf, name)
+    ArrayByteEngine[String](StringByteEngine).write(bbuf, values)
+
+//---------------------------------------------------------
+
+object ScalaEnumerationInfo:
+  def fromBytes( bbuf: ByteBuffer ): ScalaEnumerationInfo = 
+    ScalaEnumerationInfo(
+      StringByteEngine.read(bbuf),
+      ArrayByteEngine[String](StringByteEngine).read(bbuf)
+      )
 
 case class ScalaEnumerationInfo protected[dotty_reflection](
   name: String,
-  values: List[String]
+  values: Array[String]
 ) extends EnumInfo:
   val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
@@ -44,6 +67,18 @@ case class ScalaEnumerationInfo protected[dotty_reflection](
   def valueOf(s: String): Any = withNameMethod.invoke(null,s)
   def valueOf(i: Int): Any = applyMethod.invoke(null,i.asInstanceOf[Object])
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( ENUMERATION_INFO )
+    StringByteEngine.write(bbuf, name)
+    ArrayByteEngine[String](StringByteEngine).write(bbuf, values)
+
+//---------------------------------------------------------
+
+object JavaEnumInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaEnumInfo = 
+    JavaEnumInfo(
+      StringByteEngine.read(bbuf)
+      )
 
 case class JavaEnumInfo protected[dotty_reflection](
   name: String,
@@ -54,3 +89,8 @@ case class JavaEnumInfo protected[dotty_reflection](
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName +s"(${infoClass.getName})\n"
+
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( JAVA_ENUM_INFO )
+    StringByteEngine.write(bbuf, name)
+  

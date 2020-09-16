@@ -5,6 +5,15 @@ import scala.util.Try
 import impl._
 import scala.tasty.Reflection
 import Transporter.AppliedRType
+import java.nio.ByteBuffer
+
+
+object TryInfo:
+  def fromBytes( bbuf: ByteBuffer ): TryInfo =
+    TryInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
 
 case class TryInfo protected[dotty_reflection](
   name: String,
@@ -41,3 +50,8 @@ case class TryInfo protected[dotty_reflection](
       case art: AppliedRType if art.isAppliedType => TryInfo(name, _tryType.resolveTypeParams(paramMap))
       case _ => this
     }
+
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( TRY_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _tryType)

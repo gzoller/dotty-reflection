@@ -4,8 +4,16 @@ package info
 import impl._
 import Transporter.AppliedRType
 import scala.tasty.Reflection
+import java.nio.ByteBuffer
 
 /** Arity 1 Collections, e.g. List, Set, Seq */
+object SeqLikeInfo:
+  def fromBytes( bbuf: ByteBuffer ): SeqLikeInfo =
+    SeqLikeInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class SeqLikeInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType,
@@ -28,8 +36,21 @@ case class SeqLikeInfo protected[dotty_reflection](
     case e => e
   }
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( SEQLIKE_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
+
 
 /** Arity 2 Collections, Map flavors, basiclly */
+object MapLikeInfo:
+  def fromBytes( bbuf: ByteBuffer ): MapLikeInfo =
+    MapLikeInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class MapLikeInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType,
@@ -92,8 +113,21 @@ case class MapLikeInfo protected[dotty_reflection](
     + elementType.show(newTab)
     + elementType2.show(newTab)
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( MAPLIKE_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
+    RTypeByteEngine.write(bbuf, _elementType2)
+
 
 /** Scala Array */
+object ArrayInfo:
+  def fromBytes( bbuf: ByteBuffer ): ArrayInfo =
+    ArrayInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class ArrayInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType
@@ -119,9 +153,21 @@ case class ArrayInfo protected[dotty_reflection](
   override def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"array of " + elementType.show(newTab,name :: seenBefore,true)
+  
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( ARRAY_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
 
 
 /** Java Set dirivative */
+object JavaSetInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaSetInfo =
+    JavaSetInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class JavaSetInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType
@@ -143,9 +189,21 @@ case class JavaSetInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+    
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( JAVA_SET_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
 
 
 /** Java List dirivative */
+object JavaListInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaListInfo =
+    JavaListInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class JavaListInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType
@@ -167,9 +225,21 @@ case class JavaListInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+     
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( JAVA_LIST_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
 
 
 /** Java Array */
+object JavaArrayInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaArrayInfo =
+    JavaArrayInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class JavaArrayInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType
@@ -195,9 +265,21 @@ case class JavaArrayInfo protected[dotty_reflection](
   override def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"array of " + elementType.show(newTab,name :: seenBefore,true)
+     
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( JAVA_ARRAY_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
 
 
 /** Java Queue dirivative */
+object JavaQueueInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaQueueInfo =
+    JavaQueueInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class JavaQueueInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType
@@ -219,9 +301,21 @@ case class JavaQueueInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+     
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( JAVA_QUEUE_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
 
 
 /** Java Stack dirivative */
+object JavaStackInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaStackInfo =
+    JavaStackInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class JavaStackInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType
@@ -243,9 +337,22 @@ case class JavaStackInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+       
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( JAVA_STACK_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
 
 
 /** Java Map dirivative */
+object JavaMapInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaMapInfo =
+    JavaMapInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
+
 case class JavaMapInfo protected[dotty_reflection](
   name: String,
   _elementType: Transporter.RType,
@@ -307,3 +414,9 @@ case class JavaMapInfo protected[dotty_reflection](
     + s"($name):\n"
     + elementType.show(newTab,name :: seenBefore)
     + elementType2.show(newTab,name :: seenBefore)
+      
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( JAVA_MAP_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _elementType)
+    RTypeByteEngine.write(bbuf, _elementType2)
