@@ -2,32 +2,34 @@ package co.blocke.dotty_reflection
 package impl
 
 import Clazzes._
+import java.nio.ByteBuffer
 
-enum PrimitiveType(val name: String, val _infoClass: Class[_]) extends Transporter.RType:
+enum PrimitiveType(val name: String, val _infoClass: Class[_], serialToken: Byte) extends RType:
   val fullName = name
   lazy val infoClass: Class[_] = _infoClass
+  def toBytes( bbuf: ByteBuffer ): Unit = bbuf.put( serialToken )
 
-  case Scala_Boolean extends PrimitiveType("scala.Boolean", BooleanClazz)
-  case Scala_Byte    extends PrimitiveType("scala.Byte", ByteClazz)
-  case Scala_Char    extends PrimitiveType("scala.Char", CharClazz)
-  case Scala_Double  extends PrimitiveType("scala.Double", DoubleClazz)
-  case Scala_Float   extends PrimitiveType("scala.Float", FloatClazz)
-  case Scala_Int     extends PrimitiveType("scala.Int", IntClazz)
-  case Scala_Long    extends PrimitiveType("scala.Long", LongClazz)
-  case Scala_Short   extends PrimitiveType("scala.Short", ShortClazz)
-  case Scala_String  extends PrimitiveType("java.lang.String", StringClazz)
-  case Scala_Any     extends PrimitiveType("scala.Any", AnyClazz)
+  case Scala_Boolean extends PrimitiveType("scala.Boolean", BooleanClazz, SCALA_BOOLEAN)
+  case Scala_Byte    extends PrimitiveType("scala.Byte", ByteClazz, SCALA_BYTE)
+  case Scala_Char    extends PrimitiveType("scala.Char", CharClazz, SCALA_CHAR)
+  case Scala_Double  extends PrimitiveType("scala.Double", DoubleClazz, SCALA_DOUBLE)
+  case Scala_Float   extends PrimitiveType("scala.Float", FloatClazz, SCALA_FLOAT)
+  case Scala_Int     extends PrimitiveType("scala.Int", IntClazz, SCALA_INT)
+  case Scala_Long    extends PrimitiveType("scala.Long", LongClazz, SCALA_LONG)
+  case Scala_Short   extends PrimitiveType("scala.Short", ShortClazz, SCALA_SHORT)
+  case Scala_String  extends PrimitiveType("java.lang.String", StringClazz, SCALA_STRING)
+  case Scala_Any     extends PrimitiveType("scala.Any", AnyClazz, SCALA_ANY)
 
-  case Java_Boolean  extends PrimitiveType("java.lang.Boolean", JBooleanClazz)
-  case Java_Byte     extends PrimitiveType("java.lang.Byte", JByteClazz)
-  case Java_Char     extends PrimitiveType("java.lang.Character", JCharacterClazz)
-  case Java_Double   extends PrimitiveType("java.lang.Double", JDoubleClazz)
-  case Java_Float    extends PrimitiveType("java.lang.Float", JFloatClazz)
-  case Java_Int      extends PrimitiveType("java.lang.Integer", JIntegerClazz)
-  case Java_Long     extends PrimitiveType("java.lang.Long", JLongClazz)
-  case Java_Short    extends PrimitiveType("java.lang.Short", JShortClazz)
-  case Java_Object   extends PrimitiveType("java.lang.Object", ObjectClazz)
-  case Java_Number   extends PrimitiveType("java.lang.Number", JNumberClazz)
+  case Java_Boolean  extends PrimitiveType("java.lang.Boolean", JBooleanClazz, JAVA_BOOLEAN)
+  case Java_Byte     extends PrimitiveType("java.lang.Byte", JByteClazz, JAVA_BYTE)
+  case Java_Char     extends PrimitiveType("java.lang.Character", JCharacterClazz, JAVA_CHAR)
+  case Java_Double   extends PrimitiveType("java.lang.Double", JDoubleClazz, JAVA_DOUBLE)
+  case Java_Float    extends PrimitiveType("java.lang.Float", JFloatClazz, JAVA_FLOAT)
+  case Java_Int      extends PrimitiveType("java.lang.Integer", JIntegerClazz, JAVA_INT)
+  case Java_Long     extends PrimitiveType("java.lang.Long", JLongClazz, JAVA_LONG)
+  case Java_Short    extends PrimitiveType("java.lang.Short", JShortClazz, JAVA_SHORT)
+  case Java_Object   extends PrimitiveType("java.lang.Object", ObjectClazz, JAVA_OBJECT)
+  case Java_Number   extends PrimitiveType("java.lang.Number", JNumberClazz, JAVA_NUMBER)
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     {if(!supressIndent) tabs(tab) else ""} + this.name + "\n"
@@ -35,7 +37,7 @@ enum PrimitiveType(val name: String, val _infoClass: Class[_]) extends Transport
 
 import PrimitiveType._
 object PrimitiveType:
-  def unapply(symName: String): Option[Transporter.RType] = symName match {
+  def unapply(symName: String): Option[RType] = symName match {
     case "boolean"              => Some(Scala_Boolean)
     case "Boolean"              => Some(Scala_Boolean)
     case "scala.Boolean"        => Some(Scala_Boolean)
@@ -73,3 +75,42 @@ object PrimitiveType:
     case "java.lang.Number"     => Some(Java_Number)
     case _ => None
   }
+
+  def loadCache: Map[String, RType] = 
+    Map(
+      "boolean"              -> Scala_Boolean,
+      "Boolean"              -> Scala_Boolean,
+      "scala.Boolean"        -> Scala_Boolean,
+      "java.lang.Boolean"    -> Java_Boolean,
+      "byte"                 -> Scala_Byte,
+      "Byte"                 -> Scala_Byte,
+      "scala.Byte"           -> Scala_Byte,
+      "java.lang.Byte"       -> Java_Byte,
+      "char"                 -> Scala_Char,
+      "Char"                 -> Scala_Char,
+      "scala.Char"           -> Scala_Char,
+      "java.lang.Character"  -> Java_Char,
+      "double"               -> Scala_Double,
+      "Double"               -> Scala_Double,
+      "scala.Double"         -> Scala_Double,
+      "java.lang.Double"     -> Java_Double,
+      "float"                -> Scala_Float,
+      "Float"                -> Scala_Float,
+      "scala.Float"          -> Scala_Float,
+      "java.lang.Float"      -> Java_Float,
+      "int"                  -> Scala_Int,
+      "Int"                  -> Scala_Int,
+      "scala.Int"            -> Scala_Int,
+      "java.lang.Integer"    -> Java_Int,
+      "long"                 -> Scala_Long,
+      "Long"                 -> Scala_Long,
+      "scala.Long"           -> Scala_Long,
+      "java.lang.Long"       -> Java_Long,
+      "short"                -> Scala_Short,
+      "Short"                -> Scala_Short,
+      "scala.Short"          -> Scala_Short,
+      "java.lang.Short"      -> Java_Short,
+      "java.lang.String"     -> Scala_String,
+      "java.lang.Object"     -> Java_Object,
+      "java.lang.Number"     -> Java_Number
+    )

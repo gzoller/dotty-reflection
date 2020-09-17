@@ -13,7 +13,7 @@ import dotty.tools.dotc.ast.Trees.AppliedTypeTree
  */
 class TastyInspection(clazz: Class[_]) extends TastyInspector:
 
-  var inspected: Transporter.RType = UnknownInfo(clazz.getName)
+  var inspected: RType = UnknownInfo(clazz.getName)
 
   protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
     import reflect.{_, given _}
