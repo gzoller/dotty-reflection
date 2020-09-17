@@ -11,9 +11,9 @@ given Liftable[TypeSymbol] {
   def toExpr(t: TypeSymbol) = '{ ${Expr(t.asInstanceOf[String])}.asInstanceOf[TypeSymbol] }
 }
 
-given Liftable[Transporter.RType] {
-  def toExpr(x: Transporter.RType) =
-    '{ RType.deserialize(${Expr(x.serialize) }).asInstanceOf[Transporter.RType] }
+given Liftable[RType] {
+  def toExpr(x: RType) =
+    '{ RType.deserialize(${Expr(x.serialize) }).asInstanceOf[RType] }
 }
 
 given Liftable[TypeMemberInfo] {

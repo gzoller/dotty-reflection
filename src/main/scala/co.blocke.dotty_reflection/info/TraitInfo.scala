@@ -3,7 +3,6 @@ package info
 
 import scala.tasty.Reflection
 import impl._
-import Transporter.AppliedRType
 import java.nio.ByteBuffer
 
 
@@ -11,17 +10,17 @@ object TraitInfo:
   def fromBytes( bbuf: ByteBuffer ): TraitInfo = 
     TraitInfo(
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[FieldInfo](FieldInfoByteEngine).read(bbuf),
-      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf),
-      ArrayByteEngine[String](StringByteEngine).read(bbuf).map(_.asInstanceOf[TypeSymbol])
+      ArrayFieldInfoByteEngine.read(bbuf),
+      ArrayRTypeByteEngine.read(bbuf),
+      ArrayStringByteEngine.read(bbuf).asInstanceOf[Array[TypeSymbol]]
       )
 
 case class TraitInfo protected[dotty_reflection](
     name: String, 
     fields: Array[FieldInfo],
-    actualParameterTypes: Array[Transporter.RType] = Array.empty[Transporter.RType],
+    actualParameterTypes: Array[RType] = Array.empty[RType],
     paramSymbols: Array[TypeSymbol] = Array.empty[TypeSymbol],
-  ) extends Transporter.RType with Transporter.AppliedRType: 
+  ) extends RType with AppliedRType: 
 
   val fullName: String = 
     if actualParameterTypes.size > 0 then
@@ -32,7 +31,7 @@ case class TraitInfo protected[dotty_reflection](
  
   override def isAppliedType: Boolean = paramSymbols.nonEmpty
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
     TraitInfo(
       name, 
       fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) ),
@@ -85,7 +84,7 @@ case class TraitInfo protected[dotty_reflection](
           "" 
         else 
           val syms = actualParameterTypes.zip(paramSymbols)
-          " actualParamTypes: [\n"+syms.map{ (ap:Transporter.RType, s:TypeSymbol) => tabs(tab+1) + s.toString+": "+ap.show(tab+2,name :: seenBefore, true) }.mkString + tabs(tab) + "]"
+          " actualParamTypes: [\n"+syms.map{ (ap:RType, s:TypeSymbol) => tabs(tab+1) + s.toString+": "+ap.show(tab+2,name :: seenBefore, true) }.mkString + tabs(tab) + "]"
       {if(!supressIndent) tabs(tab) else ""} + this.getClass.getSimpleName 
       + s"($name)$params with fields:\n"
       + { fields.toList.map(f => tabs(tab+1)+f.name+{if f.originalSymbol.isDefined then "["+f.originalSymbol.get.toString+"]" else ""}+": "+f.fieldType.show(tab+1, Nil, true)).mkString("") }
@@ -93,9 +92,9 @@ case class TraitInfo protected[dotty_reflection](
   def toBytes( bbuf: ByteBuffer ): Unit = 
     bbuf.put( TRAIT_INFO )
     StringByteEngine.write(bbuf, name)
-    ArrayByteEngine[FieldInfo](FieldInfoByteEngine).write(bbuf, fields)
-    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, actualParameterTypes)
-    ArrayByteEngine[String](StringByteEngine).write(bbuf, paramSymbols.asInstanceOf[Array[String]])
+    ArrayFieldInfoByteEngine.write(bbuf, fields)
+    ArrayRTypeByteEngine.write(bbuf, actualParameterTypes)
+    ArrayStringByteEngine.write(bbuf, paramSymbols.asInstanceOf[Array[String]])
 
 //------------------------------------------------------------
 
@@ -103,13 +102,13 @@ object SealedTraitInfo:
   def fromBytes( bbuf: ByteBuffer ): SealedTraitInfo = 
     SealedTraitInfo(
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf)
+      ArrayRTypeByteEngine.read(bbuf)
       )
 
 case class SealedTraitInfo protected(
     name: String, 
-    children: Array[Transporter.RType]
-  ) extends Transporter.RType:
+    children: Array[RType]
+  ) extends RType:
 
   val fullName: String = name + children.map(_.fullName).toList.mkString("[",",","]")
   lazy val infoClass: Class[_] = Class.forName(name)
@@ -126,6 +125,6 @@ case class SealedTraitInfo protected(
   def toBytes( bbuf: ByteBuffer ): Unit = 
     bbuf.put( SEALED_TRAIT_INFO )
     StringByteEngine.write(bbuf, name)
-    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, children)
+    ArrayRTypeByteEngine.write(bbuf, children)
     
   

@@ -14,8 +14,8 @@ object TypeMemberInfo:
 case class TypeMemberInfo(
     name: String, 
     typeSymbol: TypeSymbol, 
-    memberType: Transporter.RType
-  ) extends Transporter.RType:
+    memberType: RType
+  ) extends RType:
 
   val fullName = name
 

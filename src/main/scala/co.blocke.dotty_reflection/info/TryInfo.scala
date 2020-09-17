@@ -4,7 +4,6 @@ package info
 import scala.util.Try
 import impl._
 import scala.tasty.Reflection
-import Transporter.AppliedRType
 import java.nio.ByteBuffer
 
 
@@ -17,12 +16,12 @@ object TryInfo:
 
 case class TryInfo protected[dotty_reflection](
   name: String,
-  _tryType: Transporter.RType
-) extends Transporter.RType with Transporter.AppliedRType:
+  _tryType: RType
+) extends RType with AppliedRType:
 
   val fullName: String = name + "[" + _tryType.fullName  + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
-  lazy val tryType: Transporter.RType = _tryType match {
+  lazy val tryType: RType = _tryType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
@@ -44,7 +43,7 @@ case class TryInfo protected[dotty_reflection](
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"Try of " + tryType.show(newTab,name :: seenBefore,true)
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _tryType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => TryInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => TryInfo(name, _tryType.resolveTypeParams(paramMap))

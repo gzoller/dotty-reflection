@@ -4,7 +4,7 @@ package impl
 import Clazzes._
 import java.nio.ByteBuffer
 
-enum PrimitiveType(val name: String, val _infoClass: Class[_], serialToken: Byte) extends Transporter.RType:
+enum PrimitiveType(val name: String, val _infoClass: Class[_], serialToken: Byte) extends RType:
   val fullName = name
   lazy val infoClass: Class[_] = _infoClass
   def toBytes( bbuf: ByteBuffer ): Unit = bbuf.put( serialToken )
@@ -37,7 +37,7 @@ enum PrimitiveType(val name: String, val _infoClass: Class[_], serialToken: Byte
 
 import PrimitiveType._
 object PrimitiveType:
-  def unapply(symName: String): Option[Transporter.RType] = symName match {
+  def unapply(symName: String): Option[RType] = symName match {
     case "boolean"              => Some(Scala_Boolean)
     case "Boolean"              => Some(Scala_Boolean)
     case "scala.Boolean"        => Some(Scala_Boolean)
@@ -76,7 +76,7 @@ object PrimitiveType:
     case _ => None
   }
 
-  def loadCache: Map[String, Transporter.RType] = 
+  def loadCache: Map[String, RType] = 
     Map(
       "boolean"              -> Scala_Boolean,
       "Boolean"              -> Scala_Boolean,

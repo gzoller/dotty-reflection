@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 object TypeSymbolInfo:
   def fromBytes( bbuf: ByteBuffer ): TypeSymbolInfo = TypeSymbolInfo(StringByteEngine.read(bbuf))
 
-case class TypeSymbolInfo(name: String) extends Transporter.RType:
+case class TypeSymbolInfo(name: String) extends RType:
   val fullName = name
   lazy val infoClass = impl.Clazzes.ObjectClazz
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 

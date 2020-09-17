@@ -7,52 +7,47 @@ import scala.tasty.Reflection
 import java.io._
 import java.nio.ByteBuffer
 
-/** This object wrapper around RType is because Serializable is not viewable from inside the compiler plugin
-    code unless this is wrapped.  Don't know why--but there it is. */
-object Transporter:
+/** A materializable type */
+trait RType extends Serializable:
+  val name: String         /** typically the fully-qualified class name */
+  val fullName: String     /** fully-qualified name w/type parameters (if AppliedType, else a copy of name) */
+  override def hashCode: Int = fullName.hashCode
+  override def equals(obj: Any) = this.hashCode == obj.hashCode
+  lazy val infoClass: Class[_]  /** the JVM class of this type */
 
-  val BUFFER_MAX = 65536 // max number of bytes for serialized RType tree
+  // Take a parameterized type's normal type 'T' and map it to the declared type 'X'
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = this
 
-  /** A materializable type */
-  trait RType extends Serializable:
-    val name: String         /** typically the fully-qualified class name */
-    val fullName: String     /** fully-qualified name w/type parameters (if AppliedType, else a copy of name) */
-    override def hashCode: Int = fullName.hashCode
-    override def equals(obj: Any) = this.hashCode == obj.hashCode
-    lazy val infoClass: Class[_]  /** the JVM class of this type */
+  // Find paths to given type symbols
+  def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    (Map.empty[TypeSymbol,Path], findSyms) // (themThatsFound, themThatsStillLost)
 
-    // Take a parameterized type's normal type 'T' and map it to the declared type 'X'
-    def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = this
+  def toType(reflect: Reflection): reflect.Type = reflect.Type(infoClass)
 
-    // Find paths to given type symbols
-    def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-      (Map.empty[TypeSymbol,Path], findSyms) // (themThatsFound, themThatsStillLost)
+  def toBytes( bbuf: ByteBuffer ): Unit
 
-    def toType(reflect: Reflection): reflect.Type = reflect.Type(infoClass)
+  def show(
+    tab: Int = 0,
+    seenBefore: List[String] = Nil,
+    supressIndent: Boolean = false,
+    modified: Boolean = false // modified is "special", ie. don't show index & sort for nonconstructor fields
+    ): String  
 
-    def toBytes( bbuf: ByteBuffer ): Unit
+  override def toString(): String = show()
 
-    def show(
-      tab: Int = 0,
-      seenBefore: List[String] = Nil,
-      supressIndent: Boolean = false,
-      modified: Boolean = false // modified is "special", ie. don't show index & sort for nonconstructor fields
-      ): String  
+  /** Write the object to a Base64 string. */
+  def serialize: String =
+    val buffer = ByteBuffer.allocate(BUFFER_MAX)
+    toBytes(buffer)
+    java.util.Base64.getEncoder().encodeToString(buffer.array.slice(0, buffer.position))
 
-    override def toString(): String = show()
 
-    /** Write the object to a Base64 string. */
-    def serialize: String =
-      val buffer = ByteBuffer.allocate(BUFFER_MAX)
-      toBytes(buffer)
-      java.util.Base64.getEncoder().encodeToString(buffer.array.slice(0, buffer.position))
-  
-  /** Needed because just because something is an AppliedType doesn't mean it has parameters.  For examlpe a case class could be
-   *  an applied type (isAppliedType=true) or not.  A collection is always applied.
-   */
-  trait AppliedRType:
-    self: Transporter.RType =>
-    def isAppliedType: Boolean = true  // can be overridden to false, e.g. Scala class that isn't parameterized
+/** Needed because just because something is an AppliedType doesn't mean it has parameters.  For examlpe a case class could be
+  *  an applied type (isAppliedType=true) or not.  A collection is always applied.
+  */
+trait AppliedRType:
+  self: RType =>
+  def isAppliedType: Boolean = true  // can be overridden to false, e.g. Scala class that isn't parameterized
 
 
 // Poked this here for now.  Used for show()
@@ -64,9 +59,9 @@ object RType:
   //------------------------
   //  <<  MACRO ENTRY >>
   //------------------------
-  inline def of[T]: Transporter.RType = ${ ofImpl[T]() }
+  inline def of[T]: RType = ${ ofImpl[T]() }
 
-  inline def of(clazz: Class[_]): Transporter.RType = 
+  inline def of(clazz: Class[_]): RType = 
     cache.getOrElse(clazz.getName,
       unpackAnno(clazz).getOrElse{
         val tc = new TastyInspection(clazz)
@@ -75,10 +70,10 @@ object RType:
       }
     )
 
-  inline def inTermsOf[T](clazz: Class[_]): Transporter.RType = 
+  inline def inTermsOf[T](clazz: Class[_]): RType = 
     inTermsOf(clazz, of[T].asInstanceOf[TraitInfo])
 
-  inline def inTermsOf(clazz: Class[_], ito: TraitInfo): Transporter.RType = 
+  inline def inTermsOf(clazz: Class[_], ito: TraitInfo): RType = 
     val clazzRType = of(clazz)
     val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
     val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path(Nil)) ).toMap, Some(ito))
@@ -91,21 +86,21 @@ object RType:
 
     clazzRType.resolveTypeParams(paramMap)
 
-  inline def unpackAnno(c: Class[_]): Option[Transporter.RType] =
+  inline def unpackAnno(c: Class[_]): Option[RType] =
     c.getAnnotations.toList.collectFirst{
       case s3r: S3Reflection => RType.deserialize(s3r.rtype)
     }
 
   // pre-loaded with known language primitive types
-  private val cache = scala.collection.mutable.Map.empty[String,Transporter.RType] ++ PrimitiveType.loadCache
+  private val cache = scala.collection.mutable.Map.empty[String,RType] ++ PrimitiveType.loadCache
   def cacheSize = cache.size
   
-  def ofImpl[T]()(implicit qctx: QuoteContext, ttype: scala.quoted.Type[T]): Expr[Transporter.RType] = 
+  def ofImpl[T]()(implicit qctx: QuoteContext, ttype: scala.quoted.Type[T]): Expr[RType] = 
     import qctx.tasty.{_, given _}
     Expr( unwindType(qctx.tasty)(typeOf[T]) )
 
     
-  protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type, resolveTypeSyms: Boolean = true): Transporter.RType =
+  protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type, resolveTypeSyms: Boolean = true): RType =
     import reflect.{_, given _}
 
     val className = aType.asInstanceOf[TypeRef] match {
@@ -144,7 +139,7 @@ object RType:
       case tn => tn
     }
 
-  def fromBytes( bbuf: ByteBuffer ): Transporter.RType = 
+  def fromBytes( bbuf: ByteBuffer ): RType = 
     bbuf.get() match {
       case SCALA_BOOLEAN         => PrimitiveType.Scala_Boolean
       case SCALA_DOUBLE          => PrimitiveType.Scala_Double
@@ -200,7 +195,7 @@ object RType:
       case JAVA_NUMBER           => PrimitiveType.Java_Number
     }
 
-  def deserialize( s: String ): Transporter.RType =
+  def deserialize( s: String ): RType =
     val data = java.util.Base64.getDecoder().decode( s )
     val bbuf = ByteBuffer.wrap(data)
     fromBytes(bbuf)

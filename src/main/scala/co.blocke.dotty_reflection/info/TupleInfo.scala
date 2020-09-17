@@ -2,7 +2,6 @@ package co.blocke.dotty_reflection
 package info
 
 import scala.tasty.Reflection
-import Transporter.AppliedRType
 import impl.{Path, TuplePathElement}
 import java.nio.ByteBuffer
 
@@ -11,13 +10,13 @@ object TupleInfo:
   def fromBytes( bbuf: ByteBuffer ): TupleInfo = 
     TupleInfo(
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf)
+      ArrayRTypeByteEngine.read(bbuf)
       )
 
 case class TupleInfo protected[dotty_reflection](
   name: String,
-  _tupleTypes: Array[Transporter.RType]
-) extends Transporter.RType with Transporter.AppliedRType:
+  _tupleTypes: Array[RType]
+) extends RType with AppliedRType:
 
   val fullName: String = name + _tupleTypes.map(_.fullName).toList.mkString("[",",","]")
 
@@ -35,11 +34,11 @@ case class TupleInfo protected[dotty_reflection](
 
   override def isAppliedType: Boolean = 
     _tupleTypes.map{ _ match {
-      case artL: Transporter.AppliedRType if artL.isAppliedType => true
+      case artL: AppliedRType if artL.isAppliedType => true
       case _ => false
       }}.foldLeft(false)(_ | _)
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     var needsCopy = false
     val resolvedTupleTypes = _tupleTypes.map( one => one match {
         case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
@@ -63,7 +62,7 @@ case class TupleInfo protected[dotty_reflection](
         case (ts:TypeSymbolInfo, i: Int) if notYetFound.contains(ts.name.asInstanceOf[TypeSymbol]) => 
           val sym = ts.name.asInstanceOf[TypeSymbol]
           (foundSoFar + (sym -> notYetFound(sym).push(TuplePathElement(i))), notYetFound - sym)
-        case (other: Transporter.RType, i: Int) =>
+        case (other: RType, i: Int) =>
           val (fsf2, nyf2) = other.findPaths( notYetFound.map( (k,v) => k -> v.push(TuplePathElement(i))) )
           (fsf2 ++ foundSoFar, nyf2)
       }
@@ -76,4 +75,4 @@ case class TupleInfo protected[dotty_reflection](
   def toBytes( bbuf: ByteBuffer ): Unit = 
     bbuf.put( TUPLE_INFO )
     StringByteEngine.write(bbuf, name)
-    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, _tupleTypes)
+    ArrayRTypeByteEngine.write(bbuf, _tupleTypes)

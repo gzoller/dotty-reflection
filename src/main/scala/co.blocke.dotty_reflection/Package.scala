@@ -20,7 +20,7 @@ val typesymregx = """.*\.\_\$(.+)$""".r
 val S3ANNO = "co.blocke.dotty_reflection.S3Reflection"
 
     
-def mangleArrayClassName(tpe: Transporter.RType): String =
+def mangleArrayClassName(tpe: RType): String =
   val mangled = tpe match {
     case _: info.TypeSymbolInfo => "Ljava.lang.Object;"
     case c: info.ArrayInfo => mangleArrayClassName(c.elementType)
@@ -66,6 +66,8 @@ extension [A,B](xs: List[A]) {
     // releaseFence()  <--- Not sure why this is needed, or what it does!
     result
 }
+
+val BUFFER_MAX = 65536 // max number of bytes for serialized RType tree
 
 // Serialized Type Codes
 val SCALA_BOOLEAN        : Byte = 1

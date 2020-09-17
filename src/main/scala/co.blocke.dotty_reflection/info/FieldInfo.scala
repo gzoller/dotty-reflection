@@ -2,14 +2,13 @@ package co.blocke.dotty_reflection
 package info
 
 import java.lang.reflect.Method
-import Transporter.AppliedRType
 import java.nio.ByteBuffer
 
 
 trait FieldInfo extends Serializable:
   val index:                Int
   val name:                 String
-  val fieldType:            Transporter.RType
+  val fieldType:            RType
   val originalSymbol:       Option[TypeSymbol]
   val annotations:          Map[String,Map[String,String]]
   lazy val defaultValue:    Option[Object]
@@ -17,7 +16,7 @@ trait FieldInfo extends Serializable:
   def valueOf[T](target: T): Object
   def reIndex(i: Int): FieldInfo
 
-  def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): FieldInfo
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -36,16 +35,16 @@ object ScalaFieldInfo:
       bbuf.getInt(),
       StringByteEngine.read(bbuf),
       RTypeByteEngine.read(bbuf),
-      MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).read(bbuf),
-      OptionByteEngine[Array[String]](ArrayByteEngine[String](StringByteEngine)).read(bbuf).map(found => (found(0),found(1))),
-      OptionByteEngine[String](StringByteEngine).read(bbuf).asInstanceOf[Option[TypeSymbol]],
+      MapStringByteEngine.read(bbuf),
+      OptionArrayStringByteEngine.read(bbuf).map(found => (found(0),found(1))),
+      OptionStringByteEngine.read(bbuf).asInstanceOf[Option[TypeSymbol]],
       BooleanByteEngine.read(bbuf)
       )
 
 case class ScalaFieldInfo(
   index:                    Int,
   name:                     String,
-  fieldType:                Transporter.RType,
+  fieldType:                RType,
   annotations:              Map[String,Map[String,String]],
   defaultValueAccessorName: Option[(String,String)], // (class, method)  //Option[()=>Object],
   originalSymbol:           Option[TypeSymbol],
@@ -57,7 +56,7 @@ case class ScalaFieldInfo(
 
   def reIndex(i: Int): FieldInfo = this.copy(index = i)
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): FieldInfo = 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo = 
     fieldType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => this.copy(fieldType = fieldType.resolveTypeParams(paramMap))
@@ -72,7 +71,7 @@ case class ScalaFieldInfo(
     companion.getMethod(accessor).invoke(companionInst)
   }
 
-  private def constructorClassFor(t: Transporter.RType): Class[_] = 
+  private def constructorClassFor(t: RType): Class[_] = 
     t match {
       case _: TypeSymbolInfo => classOf[Object] // Magic: Java constructors set param type to Object if it is a parameterized type
       case info: UnionInfo => classOf[Object]  // Union-typed constructors translate to Object in Java, so...
@@ -88,9 +87,9 @@ case class ScalaFieldInfo(
     bbuf.putInt(index)
     StringByteEngine.write(bbuf, name)
     RTypeByteEngine.write(bbuf, fieldType)
-    MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).write(bbuf, annotations)
-    OptionByteEngine[Array[String]](ArrayByteEngine[String](StringByteEngine)).write(bbuf, defaultValueAccessorName.map( dvan => Array(dvan._1, dvan._2)))
-    OptionByteEngine[String](StringByteEngine).write(bbuf, originalSymbol.asInstanceOf[Option[String]])
+    MapStringByteEngine.write(bbuf, annotations)
+    OptionArrayStringByteEngine.write(bbuf, defaultValueAccessorName.map( dvan => Array(dvan._1, dvan._2)))
+    OptionStringByteEngine.write(bbuf, originalSymbol.asInstanceOf[Option[String]])
     BooleanByteEngine.write(bbuf, isNonConstructorField)
 
 //------------------------------------------------------------
@@ -101,17 +100,17 @@ object JavaFieldInfo:
       bbuf.getInt(),
       StringByteEngine.read(bbuf),
       RTypeByteEngine.read(bbuf),
-      MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).read(bbuf),
+      MapStringByteEngine.read(bbuf),
       ObjectByteEngine.read(bbuf).asInstanceOf[Method],
       ObjectByteEngine.read(bbuf).asInstanceOf[Method],
-      OptionByteEngine[String](StringByteEngine).read(bbuf).asInstanceOf[Option[TypeSymbol]]
+      OptionStringByteEngine.read(bbuf).asInstanceOf[Option[TypeSymbol]]
       )
 
 /* This is also used for plain-class getter/setter fields */
 case class JavaFieldInfo(
   index:           Int,
   name:            String,
-  fieldType:       Transporter.RType,
+  fieldType:       RType,
   annotations:     Map[String,Map[String,String]],
   valueAccessor:   Method,
   valueSetter:     Method,
@@ -121,7 +120,7 @@ case class JavaFieldInfo(
   def valueOf[T](target: T): Object = valueAccessor.invoke(target)
   def setValue[T](target: T, theValue: Object) = valueSetter.invoke(target, theValue)
   def reIndex(i: Int): FieldInfo = this.copy(index = i)
-  def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): FieldInfo = 
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo = 
     fieldType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case pt: impl.PrimitiveType => this
@@ -133,7 +132,7 @@ case class JavaFieldInfo(
     bbuf.putInt(index)
     StringByteEngine.write(bbuf, name)
     RTypeByteEngine.write(bbuf, fieldType)
-    MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).write(bbuf, annotations)
+    MapStringByteEngine.write(bbuf, annotations)
     ObjectByteEngine.write(bbuf, valueAccessor)
     ObjectByteEngine.write(bbuf, valueSetter)
-    OptionByteEngine[String](StringByteEngine).write(bbuf, originalSymbol.asInstanceOf[Option[String]])
+    OptionStringByteEngine.write(bbuf, originalSymbol.asInstanceOf[Option[String]])

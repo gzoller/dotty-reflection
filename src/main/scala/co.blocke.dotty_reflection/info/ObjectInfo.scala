@@ -11,7 +11,7 @@ object ObjectInfo:
 
 case class ObjectInfo protected[dotty_reflection](
     name: String
-  ) extends Transporter.RType:
+  ) extends RType:
 
   val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)

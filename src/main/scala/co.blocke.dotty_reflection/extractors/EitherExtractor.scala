@@ -14,7 +14,7 @@ case class EitherExtractor() extends TypeInfoExtractor[EitherInfo]:
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    symbol: reflect.Symbol): Transporter.RType =
+    symbol: reflect.Symbol): RType =
 
     val leftType = tob(0).asInstanceOf[reflect.Type]
     val leftRType = 

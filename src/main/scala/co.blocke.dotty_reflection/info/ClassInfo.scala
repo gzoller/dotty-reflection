@@ -4,7 +4,7 @@ package info
 import impl._
 import java.nio.ByteBuffer
 
-trait ClassInfo extends Transporter.RType: 
+trait ClassInfo extends RType: 
   lazy val fields:                Array[FieldInfo]
   lazy val typeMembers:           Array[TypeMemberInfo]
   lazy val annotations:           Map[String, Map[String,String]]
@@ -13,7 +13,7 @@ trait ClassInfo extends Transporter.RType:
   def hasMixin(mixin: String): Boolean = mixins.contains(mixin)
 
 
-trait ScalaClassInfoBase extends ClassInfo with Transporter.AppliedRType:
+trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
   val name:                   String
   val paramSymbols:           Array[TypeSymbol]
   val _typeMembers:           Array[TypeMemberInfo]
@@ -105,11 +105,11 @@ object ScalaCaseClassInfo:
     ScalaCaseClassInfo(
       StringByteEngine.read(bbuf),
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[String](StringByteEngine).read(bbuf).asInstanceOf[Array[TypeSymbol]],
-      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf).map(_.asInstanceOf[TypeMemberInfo]),
-      ArrayByteEngine[FieldInfo](FieldInfoByteEngine).read(bbuf),
-      MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).read(bbuf),
-      ArrayByteEngine[String](StringByteEngine).read(bbuf),
+      ArrayStringByteEngine.read(bbuf).asInstanceOf[Array[TypeSymbol]],
+      ArrayRTypeByteEngine.read(bbuf).map(_.asInstanceOf[TypeMemberInfo]),
+      ArrayFieldInfoByteEngine.read(bbuf),
+      MapStringByteEngine.read(bbuf),
+      ArrayStringByteEngine.read(bbuf),
       BooleanByteEngine.read(bbuf),
       BooleanByteEngine.read(bbuf)
       )
@@ -130,7 +130,7 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
     this.copy( 
       _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) )
       )
@@ -139,11 +139,11 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
     bbuf.put( SCALA_CASE_CLASS_INFO )
     StringByteEngine.write(bbuf, name)
     StringByteEngine.write(bbuf, fullName)
-    ArrayByteEngine[String](StringByteEngine).write(bbuf, paramSymbols.asInstanceOf[Array[String]])
-    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, _typeMembers.asInstanceOf[Array[Transporter.RType]])
-    ArrayByteEngine[FieldInfo](FieldInfoByteEngine).write(bbuf, _fields)
-    MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).write(bbuf, _annotations)
-    ArrayByteEngine[String](StringByteEngine).write(bbuf, _mixins)
+    ArrayStringByteEngine.write(bbuf, paramSymbols.asInstanceOf[Array[String]])
+    ArrayRTypeByteEngine.write(bbuf, _typeMembers.asInstanceOf[Array[RType]])
+    ArrayFieldInfoByteEngine.write(bbuf, _fields)
+    MapStringByteEngine.write(bbuf, _annotations)
+    ArrayStringByteEngine.write(bbuf, _mixins)
     BooleanByteEngine.write(bbuf, isAppliedType)
     BooleanByteEngine.write(bbuf, isValueClass)
 
@@ -154,12 +154,12 @@ object ScalaClassInfo:
     ScalaClassInfo(
       StringByteEngine.read(bbuf),
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[String](StringByteEngine).read(bbuf).asInstanceOf[Array[TypeSymbol]],
-      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf).map(_.asInstanceOf[TypeMemberInfo]),
-      ArrayByteEngine[FieldInfo](FieldInfoByteEngine).read(bbuf),
-      ArrayByteEngine[FieldInfo](FieldInfoByteEngine).read(bbuf).map(_.asInstanceOf[ScalaFieldInfo]),
-      MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).read(bbuf),
-      ArrayByteEngine[String](StringByteEngine).read(bbuf),
+      ArrayStringByteEngine.read(bbuf).asInstanceOf[Array[TypeSymbol]],
+      ArrayRTypeByteEngine.read(bbuf).map(_.asInstanceOf[TypeMemberInfo]),
+      ArrayFieldInfoByteEngine.read(bbuf),
+      ArrayFieldInfoByteEngine.read(bbuf).map(_.asInstanceOf[ScalaFieldInfo]),
+      MapStringByteEngine.read(bbuf),
+      ArrayStringByteEngine.read(bbuf),
       BooleanByteEngine.read(bbuf),
       BooleanByteEngine.read(bbuf)
       )
@@ -181,7 +181,7 @@ case class ScalaClassInfo protected[dotty_reflection] (
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
     this.copy( 
       _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) )
       )
@@ -206,12 +206,12 @@ case class ScalaClassInfo protected[dotty_reflection] (
     bbuf.put( SCALA_CLASS_INFO )
     StringByteEngine.write(bbuf, name)
     StringByteEngine.write(bbuf, fullName)
-    ArrayByteEngine[String](StringByteEngine).write(bbuf, paramSymbols.asInstanceOf[Array[String]])
-    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, _typeMembers.asInstanceOf[Array[Transporter.RType]])
-    ArrayByteEngine[FieldInfo](FieldInfoByteEngine).write(bbuf, _fields)
-    ArrayByteEngine[FieldInfo](FieldInfoByteEngine).write(bbuf, nonConstructorFields.asInstanceOf[Array[FieldInfo]])
-    MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).write(bbuf, _annotations)
-    ArrayByteEngine[String](StringByteEngine).write(bbuf, _mixins)
+    ArrayStringByteEngine.write(bbuf, paramSymbols.asInstanceOf[Array[String]])
+    ArrayRTypeByteEngine.write(bbuf, _typeMembers.asInstanceOf[Array[RType]])
+    ArrayFieldInfoByteEngine.write(bbuf, _fields)
+    ArrayFieldInfoByteEngine.write(bbuf, nonConstructorFields.asInstanceOf[Array[FieldInfo]])
+    MapStringByteEngine.write(bbuf, _annotations)
+    ArrayStringByteEngine.write(bbuf, _mixins)
     BooleanByteEngine.write(bbuf, isAppliedType)
     BooleanByteEngine.write(bbuf, isValueClass)
 
@@ -226,14 +226,14 @@ object JavaClassInfo:
     JavaClassInfo(
       StringByteEngine.read(bbuf),
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf),
-      OptionByteEngine[Transporter.RType](RTypeByteEngine).read(bbuf).map(_.asInstanceOf[JavaClassInfoProxy])
+      ArrayRTypeByteEngine.read(bbuf),
+      OptionRTypeByteEngine.read(bbuf).map(_.asInstanceOf[JavaClassInfoProxy])
       )
 
 case class JavaClassInfo protected[dotty_reflection] ( 
     name:          String, 
     fullName:      String,
-    paramTypes:    Array[Transporter.RType], 
+    paramTypes:    Array[RType], 
     _proxy:        Option[JavaClassInfoProxy] = None 
   ) extends ClassInfo:
   lazy val infoClass: Class[_] = Class.forName(name)
@@ -247,7 +247,7 @@ case class JavaClassInfo protected[dotty_reflection] (
 
   private lazy val fieldsByName = fields.map(f => (f.name, f.asInstanceOf[JavaFieldInfo])).toMap
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType =
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
     val newProxy = this.proxy.copy(_fields = fields.map( f => f.resolveTypeParams(paramMap) ))
     val classParamSyms = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
     val newFullName =
@@ -273,25 +273,25 @@ case class JavaClassInfo protected[dotty_reflection] (
     bbuf.put( JAVA_CLASS_INFO )
     StringByteEngine.write(bbuf, name)
     StringByteEngine.write(bbuf, fullName)
-    ArrayByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, paramTypes)
-    OptionByteEngine[Transporter.RType](RTypeByteEngine).write(bbuf, _proxy)
+    ArrayRTypeByteEngine.write(bbuf, paramTypes)
+    OptionRTypeByteEngine.write(bbuf, _proxy)
 
 
 object JavaClassInfoProxy:
   def fromBytes( bbuf: ByteBuffer ): JavaClassInfoProxy = 
     JavaClassInfoProxy(
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[FieldInfo](FieldInfoByteEngine).read(bbuf),
-      MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).read(bbuf),
-      MapByteEngine[String, Transporter.RType](StringByteEngine, RTypeByteEngine).read(bbuf).map( (k,v) => (k.asInstanceOf[TypeSymbol],v)).toMap
+      ArrayFieldInfoByteEngine.read(bbuf),
+      MapStringByteEngine.read(bbuf),
+      MapStringRTypeByteEngine.read(bbuf).map( (k,v) => (k.asInstanceOf[TypeSymbol],v)).toMap
       )
 
 case class JavaClassInfoProxy protected[dotty_reflection] (
     name:                   String,
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
-    paramMap:               Map[TypeSymbol, Transporter.RType]
-  ) extends Transporter.RType:
+    paramMap:               Map[TypeSymbol, RType]
+  ) extends RType:
 
   val fullName = name
   lazy val annotations = _annotations
@@ -326,6 +326,6 @@ case class JavaClassInfoProxy protected[dotty_reflection] (
   def toBytes( bbuf: ByteBuffer ): Unit = 
     bbuf.put( JAVA_CLASS_INFO_PROXY )
     StringByteEngine.write(bbuf, name)
-    ArrayByteEngine[FieldInfo](FieldInfoByteEngine).write(bbuf, _fields)
-    MapByteEngine[String,Map[String,String]](StringByteEngine, MapByteEngine[String,String](StringByteEngine,StringByteEngine)).write(bbuf, _annotations)
-    MapByteEngine[String, Transporter.RType](StringByteEngine, RTypeByteEngine).write(bbuf, paramMap.asInstanceOf[Map[String,Transporter.RType]])
+    ArrayFieldInfoByteEngine.write(bbuf, _fields)
+    MapStringByteEngine.write(bbuf, _annotations)
+    MapStringRTypeByteEngine.write(bbuf, paramMap.asInstanceOf[Map[String,RType]])

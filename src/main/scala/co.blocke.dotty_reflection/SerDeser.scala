@@ -9,46 +9,10 @@ trait BytesEngine[T]:
   def write( bbuf: ByteBuffer, t: T ): Unit
   def read( bbuf: ByteBuffer ): T
 
-/*
-Things we need to serialize:
 
-Byte -- ByteBuffer primitive
-Int -- ByteBuffer primitive
-
-// Stringish
-String
-TypeSymbol
-
-Boolean
-
-// Arrays
-Array[TypeSymbol]
-Array[TypeMemberInfo]
-Array[FieldInfo]
-Array[Transporter.RType]
-Array[String]
-
-// Maps
-Map[String,Map[String,String]]
-Map[TypeSymbol, Transporter.RType]
-
-// Option
-Option[TypeSymbol]
-Option[(String,String)]  (can be implemented as Option[List[String]])
-
-// Class
-RType
-FieldInfo
-TypeMemberInfo
-
-// Object
-Method
-*/
-
-
-object RTypeByteEngine extends BytesEngine[Transporter.RType]:
-  def write( bbuf: ByteBuffer, t: Transporter.RType ): Unit = t.toBytes(bbuf)
-  def read( bbuf: ByteBuffer ): Transporter.RType = RType.fromBytes(bbuf)
+object RTypeByteEngine extends BytesEngine[RType]:
+  def write( bbuf: ByteBuffer, t: RType ): Unit = t.toBytes(bbuf)
+  def read( bbuf: ByteBuffer ): RType = RType.fromBytes(bbuf)
 
 
 object FieldInfoByteEngine extends BytesEngine[FieldInfo]:
@@ -62,6 +26,137 @@ object FieldInfoByteEngine extends BytesEngine[FieldInfo]:
       case SCALA_FIELD_INFO => ScalaFieldInfo.fromBytes(bbuf)
       case JAVA_FIELD_INFO => JavaFieldInfo.fromBytes(bbuf)
     }
+
+
+// *** CUSTOM ***
+object MapStringByteEngine extends BytesEngine[Map[String,Map[String,String]]]:
+  def write( bbuf: ByteBuffer, t: Map[String,Map[String,String]] ): Unit =
+    bbuf.putInt( t.size )
+    t.foreach{ (k,v) => 
+      StringByteEngine.write(bbuf,k) 
+      bbuf.putInt( v.size )
+      v.foreach{ (k2, v2) => 
+        StringByteEngine.write(bbuf,k2) 
+        StringByteEngine.write(bbuf,v2) 
+      }
+    }
+
+  def read( bbuf: ByteBuffer ): Map[String,Map[String,String]] =
+    val len = bbuf.getInt()
+    (0 to len-1).map{ _ => 
+      val k = StringByteEngine.read(bbuf)
+      val vlen = bbuf.getInt()
+      val v: Map[String,String] = (0 to vlen-1).map {_ =>
+        val k2 = StringByteEngine.read(bbuf)
+        val v2 = StringByteEngine.read(bbuf)
+        (k2,v2)
+      }.toMap
+      (k,v)
+    }.toMap
+
+    
+// *** CUSTOM ***
+object MapStringRTypeByteEngine extends BytesEngine[Map[String,RType]]:
+  def write( bbuf: ByteBuffer, t: Map[String,RType] ): Unit =
+    bbuf.putInt( t.size )
+    t.foreach{ (k,v) => 
+      StringByteEngine.write(bbuf,k) 
+      RTypeByteEngine.write(bbuf,v) 
+    }
+
+  def read( bbuf: ByteBuffer ): Map[String,RType] =
+    val len = bbuf.getInt()
+    (0 to len-1).map{ _ => 
+      val k = StringByteEngine.read(bbuf)
+      val v = RTypeByteEngine.read(bbuf)
+      (k,v)
+    }.toMap
+
+
+// *** CUSTOM ***
+object ArrayStringByteEngine extends BytesEngine[Array[String]]:
+  def write( bbuf: ByteBuffer, t: Array[String] ): Unit =
+    bbuf.putInt( t.length )
+    t.foreach( one => StringByteEngine.write(bbuf, one) )
+
+  def read( bbuf: ByteBuffer ): Array[String] =
+    val len = bbuf.getInt()
+    (0 to len-1).map(_ => StringByteEngine.read(bbuf)).toArray
+
+
+// *** CUSTOM ***
+object ArrayRTypeByteEngine extends BytesEngine[Array[RType]]:
+  def write( bbuf: ByteBuffer, t: Array[RType] ): Unit =
+    bbuf.putInt( t.length )
+    t.foreach( one => RTypeByteEngine.write(bbuf, one) )
+
+  def read( bbuf: ByteBuffer ): Array[RType] =
+    val len = bbuf.getInt()
+    (0 to len-1).map(_ => RTypeByteEngine.read(bbuf)).toArray
+
+
+// *** CUSTOM ***
+object ArrayFieldInfoByteEngine extends BytesEngine[Array[FieldInfo]]:
+  def write( bbuf: ByteBuffer, t: Array[FieldInfo] ): Unit =
+    bbuf.putInt( t.length )
+    t.foreach( one => FieldInfoByteEngine.write(bbuf, one) )
+
+  def read( bbuf: ByteBuffer ): Array[FieldInfo] =
+    val len = bbuf.getInt()
+    (0 to len-1).map(_ => FieldInfoByteEngine.read(bbuf)).toArray
+
+
+// *** CUSTOM ***
+object OptionArrayStringByteEngine extends BytesEngine[Option[Array[String]]]:
+  def write( bbuf: ByteBuffer, t: Option[Array[String]] ): Unit =
+    if t.isDefined then 
+      bbuf.put(1.toByte)
+      bbuf.putInt( t.get.length )
+      t.get.foreach( one => StringByteEngine.write(bbuf, one) )
+    else
+      bbuf.put(0.toByte)
+
+  def read( bbuf: ByteBuffer ): Option[Array[String]] =
+    bbuf.get() match {
+      case 0 => None
+      case 1 => Some{
+          val len = bbuf.getInt()
+          (0 to len-1).map(_ => StringByteEngine.read(bbuf)).toArray    
+        }
+    }
+
+
+// *** CUSTOM ***
+object OptionRTypeByteEngine extends BytesEngine[Option[RType]]:
+  def write( bbuf: ByteBuffer, t: Option[RType] ): Unit =
+    if t.isDefined then 
+      bbuf.put(1.toByte)
+      RTypeByteEngine.write(bbuf, t.get)
+    else
+      bbuf.put(0.toByte)
+
+  def read( bbuf: ByteBuffer ): Option[RType] =
+    bbuf.get() match {
+      case 0 => None
+      case 1 => Some(RTypeByteEngine.read(bbuf))
+    }
+
+
+// *** CUSTOM ***
+object OptionStringByteEngine extends BytesEngine[Option[String]]:
+  def write( bbuf: ByteBuffer, t: Option[String] ): Unit =
+    if t.isDefined then 
+      bbuf.put(1.toByte)
+      StringByteEngine.write(bbuf, t.get)
+    else
+      bbuf.put(0.toByte)
+
+  def read( bbuf: ByteBuffer ): Option[String] =
+    bbuf.get() match {
+      case 0 => None
+      case 1 => Some(StringByteEngine.read(bbuf))
+    }
+
 
 
 object StringByteEngine extends BytesEngine[String]:
@@ -89,7 +184,7 @@ object BooleanByteEngine extends BytesEngine[Boolean]:
       case 1 => true
     }
 
-
+/*
 case class ArrayByteEngine[T:ClassTag](elementEngine: BytesEngine[T]) extends BytesEngine[Array[T]]:
   def write( bbuf: ByteBuffer, t: Array[T] ): Unit =
     bbuf.putInt( t.length )
@@ -130,6 +225,7 @@ case class OptionByteEngine[T](elementEngine: BytesEngine[T]) extends BytesEngin
       case 0 => None
       case 1 => Some( elementEngine.read(bbuf) )
     }
+    */
   
 
 // This one's gonna be slow, but how else are we gonna serialize a Method?

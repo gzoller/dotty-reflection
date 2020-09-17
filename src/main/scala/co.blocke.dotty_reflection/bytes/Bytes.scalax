@@ -1,8 +1,0 @@
-package co.blocke.dotty_reflection
-package bytes
-
-import java.nio.ByteBuffer
-
-trait Bytes[T]:
-  def write( bbuf: ByteBuffer, t: T ): Unit
-  def read( bbuf: ByteBuffer ): T

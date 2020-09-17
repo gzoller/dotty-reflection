@@ -13,7 +13,7 @@ object UnknownInfo:
   def fromBytes( bbuf: ByteBuffer ): UnknownInfo = UnknownInfo(StringByteEngine.read(bbuf))
 
 
-case class UnknownInfo(name: String) extends Transporter.RType:
+case class UnknownInfo(name: String) extends RType:
 
   val fullName = name
 

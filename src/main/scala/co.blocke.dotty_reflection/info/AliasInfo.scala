@@ -13,8 +13,8 @@ object AliasInfo:
 
 case class AliasInfo protected[dotty_reflection] (
     definedType: String,
-    unwrappedType: Transporter.RType // Aliases with a parameterized wrapped type are not currently supported, so ConcreteType here.
-  ) extends Transporter.RType:
+    unwrappedType: RType // Aliases with a parameterized wrapped type are not currently supported, so ConcreteType here.
+  ) extends RType:
 
     val name: String = definedType.drop(definedType.lastIndexOf('.')+1)
     val fullName = name

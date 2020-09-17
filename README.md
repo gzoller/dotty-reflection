@@ -54,7 +54,7 @@ import co.blocke.dotty_reflection
 case class Thing(a: String)
 
 // >> Compile-time reflection using square brackets for type
-val artifact: Transporter.RType = RType.of[Thing]
+val artifact: RType = RType.of[Thing]
 // In this case the returned value would be ScalaCaseClassInfo
 
 // >> Run-time reflection using parentheses for type
@@ -62,6 +62,7 @@ val artifact: Transporter.RType = RType.of[Thing]
 // from outside your system at run-time)
 val cname:String = getClassWeNeedFromSomewhere()
 val art2: myClassRType = RType.of(Class.forName(cname))
+
 // If you're using the compiler plugin, the pre-reflected ScalaCaseClassInfo will be
 // returned, otherwise file IO will read your class' .tasty file and reflect on the class,
 // which is very slow.

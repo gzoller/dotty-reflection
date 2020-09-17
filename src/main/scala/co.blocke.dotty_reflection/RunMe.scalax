@@ -1,0 +1,13 @@
+package co.blocke.dotty_reflection
+
+import java.io._ 
+import java.nio._ 
+
+case class Foom(mame:String, age:Int)
+
+object RunMe extends App:
+
+  println(RType.of[Foom])
+  
+  println("Done.")
+  

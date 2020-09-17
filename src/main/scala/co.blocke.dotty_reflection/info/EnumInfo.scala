@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 
 /** Something to smooth the differences between the 2.x Enumeration class and the 3.x Enum class
  */
-trait EnumInfo extends Transporter.RType:
+trait EnumInfo extends RType:
   lazy val infoClass: Class[_]
   val values: Array[String]
   def ordinal(s: String): Int
@@ -21,7 +21,7 @@ object ScalaEnumInfo:
   def fromBytes( bbuf: ByteBuffer ): ScalaEnumInfo = 
     ScalaEnumInfo(
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[String](StringByteEngine).read(bbuf)
+      ArrayStringByteEngine.read(bbuf)
       )
 
 case class ScalaEnumInfo protected[dotty_reflection](
@@ -42,7 +42,7 @@ case class ScalaEnumInfo protected[dotty_reflection](
   def toBytes( bbuf: ByteBuffer ): Unit = 
     bbuf.put( ENUM_INFO )
     StringByteEngine.write(bbuf, name)
-    ArrayByteEngine[String](StringByteEngine).write(bbuf, values)
+    ArrayStringByteEngine.write(bbuf, values)
 
 //---------------------------------------------------------
 
@@ -50,7 +50,7 @@ object ScalaEnumerationInfo:
   def fromBytes( bbuf: ByteBuffer ): ScalaEnumerationInfo = 
     ScalaEnumerationInfo(
       StringByteEngine.read(bbuf),
-      ArrayByteEngine[String](StringByteEngine).read(bbuf)
+      ArrayStringByteEngine.read(bbuf)
       )
 
 case class ScalaEnumerationInfo protected[dotty_reflection](
@@ -70,7 +70,7 @@ case class ScalaEnumerationInfo protected[dotty_reflection](
   def toBytes( bbuf: ByteBuffer ): Unit = 
     bbuf.put( ENUMERATION_INFO )
     StringByteEngine.write(bbuf, name)
-    ArrayByteEngine[String](StringByteEngine).write(bbuf, values)
+    ArrayStringByteEngine.write(bbuf, values)
 
 //---------------------------------------------------------
 
@@ -82,7 +82,7 @@ object JavaEnumInfo:
 
 case class JavaEnumInfo protected[dotty_reflection](
   name: String,
-) extends Transporter.RType: 
+) extends RType: 
   val fullName = name
   lazy val infoClass: Class[_] = Class.forName(name)
 

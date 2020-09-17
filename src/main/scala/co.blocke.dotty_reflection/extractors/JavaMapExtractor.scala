@@ -15,7 +15,7 @@ case class JavaMapExtractor() extends TypeInfoExtractor[JavaMapInfo]:
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
     tob: List[reflect.TypeOrBounds], 
-    symbol: reflect.Symbol): Transporter.RType = 
+    symbol: reflect.Symbol): RType = 
       val clazz = Class.forName(symbol.fullName)
 
       val leftType = tob(0).asInstanceOf[reflect.Type]

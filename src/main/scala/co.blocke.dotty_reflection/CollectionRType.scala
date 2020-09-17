@@ -5,10 +5,10 @@ import info._
 import scala.tasty.Reflection
 
 /** Marker trait for all Scala/Java collections */
-trait CollectionRType extends Transporter.AppliedRType:
-  self: Transporter.RType =>
+trait CollectionRType extends AppliedRType:
+  self: RType =>
 
-  lazy val elementType: Transporter.RType
+  lazy val elementType: RType
 
   override def toType(reflect: Reflection): reflect.Type = 
     import reflect.{_, given _}

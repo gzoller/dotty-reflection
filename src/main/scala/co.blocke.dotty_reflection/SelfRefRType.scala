@@ -10,7 +10,7 @@ import java.nio.ByteBuffer
 object SelfRefRType:
   def fromBytes( bbuf: ByteBuffer ): SelfRefRType = SelfRefRType(StringByteEngine.read(bbuf))
 
-case class SelfRefRType(name: String) extends Transporter.RType:
+case class SelfRefRType(name: String) extends RType:
   val fullName = name
   lazy val infoClass = Class.forName(name)
   def resolve = RType.of(infoClass)
