@@ -199,3 +199,4 @@ object RType:
     val data = java.util.Base64.getDecoder().decode( s )
     val bbuf = ByteBuffer.wrap(data)
     fromBytes(bbuf)
+  

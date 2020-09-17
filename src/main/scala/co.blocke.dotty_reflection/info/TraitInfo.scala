@@ -45,7 +45,9 @@ case class TraitInfo protected[dotty_reflection](
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     val interestingFields = referenceTrait match {
-      case Some(t:TraitInfo) => fields.filter(f => t.fields.map(_.name).contains(f.name))
+      case Some(t:TraitInfo) => 
+        val refTraitFieldNames = t.fields.map(_.name)
+        fields.filter(f => refTraitFieldNames.contains(f.name))
       case _ => fields
     }
     interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>

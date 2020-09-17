@@ -297,6 +297,7 @@ object TastyReflection extends NonCaseClassReflection:
       val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
 
       if symbol.flags.is(reflect.Flags.Case) then
+
         // === Case Classes ===
         val caseFields = classDef.constructor.paramss.head.zipWithIndex.map{ (valDef, idx) => 
           val fieldType = scala.util.Try{ 

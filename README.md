@@ -1,21 +1,21 @@
 
 # Dotty Reflection
 
-
-
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=86400)](https://opensource.org/licenses/MIT)
 
 [![bintray](https://api.bintray.com/packages/blocke/releases/dotty-reflection/images/download.svg)](https://bintray.com/blocke/releases/dotty-reflection/_latestVersion)
 
-Dotty is the exciting new developmental language destined to evolve into Scala 3. One of the big changes for Dotty/Scala 3 is that runtime reflection has eliminated in favor of new mechanisms.  The primary mechanism Dotty provides for reflection is macro-based, which runs at compile-time.  The second mechanism is only a last-resort option called Tasty Inspection.  What this does is read the .tasty file at runtime.  In theory it works like Scala 2 runtime reflection, but don't miss the file read!  Tasty inspection is orders of magnitude slower than Scala 2 runtime reflection due to the file IO.
+Dotty is the developmental language destined to evolve into Scala 3. One of the big changes for Dotty/Scala 3 is that runtime reflection has been eliminated in favor of using compile-time macros to reflect on classes.  There is also a second mechanism for class reflection called Tasty Inspection, which reads Dotty .tasty files at runtime.  In theory, Inspection works like Scala 2 runtime reflection, but don't miss the bit about file reading!  File IO is *orders of magnitude* slower than Scala 2 runtime reflection, so Inspection is to be used as a mechanism of last resort.  
 
 This project seeks to accomplish two goals:
 
-* Make Dotty reflection a little more approachable by exposing a higher-level abstraction for reflected things
+* Make Dotty reflection a little more approachable by exposing a higher-level abstraction for reflected things (vs diving through Dotty classes that mirror compiler internals)
 
 * Allow for a true runtime reflection capability
 
-The second goal, runtime reflection, necessitates the use of a compiler plugin for your code.  What this does is do compile-time reflection on ALL your compiled classes and serialize that information into annotations readable at runtime.  In principle, this isn't terribly different than how Scala 2 runtime reflection works.  Use of the compiler plugin is optional, but highly recommended as it avoids the very costly file IO for runtime reflection.  The results speak for themselves.  Here's a sample of a few of the more complex test cases with/without the plugin:
+That second goal, runtime reflection, poses a unique challenge.  Just how do you provide a runtime reflection ability in a language that doesn't have that facility, and all the juicy information we are interested in capturing is available only at compile-time?  How, indeed!
+
+The solution offered by this library is to provide a compiler plugin for your code.  What this does is capture reflected information on all your compiled classes and serialize that information into annotations readable at runtime.  In principle, this isn't really very different than how Scala 2 runtime reflection works.  Use of the compiler plugin is optional, but highly recommended as it avoids the very costly file IO for runtime reflection.  The results speak for themselves.  Here's a sample of a few of the more complex test cases with/without the plugin:
 
 |Test| No plugin  |With Plugin  |
 |--|--|--|
@@ -27,7 +27,7 @@ The second goal, runtime reflection, necessitates the use of a compiler plugin f
 |With nested case class and non-case class (inverted)|0.234s|0.005s|
 |InTermsOf deep type substitution|0.239s|0.013s|
 
-Everything will still work fine if you elect not to use the plugin, or encounter classes that weren't compiled using the plugin--it will just be slower the first time a class is reflected upon. (The library caches, so subsequent reflection on an already-seen class is 1-2ms.)
+Everything will still work fine if you elect not to use the plugin, or encounter classes that weren't compiled using the plugin.  Performance will just be slower the first time a class is reflected upon. (The library caches, so subsequent reflection on an already-seen class is 1-2ms.)
 
 ## Configuration
 
@@ -58,15 +58,14 @@ val artifact: RType = RType.of[Thing]
 // In this case the returned value would be ScalaCaseClassInfo
 
 // >> Run-time reflection using parentheses for type
-// If you don't know the class you'll need to reflect on (maybe the choice is coming
-// from outside your system at run-time)
+// Maybe you don't know the class at compile-time, for example if the choice is coming
+// from outside your system at run-time).  In that case use the parentheses form of RType.of.
 val cname:String = getClassWeNeedFromSomewhere()
 val art2: myClassRType = RType.of(Class.forName(cname))
-
-// If you're using the compiler plugin, the pre-reflected ScalaCaseClassInfo will be
-// returned, otherwise file IO will read your class' .tasty file and reflect on the class,
-// which is very slow.
 ```
+For the second example, if you're using the compiler plugin, the pre-reflected ScalaCaseClassInfo will be
+returned, otherwise file IO will read your class' .tasty file and reflect on the class, which is very slow the
+first time we encounter this class.
 
 ## Resolving Classes with Parameters using Traits
 This library was principally intended to facilitate migrating ScalaJack serialization into Dotty/Scala 3.  One of ScalaJack's key features is its trait handling ability. 
@@ -83,13 +82,13 @@ val pet: Pet[Boolean] = Dog("Spot",4,true)
 ```
 When serializing  pet, ScalaJack would generate JSON with a type hint like this:
 ```json
-{"_hint":"com.mystuff.Dog","name":"Spot","numLegs":4,"special":true}
+{"_hint","com.mystuff.Dog","name":"Spot","numLegs":4,"special":true}
 ```
 The hint tells ScalaJack which specific Pet class to materialize upon reading this JSON (we're expecting a Pet).  So... you'll see here we just have a class name in the hint.  How do we know the type of T?  We have to tell it:
 ```scala
 scalajack.read[Pet[Boolean]](js)
 ```
-So Pet[Boolean] is a trait.  We get the value "com.mystuff.Dog" (a class) from the JSON.  We need to resolve Dog ***in terms of*** Pet[Boolean].
+Pet[Boolean] is a parameterized trait.  We get the value "com.mystuff.Dog" (a class) from the JSON.  We need to resolve Dog ***in terms of*** Pet[Boolean].
 
 We accomplish this feat in dotty-reflection like this:
 ```scala
@@ -99,7 +98,7 @@ This will return a ScalaCaseClassInfo with the 'special' field correctly typed t
 
 ## Learning to Drive with Macros
 
-Because dotty-reflection uses macros to the fullest extent possible to do the hard work of reflecting on types, there is application code running during the compile cycle (the macros). The impact of this will be non-intuitive at first. Think of this example:
+Because dotty-reflection uses macros to the fullest extent possible to do the hard work of reflecting on types we need to fully understand how the use of macros affects the compile/test cycle. The impact of macros will be non-intuitive at first. Think of this example:
 ```scala
 // File1.scala
 case class Foo(name: String)
@@ -109,14 +108,14 @@ val fooRType = RType.of[Foo]
 ```
 In a non-macro implementation (e.g. Scala 2 runtime reflection) if you update Foo in File1.scala you naturally expect sbt to re-compile this file, and anything that depends on Foo, and the changes will be picked up in your program, and all will be well.  
 
-That's **not** necessarily what happens with macros.  Remember the macro is code that is run at compile-time.  File2.scala needs to be re-compiled because the RType.of macro needs to be updated if you recompile Foo class.  Unfortunately sbt doesn't pick this up!  If you don't know any better you'll just re-run your program after a change to File1.scala and get a spectacular exception with exotic errors that won't mean much to you.  The solution is you need to also recompile File2.scala.
+That's **not** necessarily what happens with macros!  Remember the macro code is run at compile-time.  File2.scala needs to be re-compiled because the RType.of macro needs to be re-run if you changed Foo class to pick up your changes.  *Unfortunately sbt doesn't pick up this dependency!*  If you don't know any better you'll just re-run your program after a change to File1.scala, like normal, and get a spectacular exception with exotic errors that won't mean much to you.  The solution is you need to also recompile File2.scala.
 
-That does mean you will be doing more re-compiling with macro-based code than you would without the macros, but then that's where all the efficiency and speed come from, so there's a cost in convenience.
+That does mean you will be doing more re-compiling with macro-based code than you would without the macros.  That's an unfortunate cost of inconvenience, but the payoff is a dramatic gain in speed at runtime.
 
 
 ## Status
 
-At this point the library can inspect quite a lot of things in the Scala ecosystem:
+At this point the library can reflect on quite a lot of things in the Scala ecosystem:
 
 * Scala 3 Tasty classes (parameterized or non-parameterized) w/annotations
 * Traits (including sealed traits)
@@ -128,31 +127,28 @@ At this point the library can inspect quite a lot of things in the Scala ecosyst
 * Opaque type aliases
 * Try typed fields
 * Either
-* Option
-* Collections, incl. Java Collections
-* Tuple
+* Option and Java Optional
+* Collections, incl. several Java Collections
+* Tuples
 
 See unit tests for detailed examples of usage.
 
 
-### Limitations
-* No support for parameters in Intersection or Untion types (```val t: X|Y``` or ```val u: X&Y```). This is because union/intersection types don't appear to be implemented as full classes in Scala and we haven't yet figured out this would work.
+## Limitations
+* No support for parameters in Intersection or Union types (```val t: X|Y``` or ```val u: X&Y```). This is because union/intersection types don't appear to be implemented as full classes in Scala and we haven't yet figured out this would work in dotty-reflection.
+* This library can handle some pretty tricky trait type resolution (see tests), but there are limits. Some attempts to RType.inTermsOf() a contorted trait structure may fail. These will be pretty gnarly cases and (hopefully) unlikely.
+* The entire serialized RType tree (incl. any nested RTypes) must not exceed 64K bytes.  This is so that it will fit into a Java Annotation.
 
-### Acknowledgements
-I wish to thank three people who have helped make this library possible, with their patient explanations and help on gitter and in code reviews. Learning the Dotty reflection internals was certainly a learning curve for me and these guys really helped me through it:
+## Acknowledgements
+I wish to thank three people who have helped make this library possible, with their patient explanations and help on gitter. Learning the Dotty reflection internals was certainly a learning curve for me and these guys really helped me through it:
 ```
 Guillaume Martres (@smarter)
 Paolo G. Giarrusso (@Blaisorblade)
 Nicolas Stucki (@nicolasstucki)
 ```
 
-### Notes:
-
-This library can handle some pretty tricky trait type resolution (see tests), but there are limits. Some attempts to RType.inTermsOf() a contorted trait structure may fail. These will be pretty gnarly cases and (hopefully) unlikely.
-
-
-### Release Notes:
+## Release Notes:
 0.1.0 -- Macro-enabled reflector
 0.2.0 -- Added compiler plugin for performance lift and true runtime reflection for RType.inTermsOf.  Upgraded to Dotty 0.27.0-RC1 and JDK 13
 0.2.1 -- bug-fix
-0.2.2 -- Revised README and added performance enhancement for Any-typed reflection
+1.0.0 -- Initial full-feature release

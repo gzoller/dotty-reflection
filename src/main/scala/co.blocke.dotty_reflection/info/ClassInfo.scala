@@ -56,7 +56,9 @@ trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     val interestingFields = referenceTrait match {
-      case Some(t:TraitInfo) => fields.filter(f => t.fields.map(_.name).contains(f.name))
+      case Some(t:TraitInfo) => 
+        val refTraitFieldNames = t.fields.map(_.name)
+        fields.filter(f => refTraitFieldNames.contains(f.name))
       case _ => fields
     }
     interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
@@ -67,7 +69,7 @@ trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
           if referenceTrait.isDefined then
             TraitPathElement(nameForPath, f.name)
           else
-            ClassPathElement(nameForPath, f.name)
+            ClassPathElement(nameForPath, f.index)
         f.fieldType match {
           case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
             // This field's type is one of the sought-after TypeSymbols...

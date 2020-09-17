@@ -3,7 +3,7 @@ package co.blocke.dotty_reflection
 import java.io._ 
 import java.nio._ 
 
-case class Foom(mame:String, age:Int)
+case class Foom(name:String, bytes:Array[Byte])
 
 object RunMe extends App:
 
