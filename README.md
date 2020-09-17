@@ -176,7 +176,8 @@ Nicolas Stucki (@nicolasstucki)
 ```
 
 ## Release Notes:
-0.1.0 -- Macro-enabled reflector
-0.2.0 -- Added compiler plugin for performance lift and true runtime reflection for RType.inTermsOf.  Upgraded to Dotty 0.27.0-RC1 and JDK 13
-0.2.1 -- bug-fix
-1.0.0 -- Initial full-feature release
+* 1.0.0 -- Initial full-feature release
+* 0.2.1 -- bug-fix
+* 0.2.0 -- Added compiler plugin for performance lift and true runtime reflection for RType.inTermsOf.  Upgraded to Dotty 0.27.0-RC1 and JDK 13
+* 0.1.0 -- Macro-enabled reflector
+
