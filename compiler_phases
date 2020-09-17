@@ -1,3 +1,9 @@
+This file is for reference.  Below is output from the Dotty compiler phases.
+The plug-in needs to run before or after one of these phases.  Careful though...
+Discovered the hard way that somewhere along the line one or more of these phases
+does the type erasure, so if you put your plugin too late in the flow then you
+may not see the rich type information you expect!
+
 [info] typer
 [info] inlinedPositions
 [info] staging

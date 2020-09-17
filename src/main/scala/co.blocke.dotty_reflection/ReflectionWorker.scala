@@ -44,3 +44,4 @@ class ReflectionWorkerPhase extends PluginPhase {
       tree.symbol.addAnnotation(Annotation.apply(s3ReflectionClassSymbol.asInstanceOf[ClassSymbol], annoArg) )
     tree
 }
+

@@ -22,7 +22,7 @@ trait NonCaseClassReflection:
     typeMembers:           Array[TypeMemberInfo],
     fields:                Array[FieldInfo],
     annotations:           Map[String, Map[String,String]],
-    mixins:                List[String],
+    mixins:                Array[String],
     isValueClass:          Boolean
   ): ScalaClassInfo = 
     import reflect.{_, given _}

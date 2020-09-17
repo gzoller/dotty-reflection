@@ -5,21 +5,28 @@ import java.lang.reflect._
 import java.util.Optional
 import impl._
 import scala.tasty.Reflection
-import Transporter.AppliedRType
+import java.nio.ByteBuffer
 
 
-trait OptionInfo extends Transporter.RType with Transporter.AppliedRType:
-  lazy val optionParamType: Transporter.RType
+trait OptionInfo extends RType with AppliedRType:
+  lazy val optionParamType: RType
 
+
+object ScalaOptionInfo:
+  def fromBytes( bbuf: ByteBuffer ): ScalaOptionInfo =
+    ScalaOptionInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
 
 case class ScalaOptionInfo protected[dotty_reflection](
   name: String,
-  _optionParamType: Transporter.RType
+  _optionParamType: RType
 ) extends OptionInfo:
 
   val fullName: String = name + "[" + _optionParamType.fullName  + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
-  lazy val optionParamType: Transporter.RType = _optionParamType match {
+  lazy val optionParamType: RType = _optionParamType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
@@ -41,22 +48,34 @@ case class ScalaOptionInfo protected[dotty_reflection](
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + "Option of " + optionParamType.show(newTab,name :: seenBefore,true)
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _optionParamType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => ScalaOptionInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => ScalaOptionInfo(name, _optionParamType.resolveTypeParams(paramMap))
       case _ => this
     }
 
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( OPTION_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _optionParamType)
+
+
+object JavaOptionalInfo:
+  def fromBytes( bbuf: ByteBuffer ): JavaOptionalInfo =
+    JavaOptionalInfo(
+      StringByteEngine.read(bbuf),
+      RTypeByteEngine.read(bbuf)
+      )
 
 case class JavaOptionalInfo protected[dotty_reflection](
   name: String,
-  _optionParamType: Transporter.RType
+  _optionParamType: RType
 ) extends OptionInfo:
 
   val fullName: String = name + "[" + _optionParamType.fullName  + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
-  lazy val optionParamType: Transporter.RType = _optionParamType match {
+  lazy val optionParamType: RType = _optionParamType match {
     case e: SelfRefRType => e.resolve
     case e => e
   }
@@ -69,9 +88,14 @@ case class JavaOptionalInfo protected[dotty_reflection](
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + "Optional of " + optionParamType.show(newTab,name :: seenBefore,true)
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _optionParamType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => JavaOptionalInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => JavaOptionalInfo(name, _optionParamType.resolveTypeParams(paramMap))
       case _ => this
     }
+
+  def toBytes( bbuf: ByteBuffer ): Unit = 
+    bbuf.put( OPTIONAL_INFO )
+    StringByteEngine.write(bbuf, name)
+    RTypeByteEngine.write(bbuf, _optionParamType)

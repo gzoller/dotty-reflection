@@ -3,14 +3,13 @@ package co.blocke.dotty_reflection
 import impl._
 import info._
 import scala.tasty.Reflection
-import Transporter.AppliedRType
 
 /** Marker trait for all Scala/Java left/right types (either, intersection, union) */
-trait LeftRightRType extends Transporter.AppliedRType:
-  self: Transporter.RType =>
+trait LeftRightRType extends AppliedRType:
+  self: RType =>
 
-  lazy val leftType: Transporter.RType
-  lazy val rightType: Transporter.RType
+  lazy val leftType: RType
+  lazy val rightType: RType
 
   override def toType(reflect: Reflection): reflect.Type = 
     import reflect.{_, given _}
@@ -33,18 +32,18 @@ trait LeftRightRType extends Transporter.AppliedRType:
     }
     (leftFound ++ rightFound, rightUnfound)
 
-  def _copy( left: Transporter.RType, right: Transporter.RType ): Transporter.RType
+  def _copy( left: RType, right: RType ): RType
 
   override def isAppliedType: Boolean = 
     (leftType match {
-      case artL: Transporter.AppliedRType if artL.isAppliedType => true
+      case artL: AppliedRType if artL.isAppliedType => true
       case _ => false
     }) | (rightType match {
-      case artR: Transporter.AppliedRType if artR.isAppliedType => true
+      case artR: AppliedRType if artR.isAppliedType => true
       case _ => false
     })
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, Transporter.RType] ): Transporter.RType = 
+  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     val stage1 = leftType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => _copy(paramMap(ts.name.asInstanceOf[TypeSymbol]), rightType)
       case art: AppliedRType if art.isAppliedType => _copy(leftType.resolveTypeParams(paramMap), rightType)
