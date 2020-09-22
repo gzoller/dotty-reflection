@@ -19,6 +19,7 @@ trait RType extends Serializable:
   def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = this
 
   // Find paths to given type symbols
+  // referenceTrait is for top-level call
   def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     (Map.empty[TypeSymbol,Path], findSyms) // (themThatsFound, themThatsStillLost)
 
@@ -76,12 +77,19 @@ object RType:
   inline def inTermsOf(clazz: Class[_], ito: TraitInfo): RType = 
     val clazzRType = of(clazz)
     val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
-    val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path(Nil)) ).toMap, Some(ito))
+    val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path.buildPath) ).toMap, Some(ito))
+
+    println("Unfound: "+unfoundSyms)
+    println("Found paths.....\n========================\n")
+    symPaths.map{ (sym, path) =>
+      println("Path to "+sym)
+      println(path)
+    }
 
     // Now nav the symPaths into RType from ito (reference trait) then sew these as arguments into the "naked" parameterized class (applied type)
     val paramMap = clazzSyms.map( _ match {
       case sym if unfoundSyms.contains(sym) => (sym -> PrimitiveType.Scala_Any)
-      case sym => (sym -> symPaths(sym).nav(ito).getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")))
+      case sym => (sym -> symPaths(sym).nav(ito)) //.getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")))
       }).toMap
 
     clazzRType.resolveTypeParams(paramMap)

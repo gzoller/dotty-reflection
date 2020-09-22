@@ -53,14 +53,19 @@ case class TraitInfo protected[dotty_reflection](
     interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
       val (found, notFound) = acc
       if notFound.nonEmpty then
+        val index = 
+          if referenceTrait.isDefined then
+            referenceTrait.get.fields.indexWhere(_.name == f.name)
+          else
+            f.index
         f.fieldType match {
           case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
             // This field's type is one of the sought-after TypeSymbols...
             val sym = ts.name.asInstanceOf[TypeSymbol]
-            (found + (sym -> notFound(sym).push(TraitPathElement(name,f.name))), notFound - sym)
+            (found + (sym -> notFound(sym).add(Path.TRAIT_PATH, index.toByte).lock), notFound - sym)
           case _ =>
             // Or it's not...
-            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.push(TraitPathElement(name,f.name)) ))
+            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.fork.add(Path.TRAIT_PATH, index.toByte) ))
             (found ++ themThatsFound, themThatsStillLost.map( (k,v) => k -> findSyms(k) ))
         }
       else

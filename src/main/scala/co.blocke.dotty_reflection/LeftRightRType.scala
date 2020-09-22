@@ -19,16 +19,16 @@ trait LeftRightRType extends AppliedRType:
     val (leftFound, leftUnfound) = leftType match {
       case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
         val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(LeftPathElement()) ), findSyms - sym)
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.LEFT_PATH).lock ), findSyms - sym)
       case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.push(LeftPathElement()) ))
+        other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.LEFT_PATH) ))
     }
     val (rightFound, rightUnfound) = leftType match {
       case ts: TypeSymbolInfo if leftUnfound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
         val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> leftUnfound(sym).push(RightPathElement()) ), findSyms - sym)
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> leftUnfound(sym).add(Path.RIGHT_PATH) ), findSyms - sym)
       case other => 
-        other.findPaths(leftUnfound.map( (k,v) => k -> v.push(RightPathElement()) ))
+        other.findPaths(leftUnfound.map( (k,v) => k -> v.fork.add(Path.RIGHT_PATH) ))
     }
     (leftFound ++ rightFound, rightUnfound)
 

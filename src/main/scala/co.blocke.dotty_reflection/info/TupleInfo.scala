@@ -2,7 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 import scala.tasty.Reflection
-import impl.{Path, TuplePathElement}
+import impl.Path
 import java.nio.ByteBuffer
 
 
@@ -61,9 +61,9 @@ case class TupleInfo protected[dotty_reflection](
       item match {
         case (ts:TypeSymbolInfo, i: Int) if notYetFound.contains(ts.name.asInstanceOf[TypeSymbol]) => 
           val sym = ts.name.asInstanceOf[TypeSymbol]
-          (foundSoFar + (sym -> notYetFound(sym).push(TuplePathElement(i))), notYetFound - sym)
+          (foundSoFar + (sym -> notYetFound(sym).add(Path.TUPLE_PATH,i.toByte).lock), notYetFound - sym)
         case (other: RType, i: Int) =>
-          val (fsf2, nyf2) = other.findPaths( notYetFound.map( (k,v) => k -> v.push(TuplePathElement(i))) )
+          val (fsf2, nyf2) = other.findPaths( notYetFound.map( (k,v) => k -> v.fork.add(Path.TUPLE_PATH,i.toByte)) )
           (fsf2 ++ foundSoFar, nyf2)
       }
     }

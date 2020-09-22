@@ -67,16 +67,16 @@ case class MapLikeInfo protected[dotty_reflection](
     val (stage1Found, stage1Unfound) = elementType match {
       case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
         val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(MapKeyPathElement()) ), findSyms - sym)
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.MAP_KEY_PATH).lock ), findSyms - sym)
       case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.push(MapKeyPathElement()) ))
+        other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.MAP_KEY_PATH) ))
     }
     val (stage2Found, stage2Unfound) = elementType2 match {
       case ts: TypeSymbolInfo if stage1Unfound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
         val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> stage1Unfound(sym).push(MapValuePathElement()) ), findSyms - sym)
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> stage1Unfound(sym).add(Path.MAP_VALUE_PATH).lock ), findSyms - sym)
       case other => 
-        other.findPaths(stage1Unfound.map( (k,v) => k -> v.push(MapValuePathElement()) ))
+        other.findPaths(stage1Unfound.map( (k,v) => k -> v.fork.add(Path.MAP_VALUE_PATH) ))
     }
     (stage1Found ++ stage2Found, stage2Unfound)
     
@@ -378,16 +378,16 @@ case class JavaMapInfo protected[dotty_reflection](
     val (stage1Found, stage1Unfound) = elementType match {
       case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
         val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(MapKeyPathElement()) ), findSyms - sym)
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.MAP_KEY_PATH).lock ), findSyms - sym)
       case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.push(MapKeyPathElement()) ))
+        other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.MAP_KEY_PATH) ))
     }
     val (stage2Found, stage2Unfound) = elementType2 match {
       case ts: TypeSymbolInfo if stage1Unfound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
         val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> stage1Unfound(sym).push(MapValuePathElement()) ), findSyms - sym)
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> stage1Unfound(sym).add(Path.MAP_VALUE_PATH).lock ), findSyms - sym)
       case other => 
-        other.findPaths(stage1Unfound.map( (k,v) => k -> v.push(MapValuePathElement()) ))
+        other.findPaths(stage1Unfound.map( (k,v) => k -> v.fork.add(Path.MAP_VALUE_PATH) ))
     }
     (stage1Found ++ stage2Found, stage2Unfound)
 

@@ -129,6 +129,7 @@ object TastyReflection extends NonCaseClassReflection:
     }
 
     val symbol = typeRef.classSymbol.get
+    val typeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
 
     if symbol.flags.is(reflect.Flags.Scala2X) then
       symbol.fullName match {
@@ -167,10 +168,9 @@ object TastyReflection extends NonCaseClassReflection:
                 TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
               }   
             }
-            val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
-            val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
+            val paramMap: Map[TypeSymbol, RType] = typeSymbols.zip(actualParamTypes).toMap
 
-            val traitFields = symbol.fields.map { f =>
+            val traitFields = symbol.fields.zipWithIndex.map { (f,index) =>
               val fieldType = 
                 // A lot of complex messiness to sew down the mapped type:  Foo[T]( val x: List[T]) where we call Foo[W] from a higher class,
                 // so T -> W.  We need resolveTypeParams to sew down for deeper nested types like List.  Ugh.
@@ -195,16 +195,16 @@ object TastyReflection extends NonCaseClassReflection:
                 }
               val typeSym = 
                 f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol] match {
-                  case ts if paramTypeSymbols.contains(ts) => Some(ts)
+                  case ts if typeSymbols.contains(ts) => Some(ts)
                   case _ => None
                 }
-              ScalaFieldInfo(-1, f.name, fieldType, Map.empty[String,Map[String,String]], None, typeSym, true)
+              ScalaFieldInfo(index, f.name, fieldType, Map.empty[String,Map[String,String]], None, typeSym, true)
             }
             TraitInfo(
               className,
               traitFields.toArray, 
               actualParamTypes.toArray,
-              paramTypeSymbols.toArray
+              typeSymbols.toArray
             )
           case _ => 
             // non-parameterized trait
@@ -246,6 +246,25 @@ object TastyReflection extends NonCaseClassReflection:
 
       val isValueClass = typeRef.baseClasses.contains(Symbol.classSymbol("scala.AnyVal"))
 
+      // Need:  Map[ TraitClass -> Map[TypeSymbol -> Path] ]
+      println("Class "+className)
+      implicit val ctx = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context]
+      val typeSymbolTypes: List[reflect.Type] = symbol.primaryConstructor.paramSymss.head.map(_.asInstanceOf[dotty.tools.dotc.core.Symbols.Symbol].denot.infoOrCompleter.asInstanceOf[reflect.Type])
+      println("Syms: "+typeSymbolTypes)
+      println("Parents: "+classDef.parents.collect{
+        case t:reflect.TypeTree => t.tpe
+      }.collect{
+        case traitApplied: AppliedType if traitApplied.typeSymbol.flags.is(reflect.Flags.Trait) => 
+          val found = reflectOnSymbols(reflect)( typeSymbols.toSet, RType.unwindType(reflect)(traitApplied.asInstanceOf[Type], false), Path.buildPath)
+          println(">>> "+found)
+          val ddad = traitApplied.classSymbol.get.tree.asInstanceOf[ClassDef].parents.collect{
+            case t:reflect.TypeTree => t.tpe
+          }.collect{
+            case AppliedType(tz,_) => tz.appliedTo(typeSymbolTypes)
+          }
+          println("DDAD: "+ddad)
+        })
+
       // Get superclass' field annotations--if any
       val dad = classDef.parents.headOption match {
         case Some(tt: TypeTree) if !isValueClass && tt.tpe.classSymbol.get.fullName != "java.lang.Object" => 
@@ -266,7 +285,6 @@ object TastyReflection extends NonCaseClassReflection:
 
       // All this mucking around in the constructor.... why not just get the case fields from the symbol?
       // Because:  symbol's case fields lose the annotations!  Pulling from contstructor ensures they are retained.
-      val typeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name)
       val tob = typeRef match {
         case AppliedType(t,tob) => tob
         case _                  => Nil
@@ -276,12 +294,11 @@ object TastyReflection extends NonCaseClassReflection:
           val pos = typeSymbols.indexOf(typeTree.asInstanceOf[TypeTree].tpe.typeSymbol.name)
           TypeMemberInfo(
             typeName,
-            typeSymbols(pos).asInstanceOf[TypeSymbol],
+            typeSymbols(pos),
             RType.unwindType(reflect)(tob(pos).asInstanceOf[Type])
           )
       }
 
-      val paramTypeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
       val actualParamTypes = tob.map{ oneTob => 
         scala.util.Try{ 
           if resolveTypeSyms then
@@ -294,7 +311,7 @@ object TastyReflection extends NonCaseClassReflection:
           TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
         }   
       }
-      val paramMap: Map[TypeSymbol, RType] = paramTypeSymbols.zip(actualParamTypes).toMap
+      val paramMap: Map[TypeSymbol, RType] = typeSymbols.zip(actualParamTypes).toMap
 
       if symbol.flags.is(reflect.Flags.Case) then
 
@@ -316,13 +333,13 @@ object TastyReflection extends NonCaseClassReflection:
         ScalaCaseClassInfo(
           className,
           fullName,
-          // {if paramTypeSymbols.nonEmpty then className + actualParamTypes.map(t => t.name).mkString("[",",","]") else fullName},
-          paramTypeSymbols.toArray,
+          // {if typeSymbols.nonEmpty then className + actualParamTypes.map(t => t.name).mkString("[",",","]") else fullName},
+          typeSymbols.toArray,
           typeMembers.toArray, 
           caseFields.toArray, 
           classAnnos, 
           classDef.parents.map(_.symbol.fullName).toArray, 
-          paramTypeSymbols.nonEmpty,
+          typeSymbols.nonEmpty,
           isValueClass)
       else
         // === Non-Case Classes ===
@@ -342,12 +359,12 @@ object TastyReflection extends NonCaseClassReflection:
         inspectNonCaseClass(reflect)(
           symbol, 
           tob,
-          paramTypeSymbols.toArray,
+          typeSymbols.toArray,
           classDef, 
           dad,
           className,
           fullName,
-          paramTypeSymbols.nonEmpty,
+          typeSymbols.nonEmpty,
           fieldDefaultMethods,
           typeMembers.toArray,
           caseFields.toArray, 
@@ -385,3 +402,41 @@ object TastyReflection extends NonCaseClassReflection:
     val originalTypeSymbol = if isTypeParam then Some(valTypeRef.name.asInstanceOf[TypeSymbol]) else None
 
     ScalaFieldInfo(index, valDef.name, fieldType, fieldAnnos, fieldDefaultMethods.get(index), originalTypeSymbol)
+
+
+  // Dive into the given tree (typically starting with a trait) and find the given symbols (taken from a parameterized class)
+
+  // PROBLEM:  A trait w/no fields must somehow inherit its base traits' fields in order for this logic to work, 
+  // otherwise the marker trait's fields list will be empty!
+  def reflectOnSymbols(reflect: Reflection)( syms: Set[TypeSymbol], tree: RType, pathSoFar: Path ): Map[TypeSymbol, Path] =
+    // Examine anything that can be an AppliedType (parameterizable)
+    tree match {
+      case s: TraitInfo      =>
+        s.fields.foldLeft( (syms, Map.empty[TypeSymbol,Path]) ){ case ((syms2,symPathMap), oneField) => 
+          oneField.fieldType match {
+            case ts: TypeSymbolInfo => 
+              val symName = ts.name.asInstanceOf[TypeSymbol]
+              if syms2.contains(symName) then
+                // Found a symbol we're looking for... remove from list and add entry in path map
+                (syms2 - symName, symPathMap + (symName -> pathSoFar.add(Path.TRAIT_PATH, oneField.index.toByte).lock))
+              else
+                // Not a symbol we're looking for... ignore it... no change to foldLeft args
+                (syms2, symPathMap)
+            case other              =>
+              val symsFoundMap = reflectOnSymbols(reflect)(syms2, oneField.fieldType, pathSoFar.fork.add(Path.TRAIT_PATH, oneField.index.toByte))
+              (syms2 -- symsFoundMap.keySet, symsFoundMap)
+            }
+          }._2 // return just the paths to the found symbols
+      case s: ClassInfo       =>
+        ???
+      case s: CollectionRType =>
+        ???
+      case s: LeftRightRType  =>
+        ???
+      case s: OptionInfo      =>
+        ???
+      case s: TryInfo         =>
+        ???
+      case s: TupleInfo       =>
+        ???
+    }

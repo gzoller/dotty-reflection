@@ -11,6 +11,15 @@ import java.nio.ByteBuffer
 trait OptionInfo extends RType with AppliedRType:
   lazy val optionParamType: RType
 
+  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
+    optionParamType match {
+      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
+        val sym = ts.name.asInstanceOf[TypeSymbol]
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.OPTION_PATH).lock ), findSyms - sym)
+      case other => 
+        other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.OPTION_PATH) ))
+    }
+
 
 object ScalaOptionInfo:
   def fromBytes( bbuf: ByteBuffer ): ScalaOptionInfo =
@@ -34,15 +43,6 @@ case class ScalaOptionInfo protected[dotty_reflection](
   override def toType(reflect: Reflection): reflect.Type = 
     import reflect.{_, given _}
     AppliedType(Type(infoClass), List(optionParamType.toType(reflect)))
-
-  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    optionParamType match {
-      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
-        val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(OptionPathElement()) ), findSyms - sym)
-      case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.push(OptionPathElement()) ))
-    }
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

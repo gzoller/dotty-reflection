@@ -28,15 +28,16 @@ case class TryInfo protected[dotty_reflection](
 
   override def toType(reflect: Reflection): reflect.Type = 
     import reflect.{_, given _}
-    AppliedType(Type(infoClass), List(tryType.toType(reflect)))
+    val clazzType = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context].getClassIfDefined(infoClass.getCanonicalName).typeRef
+    dotty.tools.dotc.core.Types.AppliedType(clazzType, List(tryType.toType(reflect))).asInstaneOf[reflect.AppliedType]
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     tryType match {
       case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
         val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(TryPathElement()) ), findSyms - sym)
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.TRY_PATH).lock ), findSyms - sym)
       case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.push(TryPathElement()) ))
+        other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.TRY_PATH) ))
     }
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 

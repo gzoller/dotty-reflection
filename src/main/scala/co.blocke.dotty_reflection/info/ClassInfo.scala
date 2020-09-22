@@ -63,21 +63,27 @@ trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
     }
     interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
       val (found, notFound) = acc
-      val nameForPath = referenceTrait.map(_.name).getOrElse(name)
       if notFound.nonEmpty then
-        val pathElement = 
+        val fn = (p: Path, doLock: Boolean) => 
           if referenceTrait.isDefined then
-            TraitPathElement(nameForPath, f.name)
+            val index = referenceTrait.get.fields.indexWhere(_.name == f.name)
+            if doLock then
+              p.add(Path.TRAIT_PATH, index.toByte).lock
+            else
+              p.fork.add(Path.TRAIT_PATH, index.toByte)
           else
-            ClassPathElement(nameForPath, f.index)
+            if doLock then
+              p.add(Path.CLASS_PATH, f.index.toByte).lock
+            else
+              p.fork.add(Path.CLASS_PATH, f.index.toByte)
         f.fieldType match {
           case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
             // This field's type is one of the sought-after TypeSymbols...
             val sym = ts.name.asInstanceOf[TypeSymbol]
-            (found + (sym -> notFound(sym).push(pathElement)), notFound - sym)
+            (found + (sym -> fn(notFound(sym),true)), notFound - sym)
           case _ =>
             // Or it's not...
-            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.push(pathElement) ))
+            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> fn(v,false) ))
             (found ++ themThatsFound, themThatsStillLost.map( (k,v) => k -> findSyms(k) ))
         }
       else

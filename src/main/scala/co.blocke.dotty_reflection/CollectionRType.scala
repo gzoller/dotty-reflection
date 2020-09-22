@@ -18,9 +18,9 @@ trait CollectionRType extends AppliedRType:
     elementType match {
       case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
         val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).push(SeqPathElement()) ), findSyms - sym)
+        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.SEQ_PATH).lock ), findSyms - sym)
       case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.push(SeqPathElement()) ))
+        other.findPaths(findSyms.map( (k,v) => k -> v.add(Path.SEQ_PATH) ))
     }
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
