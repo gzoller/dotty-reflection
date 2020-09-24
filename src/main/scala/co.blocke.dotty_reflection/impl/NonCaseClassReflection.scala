@@ -11,7 +11,7 @@ trait NonCaseClassReflection:
 
   def inspectNonCaseClass(reflect: Reflection)(
     symbol:                reflect.Symbol,
-    tob:                   List[reflect.TypeOrBounds],
+    tob:                   List[reflect.Type],
     paramSymbols:          Array[TypeSymbol],
     classDef:              reflect.ClassDef,
     superClass:            Option[ClassInfo],

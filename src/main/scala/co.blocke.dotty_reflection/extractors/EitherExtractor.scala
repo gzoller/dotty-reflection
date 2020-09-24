@@ -13,22 +13,22 @@ case class EitherExtractor() extends TypeInfoExtractor[EitherInfo]:
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
-    tob: List[reflect.TypeOrBounds], 
+    tob: List[reflect.Type], 
     symbol: reflect.Symbol): RType =
 
-    val leftType = tob(0).asInstanceOf[reflect.Type]
+    val leftType = tob(0)
     val leftRType = 
       if leftType.typeSymbol.flags.is(reflect.Flags.Param) then
-        TypeSymbolInfo(tob(0).asInstanceOf[reflect.Type].typeSymbol.name)
+        TypeSymbolInfo(tob(0).typeSymbol.name)
       else
-        RType.unwindType(reflect)(tob(0).asInstanceOf[reflect.Type])
+        RType.unwindType(reflect)(tob(0))
 
-    val rightType = tob(1).asInstanceOf[reflect.Type]
+    val rightType = tob(1)
     val rightRType = 
       if rightType.typeSymbol.flags.is(reflect.Flags.Param) then
-        TypeSymbolInfo(tob(1).asInstanceOf[reflect.Type].typeSymbol.name)
+        TypeSymbolInfo(tob(1).typeSymbol.name)
       else
-        RType.unwindType(reflect)(tob(1).asInstanceOf[reflect.Type])
+        RType.unwindType(reflect)(tob(1))
 
     val tparms = EitherClazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
     EitherInfo(

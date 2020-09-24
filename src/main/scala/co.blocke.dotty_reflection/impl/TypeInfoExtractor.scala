@@ -9,6 +9,6 @@ trait TypeInfoExtractor[T <: RType]:
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
-    tob: List[reflect.TypeOrBounds], 
+    tob: List[reflect.Type], 
     symbol: reflect.Symbol): RType
 

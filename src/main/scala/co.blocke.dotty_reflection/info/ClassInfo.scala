@@ -34,17 +34,6 @@ trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
   lazy val mixins = _mixins
   lazy val infoClass: Class[_] = Class.forName(name)
   lazy val typeParams = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
-
-  override def toType(reflect: scala.tasty.Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    val actualParameterTypes = fields.collect{
-      case f if f.originalSymbol.isDefined => f.originalSymbol.get -> f.fieldType.toType(reflect).asInstanceOf[Type]
-    }.toMap
-    if typeParams.nonEmpty then
-      val args = typeParams.map(sym => actualParameterTypes.getOrElse(sym,PrimitiveType.Scala_Any.toType(reflect).asInstanceOf[Type])).toList
-      AppliedType(Type(infoClass), args)
-    else
-      reflect.Type(infoClass)
  
   // Fields may be self-referencing, so we need to unwind this...
   lazy val fields = _fields.map( f => f.fieldType match {
@@ -90,6 +79,12 @@ trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
         (found, notFound)
       }
 
+  def select(i: Int): RType = 
+    if i >= 0 && i <= _fields.size-1 then
+      _fields(i).fieldType
+    else
+      throw new SelectException(s"AppliedType select index $i out of range for ${name}") 
+      
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase 

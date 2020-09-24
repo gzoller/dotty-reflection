@@ -15,16 +15,16 @@ case class ScalaArrayExtractor() extends TypeInfoExtractor[ArrayInfo]:
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
-    tob: List[reflect.TypeOrBounds], 
+    tob: List[reflect.Type], 
     symbol: reflect.Symbol): RType =
 
-    val arrayOfType = tob.head.asInstanceOf[reflect.Type]
+    val arrayOfType = tob.head
     val isTypeParam = arrayOfType.typeSymbol.flags.is(reflect.Flags.Param)
     val arrayOfRType = 
       if isTypeParam then
-        TypeSymbolInfo(tob.head.asInstanceOf[reflect.Type].typeSymbol.name)
+        TypeSymbolInfo(tob.head.typeSymbol.name)
       else
-        RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
+        RType.unwindType(reflect)(tob.head)
 
     val mangled = mangleArrayClassName(arrayOfRType)
     ArrayInfo(

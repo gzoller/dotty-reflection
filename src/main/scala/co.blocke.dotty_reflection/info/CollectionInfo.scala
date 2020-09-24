@@ -59,10 +59,6 @@ case class MapLikeInfo protected[dotty_reflection](
   val fullName = name + "[" + _elementType.fullName + "," + _elementType2.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
 
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    AppliedType(Type(infoClass), List(elementType.toType(reflect), elementType2.toType(reflect)))
-
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     val (stage1Found, stage1Unfound) = elementType match {
       case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
@@ -369,10 +365,6 @@ case class JavaMapInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
-
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    AppliedType(Type(infoClass), List(elementType.toType(reflect), elementType2.toType(reflect)))
 
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     val (stage1Found, stage1Unfound) = elementType match {

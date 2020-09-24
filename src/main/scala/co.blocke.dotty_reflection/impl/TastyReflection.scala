@@ -115,7 +115,7 @@ object TastyReflection extends NonCaseClassReflection:
     }
 
 
-  def reflectOnClass(reflect: Reflection)(typeRef: reflect.TypeRef, fullName: String, resolveTypeSyms: Boolean, appliedTob: List[reflect.TypeOrBounds] =  Nil): RType = 
+  def reflectOnClass(reflect: Reflection)(typeRef: reflect.TypeRef, fullName: String, resolveTypeSyms: Boolean, appliedTob: List[reflect.Type] =  Nil): RType = 
     import reflect.{_, given _}
 
     val className = typeRef.classSymbol.get.fullName
@@ -247,23 +247,12 @@ object TastyReflection extends NonCaseClassReflection:
       val isValueClass = typeRef.baseClasses.contains(Symbol.classSymbol("scala.AnyVal"))
 
       // Need:  Map[ TraitClass -> Map[TypeSymbol -> Path] ]
-      println("Class "+className)
-      implicit val ctx = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context]
-      val typeSymbolTypes: List[reflect.Type] = symbol.primaryConstructor.paramSymss.head.map(_.asInstanceOf[dotty.tools.dotc.core.Symbols.Symbol].denot.infoOrCompleter.asInstanceOf[reflect.Type])
-      println("Syms: "+typeSymbolTypes)
-      println("Parents: "+classDef.parents.collect{
-        case t:reflect.TypeTree => t.tpe
-      }.collect{
-        case traitApplied: AppliedType if traitApplied.typeSymbol.flags.is(reflect.Flags.Trait) => 
-          val found = reflectOnSymbols(reflect)( typeSymbols.toSet, RType.unwindType(reflect)(traitApplied.asInstanceOf[Type], false), Path.buildPath)
-          println(">>> "+found)
-          val ddad = traitApplied.classSymbol.get.tree.asInstanceOf[ClassDef].parents.collect{
-            case t:reflect.TypeTree => t.tpe
-          }.collect{
-            case AppliedType(tz,_) => tz.appliedTo(typeSymbolTypes)
-          }
-          println("DDAD: "+ddad)
-        })
+      // val symTypeMap = TypeLoom.extractSymbolTypes(reflect)(typeRef, symbol.primaryConstructor.paramSymss.head.toSet)
+      // println("HERE: "+symTypeMap)
+      // TypeLoom.descendParents(reflect)(typeRef, typeSymbols.toSet)
+      /*
+      ZZZ
+      */
 
       // Get superclass' field annotations--if any
       val dad = classDef.parents.headOption match {

@@ -14,7 +14,8 @@ import dotty.tools.dotc.ast.Trees.AppliedTypeTree
 class TastyInspection(clazz: Class[_]) extends TastyInspector:
 
   var inspected: RType = UnknownInfo(clazz.getName)
+  var tasty: scala.tasty.Reflection = null
 
-  protected def processCompilationUnit(reflect: Reflection)(root: reflect.Tree): Unit = 
-    import reflect.{_, given _}
-    inspected = RType.unwindType(reflect)( Type(clazz), false )
+  protected def processCompilationUnit(using qctx: QuoteContext)(root: qctx.tasty.Tree): Unit =
+    inspected = RType.unwindType(qctx.tasty)( qctx.tasty.Type.typeConstructorOf(clazz), false )
+    tasty = qctx.tasty

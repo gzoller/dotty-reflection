@@ -23,8 +23,6 @@ trait RType extends Serializable:
   def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     (Map.empty[TypeSymbol,Path], findSyms) // (themThatsFound, themThatsStillLost)
 
-  def toType(reflect: Reflection): reflect.Type = reflect.Type(infoClass)
-
   def toBytes( bbuf: ByteBuffer ): Unit
 
   def show(
@@ -49,6 +47,7 @@ trait RType extends Serializable:
 trait AppliedRType:
   self: RType =>
   def isAppliedType: Boolean = true  // can be overridden to false, e.g. Scala class that isn't parameterized
+  def select(i: Int): RType
 
 
 // Poked this here for now.  Used for show()
@@ -61,6 +60,10 @@ object RType:
   //  <<  MACRO ENTRY >>
   //------------------------
   inline def of[T]: RType = ${ ofImpl[T]() }
+  
+  def ofImpl[T]()(implicit qctx: QuoteContext, ttype: scala.quoted.Type[T]): Expr[RType] = 
+    import qctx.tasty.{_, given _}
+    Expr( unwindType(qctx.tasty)( Type.of[T]) )
 
   inline def of(clazz: Class[_]): RType = 
     cache.getOrElse(clazz.getName,
@@ -71,26 +74,27 @@ object RType:
       }
     )
 
+  private inline def ofWithReflection(clazz: Class[_]): (RType, Reflection) = 
+    val tc = new TastyInspection(clazz)
+    tc.inspect("", List(clazz.getName))
+    (tc.inspected, tc.tasty)
+  
   inline def inTermsOf[T](clazz: Class[_]): RType = 
     inTermsOf(clazz, of[T].asInstanceOf[TraitInfo])
 
   inline def inTermsOf(clazz: Class[_], ito: TraitInfo): RType = 
-    val clazzRType = of(clazz)
-    val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
-    val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path.buildPath) ).toMap, Some(ito))
+    val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]).toSet
+    val (clazzRType, reflection) = ofWithReflection(clazz)
+    val foundSyms = TypeLoom.descendParents(reflection)( reflection.Type.typeConstructorOf(clazz), clazzSyms )
+    val paramMap = TypeLoom.Recipe.navigate( foundSyms(ito.name), ito )
 
-    println("Unfound: "+unfoundSyms)
-    println("Found paths.....\n========================\n")
-    symPaths.map{ (sym, path) =>
-      println("Path to "+sym)
-      println(path)
-    }
+    // val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path.buildPath) ).toMap, Some(ito))
 
     // Now nav the symPaths into RType from ito (reference trait) then sew these as arguments into the "naked" parameterized class (applied type)
-    val paramMap = clazzSyms.map( _ match {
-      case sym if unfoundSyms.contains(sym) => (sym -> PrimitiveType.Scala_Any)
-      case sym => (sym -> symPaths(sym).nav(ito)) //.getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")))
-      }).toMap
+    // val paramMap = clazzSyms.map( _ match {
+    //   case sym if unfoundSyms.contains(sym) => (sym -> PrimitiveType.Scala_Any)
+    //   case sym => (sym -> symPaths(sym).nav(ito)) //.getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")))
+    //   }).toMap
 
     clazzRType.resolveTypeParams(paramMap)
 
@@ -102,12 +106,7 @@ object RType:
   // pre-loaded with known language primitive types
   private val cache = scala.collection.mutable.Map.empty[String,RType] ++ PrimitiveType.loadCache
   def cacheSize = cache.size
-  
-  def ofImpl[T]()(implicit qctx: QuoteContext, ttype: scala.quoted.Type[T]): Expr[RType] = 
-    import qctx.tasty.{_, given _}
-    Expr( unwindType(qctx.tasty)(typeOf[T]) )
 
-    
   protected[dotty_reflection] def unwindType(reflect: Reflection)(aType: reflect.Type, resolveTypeSyms: Boolean = true): RType =
     import reflect.{_, given _}
 

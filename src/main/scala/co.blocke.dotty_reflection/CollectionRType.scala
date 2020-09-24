@@ -10,10 +10,6 @@ trait CollectionRType extends AppliedRType:
 
   lazy val elementType: RType
 
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    AppliedType(Type(self.infoClass), List(elementType.toType(reflect)))
-
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     elementType match {
       case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
@@ -22,6 +18,12 @@ trait CollectionRType extends AppliedRType:
       case other => 
         other.findPaths(findSyms.map( (k,v) => k -> v.add(Path.SEQ_PATH) ))
     }
+
+  def select(i: Int): RType = 
+    if i == 0 then
+      elementType
+    else
+      throw new SelectException(s"AppliedType select index $i out of range for ${self.name}")
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

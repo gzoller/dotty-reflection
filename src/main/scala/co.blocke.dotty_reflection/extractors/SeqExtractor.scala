@@ -17,16 +17,16 @@ case class SeqExtractor() extends TypeInfoExtractor[SeqLikeInfo]:
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
-    tob: List[reflect.TypeOrBounds], 
+    tob: List[reflect.Type], 
     symbol: reflect.Symbol): RType =
 
-    val listOfType = tob.head.asInstanceOf[reflect.Type]
+    val listOfType = tob.head
     val isTypeParam = listOfType.typeSymbol.flags.is(reflect.Flags.Param)
     val listOfRType = 
       if isTypeParam then
-        TypeSymbolInfo(tob.head.asInstanceOf[reflect.Type].typeSymbol.name)
+        TypeSymbolInfo(tob.head.typeSymbol.name)
       else
-        RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
+        RType.unwindType(reflect)(tob.head)
 
     SeqLikeInfo(
       t.classSymbol.get.fullName,

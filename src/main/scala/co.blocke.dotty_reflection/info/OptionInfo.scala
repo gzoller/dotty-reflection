@@ -20,6 +20,13 @@ trait OptionInfo extends RType with AppliedRType:
         other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.OPTION_PATH) ))
     }
 
+  def select(i: Int): RType = 
+    if i == 0 then
+      optionParamType
+    else
+      throw new SelectException(s"AppliedType select index $i out of range for ${name}")
+      
+
 
 object ScalaOptionInfo:
   def fromBytes( bbuf: ByteBuffer ): ScalaOptionInfo =
@@ -39,10 +46,6 @@ case class ScalaOptionInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
-
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    AppliedType(Type(infoClass), List(optionParamType.toType(reflect)))
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -79,10 +82,6 @@ case class JavaOptionalInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
-
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    AppliedType(Type(infoClass), List(optionParamType.toType(reflect)))
    
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

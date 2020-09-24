@@ -11,10 +11,6 @@ trait LeftRightRType extends AppliedRType:
   lazy val leftType: RType
   lazy val rightType: RType
 
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    AppliedType(Type(self.infoClass), List(leftType.toType(reflect), rightType.toType(reflect)))
-
   override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
     val (leftFound, leftUnfound) = leftType match {
       case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
@@ -54,6 +50,13 @@ trait LeftRightRType extends AppliedRType:
       case art: AppliedRType if art.isAppliedType => _copy(stage1.asInstanceOf[LeftRightRType].leftType, rightType.resolveTypeParams(paramMap))
       case _ => stage1
     }
+
+  def select(i: Int): RType = 
+    i match {
+      case 0 => leftType
+      case 1 => rightType
+      case _ => throw new SelectException(s"AppliedType select index $i out of range for ${self.name}")
+    }   
 
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 

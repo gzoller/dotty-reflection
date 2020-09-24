@@ -28,11 +28,6 @@ case class UnionInfo protected[dotty_reflection] (
     case e: SelfRefRType => e.resolve
     case e => e
   }
-
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    OrType(leftType.toType(reflect), rightType.toType(reflect))
-
   
   def _copy( left: RType, right: RType ) = this.copy(_leftType = left, _rightType = right)
 

@@ -28,10 +28,6 @@ case class TupleInfo protected[dotty_reflection](
     case s => s
   })
 
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    AppliedType(Type(infoClass), tupleTypes.toList.map( _.toType(reflect) ))
-
   override def isAppliedType: Boolean = 
     _tupleTypes.map{ _ match {
       case artL: AppliedRType if artL.isAppliedType => true
@@ -68,6 +64,14 @@ case class TupleInfo protected[dotty_reflection](
       }
     }
 
+
+  def select(i: Int): RType = 
+    if i >= 0 && i <= _tupleTypes.size-1 then
+      _tupleTypes(i)
+    else 
+      throw new SelectException(s"AppliedType select index $i out of range for ${name}")
+
+      
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"""(\n${tupleTypes.map(_.show(newTab,name :: seenBefore)).mkString}""" + tabs(tab) + ")\n"

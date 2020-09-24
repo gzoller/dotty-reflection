@@ -72,13 +72,11 @@ case class TraitInfo protected[dotty_reflection](
         (found, notFound)
       }
 
-  override def toType(reflect: Reflection): reflect.Type = 
-    import reflect.{_, given _}
-    if actualParameterTypes.nonEmpty then
-      val args = actualParameterTypes.map(_.toType(reflect).asInstanceOf[reflect.Type]).toList
-      AppliedType(Type(infoClass), args)
+  def select(i: Int): RType = 
+    if i >= 0 && i <= actualParameterTypes.size-1 then
+      actualParameterTypes(i)
     else
-      reflect.Type(infoClass)
+      throw new SelectException(s"AppliedType select index $i out of range for ${name}")   
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

@@ -13,16 +13,16 @@ case class TryExtractor() extends TypeInfoExtractor[TryInfo]:
 
   def extractInfo(reflect: Reflection)(
     t: reflect.Type, 
-    tob: List[reflect.TypeOrBounds], 
+    tob: List[reflect.Type], 
     symbol: reflect.Symbol): RType =
 
-    val tryOfType = tob.head.asInstanceOf[reflect.Type]
+    val tryOfType = tob.head
     val isTypeParam = tryOfType.typeSymbol.flags.is(reflect.Flags.Param)
     val tryOfRType = 
       if isTypeParam then
-        TypeSymbolInfo(tob.head.asInstanceOf[reflect.Type].typeSymbol.name)
+        TypeSymbolInfo(tob.head.typeSymbol.name)
       else
-        RType.unwindType(reflect)(tob.head.asInstanceOf[reflect.Type])
+        RType.unwindType(reflect)(tob.head)
 
     TryInfo(
       t.classSymbol.get.fullName,
