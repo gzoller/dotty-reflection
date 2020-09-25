@@ -23,13 +23,13 @@ lazy val dependencies =
   new {
     val dottyCompiler = "ch.epfl.lamp" %% "dotty-compiler" % dottyVersion
     val dottyInspection = "ch.epfl.lamp" %% "dotty-tasty-inspector" % dottyVersion
-    //val munit = "org.scalameta" %% "munit" % "0.7.12" % Test
+    val munit = "org.scalameta" %% "munit" % "0.7.12+51-8feb6e8b-SNAPSHOT" % Test //"0.7.12" % Test
   }
 
 lazy val commonDependencies = Seq(
   dependencies.dottyCompiler,
   dependencies.dottyInspection,
-  //dependencies.munit
+  dependencies.munit
 )
 
 //==========================

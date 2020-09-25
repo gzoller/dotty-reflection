@@ -85,7 +85,6 @@ object RType:
   inline def inTermsOf(clazz: Class[_], ito: TraitInfo): RType = 
     val (clazzRType, reflection, clazzType) = ofWithReflection(clazz)
     val foundSyms = TypeLoom.descendParents(reflection)( clazzType.asInstanceOf[reflection.Type] )
-    println("Found: "+foundSyms)
     val paramMap = TypeLoom.Recipe.navigate( foundSyms(ito.name), ito )
     clazzRType.resolveTypeParams(paramMap)
 
