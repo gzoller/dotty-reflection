@@ -2,26 +2,6 @@ package co.blocke.dotty_reflection
 
 import java.nio.ByteBuffer
 
-trait Pet[T] {
-  val name: String
-  val numLegs: Int
-  val special: T
-  }
-case class Dog[T](name: String, numLegs: Int, special: T) extends Pet[T]
-
-trait Foo[A]:
-  val a: Option[A]
-
-case class Bar[B]( b: B, a: Option[List[B]] ) extends Foo[List[B]]
-
-
-// trait Message[M]:
-//   val msg: List[M]
-
-// trait CommandMessage[C] extends Message[C]
-
-// case class Command[X,Y](stuff: String, one: X, msg: List[Y]) extends CommandMessage[Y]
-
 trait Message[M,N]:
   val msg: M
   val n:   N
@@ -37,64 +17,22 @@ case class Command[X,Y,Z](
   y: Y,
   thing: Z) extends CommandMessage[Option[Y], Z]  // extends Message[Z, List[Option[Y]]] --> Path for Y should be: (1,0,0)
 
-/*
-  Y and Z inTermsOf CommandMessage:
-      MAPPING                DE-REF ACTION
-      Y -> C                 C -> Y
-      Y -> Param(0)
 
-      Option[Z] -> D         un-apply[D] -> Z
-      Option[Z] -> Param(1)  un-apply[Param(1)] -> Z
-
-  Y and Z inTermsOf Message:  
-      MAPPING                        DE-REF ACTION
-      Y -> N                         N -> Y
-      Y -> Param(1)                  Param(1) -> Y
-
-      List[Option[Z]] -> M           un-apply[un-apply[M]] -> Z
-      List[Option[Z]] -> Param(0)    un-apply[aun-apply[Param(0)]] -> Z
-*/
+// trait T5[X, Y] { val thing1: X; val thing2: Y }
+// trait T10[X, Y] { val x: X; val y: Y }
+// trait T11[W, Z] { val w: W; val z: Z }
+// case class TBlah1[A, B](w: A, z: B) extends T11[A, B]
+// case class TBar7[A, B](thing1: A, thing2: B) extends T5[A, B]
+// case class TFoo6[A, B, C, D](x: T11[C, T5[D, A]], y: B) extends T10[T11[C, T5[D, A]], B]
 
 
 object RunMe extends App:
 
-// tree.tpe.appliedRef
-
-  // println(RType.of[Pet[Boolean]])
-  // println(RType.of[Dog[_]])
-  // println(RType.inTermsOf[Pet[Boolean]](classOf[Dog[_]]))
-
-
-  // println(RType.inTermsOf[Foo[Float]](classOf[Bar[_]]))
-
-
-  // println(RType.of(classOf[Command[_]]))
-  // println(RType.of[Command[String]])
-
   // println(RType.inTermsOf[CommandMessage[Option[String],Boolean]](classOf[Command[_,_,_]]))
-  println(RType.inTermsOf[Message[Boolean, List[Option[String]]]](classOf[Command[_,_,_]]))
+  // println(RType.inTermsOf[Message[Boolean, List[Option[String]]]](classOf[Command[_,_,_]]))
 
-  
+  // val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
+  // val result = RType.inTermsOf[T10[T11[Int, T5[Double, Char]], String]]( inst.getClass )
+  // println(result)
 
-  // println(RType.inTermsOf[Foo[List[Boolean]]]( classOf[Bar[_]]))
-  
-  // val r = RType.of[Foo[List[Boolean]]].asInstanceOf[info.TraitInfo]
-  // println(r.actualParameterTypes.toList)
-  // println(r.paramSymbols.toList)
-  
   println("Done.")
-  
-
-
-
-// RType.inTermsOf[Foo[List[Boolean]]]( classOf[Bar] )
-//   A -> List[Boolean]
-
-
-/*
-Path Map:
-  Command --> CommandMessage:   C <-- Y
-  Command --> Messgage:         M <-- List[Y]  UnApply[M](0) = Y  (0) is tob list index (could be > 0 for Map or Tuple)
-
-  Goal: inTermsOf[Message[List[String]]]( classOf[Command])
-*/

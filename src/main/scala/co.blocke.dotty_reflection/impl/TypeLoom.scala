@@ -2,11 +2,6 @@ package co.blocke.dotty_reflection
 package impl
 
 import scala.tasty.Reflection
-// import java.nio.ByteBuffer
-
-// Ok, a no-no here... breaking out of the walls of Reflection and into compiler internals.
-// Saves creationg of an Reflection context at runtime when one is strictly not needed.
-// import dotty.tools.dotc.core.Types._ 
 
 /**
 
@@ -54,44 +49,6 @@ case class Command[X,Y,Z](
 
 object TypeLoom:
 
-
-/*
-  def extractSymbolTypes(reflect: Reflection)( 
-      subject: reflect.Type, 
-      symbols: Set[reflect.Symbol], 
-      foundSoFar: Map[String, reflect.Type] = Map.empty[String, reflect.Type] 
-    ): Map[String, reflect.Type] =
-    import reflect._ 
-
-    subject match {
-      case AppliedType(t,tob) =>
-        tob.foldLeft( (symbols,foundSoFar) ){ case((symsToFind, soFar),tpe) =>
-          val gotSome = extractSymbolTypes(reflect)(tpe, symsToFind, soFar)
-          (symsToFind.filterNot(s => gotSome.keySet.contains(s.fullName.replace("_$",""))), gotSome)
-          }._2
-      
-      case _ => // found a symbol
-        subject.typeSymbol match {
-          case ts if ts.isTypeDef && symbols.contains(ts) =>
-            foundSoFar + (subject.typeSymbol.fullName.replace("_$","") -> subject)
-
-          case _ =>  // a class or trait of some sort
-            subject.classSymbol.get match {
-              case sym if sym.isClassDef =>
-                if sym.tree.asInstanceOf[ClassDef].constructor.paramss.head.nonEmpty then
-                  sym.tree.asInstanceOf[ClassDef].constructor.paramss.head.foldLeft( (symbols,foundSoFar) ){ case ((symsToFind, soFar),fieldValDef) => 
-                    val gotSome = extractSymbolTypes(reflect)(fieldValDef.tpt.tpe, symsToFind, soFar) 
-                    (symsToFind.filterNot(s => gotSome.keySet.contains(s.fullName.replace("_$",""))), gotSome)
-                    }._2
-                else
-                  // no params on this class -- pass through
-                  foundSoFar
-            }
-        }
-  }
-  */
-
-
   def descendParents(reflect: Reflection)( subject: reflect.Type ): Map[String, Map[String, List[Int]]] =
     import reflect._
     val classDef = subject.classSymbol.get.tree.asInstanceOf[ClassDef]
@@ -109,13 +66,14 @@ object TypeLoom:
         val dadsSyms = a.classSymbol.get.primaryConstructor.paramSymss.head.map(n => a.classSymbol.get.fullName+"."+n.name)
         val dads = descendParents(reflect)(a)
         val mine = Map(a.typeSymbol.fullName -> descendAppliedType(reflect)(a, Nil, Map.empty[String,List[Int]], lookFor.toSet))
+
         // Ok here we have our mappings and our parents' mappings... In terms of themselves.
         // We now have to resolve the parents' in terms of mine and add to result
         val resolvedPaths: Map[String,Map[String,List[Int]]] = mine ++ dads.map{
           case( dadsClassName, dadsMappings ) =>
             val resolved: Map[String,List[Int]] = mine.head._2.map{
               case (sym, pathHead :: pathRest) =>
-                (sym, pathRest ++ dadsMappings( dadsSyms(pathHead) ))
+                (sym, dadsMappings( dadsSyms(pathHead) ) ++ pathRest)
               case (sym, Nil) =>
                 (sym, Nil) // do nothing for unmapped/unfound syms
             }.toMap
