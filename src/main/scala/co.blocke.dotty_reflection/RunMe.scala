@@ -26,15 +26,16 @@ trait Message[M,N]:
   val msg: M
   val n:   N
 
-trait CommandMessage[C,D] extends Message[List[C],D]:
+trait CommandMessage[C,D] extends Message[D,List[C]]:
   val thing: D
 
 case class Command[X,Y,Z](
   stuff: String, 
   one: X, 
-  msg: List[Option[Y]], 
-  n: Z,
-  thing: Z) extends CommandMessage[Option[Y], Z]
+  msg: Z, 
+  n: List[Option[Y]],
+  y: Y,
+  thing: Z) extends CommandMessage[Option[Y], Z]  // extends Message[Z, List[Option[Y]]] --> Path for Y should be: (1,0,0)
 
 /*
   Y and Z inTermsOf CommandMessage:
@@ -70,8 +71,8 @@ object RunMe extends App:
   // println(RType.of(classOf[Command[_]]))
   // println(RType.of[Command[String]])
 
-  println(RType.inTermsOf[CommandMessage[Option[String],Boolean]](classOf[Command[_,_,_]]))
-  // println(RType.inTermsOf[Message[List[String],Boolean]](classOf[Command[_,_,_]]))
+  // println(RType.inTermsOf[CommandMessage[Option[String],Boolean]](classOf[Command[_,_,_]]))
+  println(RType.inTermsOf[Message[Boolean, List[Option[String]]]](classOf[Command[_,_,_]]))
 
   
 

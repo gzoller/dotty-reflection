@@ -74,28 +74,19 @@ object RType:
       }
     )
 
-  private inline def ofWithReflection(clazz: Class[_]): (RType, Reflection) = 
+  private inline def ofWithReflection(clazz: Class[_]): (RType, Reflection, dotty.tools.dotc.core.Types.CachedType) = 
     val tc = new TastyInspection(clazz)
     tc.inspect("", List(clazz.getName))
-    (tc.inspected, tc.tasty)
+    (tc.inspected, tc.tasty, tc.clazzType)
   
   inline def inTermsOf[T](clazz: Class[_]): RType = 
     inTermsOf(clazz, of[T].asInstanceOf[TraitInfo])
 
   inline def inTermsOf(clazz: Class[_], ito: TraitInfo): RType = 
-    val clazzSyms = clazz.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol]).toSet
-    val (clazzRType, reflection) = ofWithReflection(clazz)
-    val foundSyms = TypeLoom.descendParents(reflection)( reflection.Type.typeConstructorOf(clazz), clazzSyms )
+    val (clazzRType, reflection, clazzType) = ofWithReflection(clazz)
+    val foundSyms = TypeLoom.descendParents(reflection)( clazzType.asInstanceOf[reflection.Type] )
+    println("Found: "+foundSyms)
     val paramMap = TypeLoom.Recipe.navigate( foundSyms(ito.name), ito )
-
-    // val (symPaths, unfoundSyms) = clazzRType.findPaths(clazzSyms.map( sym => (sym->Path.buildPath) ).toMap, Some(ito))
-
-    // Now nav the symPaths into RType from ito (reference trait) then sew these as arguments into the "naked" parameterized class (applied type)
-    // val paramMap = clazzSyms.map( _ match {
-    //   case sym if unfoundSyms.contains(sym) => (sym -> PrimitiveType.Scala_Any)
-    //   case sym => (sym -> symPaths(sym).nav(ito)) //.getOrElse( throw new ReflectException(s"Failure to resolve type parameter '${sym}'")))
-    //   }).toMap
-
     clazzRType.resolveTypeParams(paramMap)
 
   inline def unpackAnno(c: Class[_]): Option[RType] =

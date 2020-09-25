@@ -15,7 +15,10 @@ class TastyInspection(clazz: Class[_]) extends TastyInspector:
 
   var inspected: RType = UnknownInfo(clazz.getName)
   var tasty: scala.tasty.Reflection = null
+  var clazzType: dotty.tools.dotc.core.Types.CachedType = null
 
   protected def processCompilationUnit(using qctx: QuoteContext)(root: qctx.tasty.Tree): Unit =
-    inspected = RType.unwindType(qctx.tasty)( qctx.tasty.Type.typeConstructorOf(clazz), false )
+    val tastyType = qctx.tasty.Type.typeConstructorOf(clazz)
+    inspected = RType.unwindType(qctx.tasty)( tastyType, false )
     tasty = qctx.tasty
+    clazzType = tastyType.asInstanceOf[dotty.tools.dotc.core.Types.CachedType]
