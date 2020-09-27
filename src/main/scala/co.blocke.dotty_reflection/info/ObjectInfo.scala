@@ -2,6 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 import java.nio.ByteBuffer
+import impl._
 
 object ObjectInfo:
   def fromBytes( bbuf: ByteBuffer ): ObjectInfo = 

@@ -3,6 +3,7 @@ package info
 
 import scala.tasty.Reflection
 import java.nio.ByteBuffer
+import impl._
 
 object AliasInfo:
   def fromBytes( bbuf: ByteBuffer ): AliasInfo = 

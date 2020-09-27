@@ -2,8 +2,8 @@ package co.blocke.dotty_reflection
 package info
 
 import scala.tasty.Reflection
-import impl.Path
 import java.nio.ByteBuffer
+import impl._
 
 
 object TupleInfo:
@@ -51,27 +51,12 @@ case class TupleInfo protected[dotty_reflection](
     else
       this
 
-  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    tupleTypes.zipWithIndex.foldLeft( (Map.empty[TypeSymbol,Path], findSyms) ){ (acc, item) =>
-      val (foundSoFar, notYetFound) = acc
-      item match {
-        case (ts:TypeSymbolInfo, i: Int) if notYetFound.contains(ts.name.asInstanceOf[TypeSymbol]) => 
-          val sym = ts.name.asInstanceOf[TypeSymbol]
-          (foundSoFar + (sym -> notYetFound(sym).add(Path.TUPLE_PATH,i.toByte).lock), notYetFound - sym)
-        case (other: RType, i: Int) =>
-          val (fsf2, nyf2) = other.findPaths( notYetFound.map( (k,v) => k -> v.fork.add(Path.TUPLE_PATH,i.toByte)) )
-          (fsf2 ++ foundSoFar, nyf2)
-      }
-    }
-
-
   def select(i: Int): RType = 
     if i >= 0 && i <= _tupleTypes.size-1 then
       _tupleTypes(i)
     else 
-      throw new SelectException(s"AppliedType select index $i out of range for ${name}")
+      throw new ReflectException(s"AppliedType select index $i out of range for ${name}")
 
-      
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + s"""(\n${tupleTypes.map(_.show(newTab,name :: seenBefore)).mkString}""" + tabs(tab) + ")\n"

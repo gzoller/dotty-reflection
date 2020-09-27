@@ -1,4 +1,5 @@
 package co.blocke.dotty_reflection
+package impl
 
 import java.io._
 import java.nio._
@@ -49,6 +50,35 @@ object MapStringByteEngine extends BytesEngine[Map[String,Map[String,String]]]:
       val v: Map[String,String] = (0 to vlen-1).map {_ =>
         val k2 = StringByteEngine.read(bbuf)
         val v2 = StringByteEngine.read(bbuf)
+        (k2,v2)
+      }.toMap
+      (k,v)
+    }.toMap
+
+
+// *** CUSTOM ***
+object MapStringListByteEngine extends BytesEngine[Map[String,Map[String,List[Int]]]]:
+  def write( bbuf: ByteBuffer, t: Map[String,Map[String,List[Int]]] ): Unit =
+    bbuf.putInt( t.size )
+    t.foreach{ (k,v) => 
+      StringByteEngine.write(bbuf,k)
+      bbuf.putInt( v.size )
+      v.foreach{ (k2,v2) =>
+        StringByteEngine.write(bbuf,k2)
+        bbuf.putInt(v2.length)
+        v2.foreach( one => bbuf.putInt(one) )
+      }
+    }
+
+  def read( bbuf: ByteBuffer ): Map[String,Map[String,List[Int]]] =
+    val len = bbuf.getInt()
+    (0 to len-1).map{ _ => 
+      val k = StringByteEngine.read(bbuf)
+      val len2 = bbuf.getInt()
+      val v = (0 to len2-1).map{ _ =>
+        val k2 = StringByteEngine.read(bbuf)
+        val arrLen = bbuf.getInt()
+        val v2 = (0 to arrLen-1).map(_ => bbuf.getInt()).toList
         (k2,v2)
       }.toMap
       (k,v)

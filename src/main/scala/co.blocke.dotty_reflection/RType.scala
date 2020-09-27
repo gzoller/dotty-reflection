@@ -18,11 +18,6 @@ trait RType extends Serializable:
   // Take a parameterized type's normal type 'T' and map it to the declared type 'X'
   def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = this
 
-  // Find paths to given type symbols
-  // referenceTrait is for top-level call
-  def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    (Map.empty[TypeSymbol,Path], findSyms) // (themThatsFound, themThatsStillLost)
-
   def toBytes( bbuf: ByteBuffer ): Unit
 
   def show(
@@ -83,10 +78,32 @@ object RType:
     inTermsOf(clazz, of[T].asInstanceOf[TraitInfo])
 
   inline def inTermsOf(clazz: Class[_], ito: TraitInfo): RType = 
-    val (clazzRType, reflection, clazzType) = ofWithReflection(clazz)
-    val foundSyms = TypeLoom.descendParents(reflection)( clazzType.asInstanceOf[reflection.Type] )
-    val paramMap = TypeLoom.Recipe.navigate( foundSyms(ito.name), ito )
-    clazzRType.resolveTypeParams(paramMap)
+    cache.get(clazz.getName) match {
+      case Some(scib: ScalaClassInfoBase) => scib.resolveTypeParams( TypeLoom.Recipe.navigate( scib.paths(ito.name), ito ))
+      case None => 
+        unpackAnno(clazz) match {
+          case Some(scib: ScalaClassInfoBase) => scib.resolveTypeParams( TypeLoom.Recipe.navigate( scib.paths(ito.name), ito ))
+          case None =>
+            val (clazzRType, reflection, clazzType) = ofWithReflection(clazz)
+            val symPaths = TypeLoom.descendParents(reflection)( clazzType.asInstanceOf[reflection.Type] ) 
+            clazzRType.asInstanceOf[ScalaClassInfoBase].resolveTypeParams( TypeLoom.Recipe.navigate( symPaths(ito.name), ito ))
+          case _ => 
+            throw new ReflectException(s"ClassInfo in annotation for ${clazz.getName} is not a Scala 3 class")
+        }
+      case _ =>
+        throw new ReflectException(s"Cached class ${clazz.getName} is not a Scala 3 class")
+    }
+    // val (rt, paths) = cache.get(clazz.getName).map(c => (c.asInstanceOf[ScalaClassInfoBase], c.asInstanceOf[ScalaClassInfoBase].paths)).getOrElse(
+    //   unpackAnno(clazz).map{ clazzRtype =>
+    //     cache.put(clazz.getName, clazzRtype)
+    //     (clazzRtype.asInstanceOf[ScalaClassInfoBase], clazzRtype.asInstanceOf[ScalaClassInfoBase].paths)
+    //   }.getOrElse{
+    //     val (clazzRType, reflection, clazzType) = ofWithReflection(clazz)
+    //     val symPaths = TypeLoom.descendParents(reflection)( clazzType.asInstanceOf[reflection.Type] ) 
+    //     (clazzRType.asInstanceOf[ScalaClassInfoBase], symPaths)           
+    //   }
+    // )
+    // rt.resolveTypeParams( TypeLoom.Recipe.navigate( paths(ito.name), ito ) )
 
   inline def unpackAnno(c: Class[_]): Option[RType] =
     c.getAnnotations.toList.collectFirst{

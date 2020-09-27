@@ -1,6 +1,7 @@
 package co.blocke.dotty_reflection
 package info
 
+import impl._
 import java.nio.ByteBuffer
 
 object EitherInfo:

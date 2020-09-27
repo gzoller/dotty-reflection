@@ -125,6 +125,3 @@ val UNKNOWN_INFO         : Byte = 51
 val SCALA_FIELD_INFO     : Byte = 52
 val JAVA_FIELD_INFO      : Byte = 53
 val JAVA_CLASS_INFO_PROXY: Byte = 54
-
-
-class SelectException(msg: String) extends Exception(msg)

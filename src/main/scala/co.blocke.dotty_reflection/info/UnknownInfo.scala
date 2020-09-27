@@ -2,6 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 import java.nio.ByteBuffer
+import impl._
 
 /** This is for all the classes we don't inspect.  These may be "invalid" or just not reflectable.
   * Rather than toss our exception cookies, we just return UnknownInfo and let the caller decide

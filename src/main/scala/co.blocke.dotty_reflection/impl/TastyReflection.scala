@@ -246,14 +246,6 @@ object TastyReflection extends NonCaseClassReflection:
 
       val isValueClass = typeRef.baseClasses.contains(Symbol.classSymbol("scala.AnyVal"))
 
-      // Need:  Map[ TraitClass -> Map[TypeSymbol -> Path] ]
-      // val symTypeMap = TypeLoom.extractSymbolTypes(reflect)(typeRef, symbol.primaryConstructor.paramSymss.head.toSet)
-      // println("HERE: "+symTypeMap)
-      // TypeLoom.descendParents(reflect)(typeRef, typeSymbols.toSet)
-      /*
-      ZZZ
-      */
-
       // Get superclass' field annotations--if any
       val dad = classDef.parents.headOption match {
         case Some(tt: TypeTree) if !isValueClass && tt.tpe.classSymbol.get.fullName != "java.lang.Object" => 
@@ -317,8 +309,8 @@ object TastyReflection extends NonCaseClassReflection:
             TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
           }
           reflectOnField(reflect)(fieldType, valDef, idx, dad, fieldDefaultMethods).resolveTypeParams( paramMap )
-        }       
-
+        }      
+        
         ScalaCaseClassInfo(
           className,
           fullName,
@@ -327,6 +319,7 @@ object TastyReflection extends NonCaseClassReflection:
           typeMembers.toArray, 
           caseFields.toArray, 
           classAnnos, 
+          TypeLoom.descendParents(reflect)( typeRef ),
           classDef.parents.map(_.symbol.fullName).toArray, 
           typeSymbols.nonEmpty,
           isValueClass)
@@ -358,6 +351,7 @@ object TastyReflection extends NonCaseClassReflection:
           typeMembers.toArray,
           caseFields.toArray, 
           classAnnos,
+          TypeLoom.descendParents(reflect)( typeRef ),
           classDef.parents.map(_.symbol.fullName).toArray,
           isValueClass)
 
@@ -391,41 +385,3 @@ object TastyReflection extends NonCaseClassReflection:
     val originalTypeSymbol = if isTypeParam then Some(valTypeRef.name.asInstanceOf[TypeSymbol]) else None
 
     ScalaFieldInfo(index, valDef.name, fieldType, fieldAnnos, fieldDefaultMethods.get(index), originalTypeSymbol)
-
-
-  // Dive into the given tree (typically starting with a trait) and find the given symbols (taken from a parameterized class)
-
-  // PROBLEM:  A trait w/no fields must somehow inherit its base traits' fields in order for this logic to work, 
-  // otherwise the marker trait's fields list will be empty!
-  def reflectOnSymbols(reflect: Reflection)( syms: Set[TypeSymbol], tree: RType, pathSoFar: Path ): Map[TypeSymbol, Path] =
-    // Examine anything that can be an AppliedType (parameterizable)
-    tree match {
-      case s: TraitInfo      =>
-        s.fields.foldLeft( (syms, Map.empty[TypeSymbol,Path]) ){ case ((syms2,symPathMap), oneField) => 
-          oneField.fieldType match {
-            case ts: TypeSymbolInfo => 
-              val symName = ts.name.asInstanceOf[TypeSymbol]
-              if syms2.contains(symName) then
-                // Found a symbol we're looking for... remove from list and add entry in path map
-                (syms2 - symName, symPathMap + (symName -> pathSoFar.add(Path.TRAIT_PATH, oneField.index.toByte).lock))
-              else
-                // Not a symbol we're looking for... ignore it... no change to foldLeft args
-                (syms2, symPathMap)
-            case other              =>
-              val symsFoundMap = reflectOnSymbols(reflect)(syms2, oneField.fieldType, pathSoFar.fork.add(Path.TRAIT_PATH, oneField.index.toByte))
-              (syms2 -- symsFoundMap.keySet, symsFoundMap)
-            }
-          }._2 // return just the paths to the found symbols
-      case s: ClassInfo       =>
-        ???
-      case s: CollectionRType =>
-        ???
-      case s: LeftRightRType  =>
-        ???
-      case s: OptionInfo      =>
-        ???
-      case s: TryInfo         =>
-        ???
-      case s: TupleInfo       =>
-        ???
-    }

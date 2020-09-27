@@ -1,6 +1,6 @@
 package co.blocke.dotty_reflection
+package impl
 
-import impl._
 import info._
 import scala.tasty.Reflection
 
@@ -10,23 +10,6 @@ trait LeftRightRType extends AppliedRType:
 
   lazy val leftType: RType
   lazy val rightType: RType
-
-  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    val (leftFound, leftUnfound) = leftType match {
-      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
-        val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.LEFT_PATH).lock ), findSyms - sym)
-      case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.LEFT_PATH) ))
-    }
-    val (rightFound, rightUnfound) = leftType match {
-      case ts: TypeSymbolInfo if leftUnfound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
-        val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> leftUnfound(sym).add(Path.RIGHT_PATH) ), findSyms - sym)
-      case other => 
-        other.findPaths(leftUnfound.map( (k,v) => k -> v.fork.add(Path.RIGHT_PATH) ))
-    }
-    (leftFound ++ rightFound, rightUnfound)
 
   def _copy( left: RType, right: RType ): RType
 
@@ -55,7 +38,7 @@ trait LeftRightRType extends AppliedRType:
     i match {
       case 0 => leftType
       case 1 => rightType
-      case _ => throw new SelectException(s"AppliedType select index $i out of range for ${self.name}")
+      case _ => throw new ReflectException(s"AppliedType select index $i out of range for ${self.name}")
     }   
 
 

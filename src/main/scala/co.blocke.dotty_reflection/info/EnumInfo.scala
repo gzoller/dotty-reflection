@@ -2,6 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 import java.nio.ByteBuffer
+import impl._
 
 /** Something to smooth the differences between the 2.x Enumeration class and the 3.x Enum class
  */

@@ -2,6 +2,7 @@ package co.blocke.dotty_reflection
 package info
 
 import java.nio.ByteBuffer
+import impl._
 
 /** RType for a Scala 2 class (no Tasty info)
  */

@@ -3,6 +3,7 @@ package info
 
 import java.lang.reflect.Method
 import java.nio.ByteBuffer
+import impl._
 
 
 trait FieldInfo extends Serializable:

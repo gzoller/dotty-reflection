@@ -6,6 +6,7 @@ import java.util._
 import Liftable._
 
 import info._
+import impl.SelfRefRType
 
 given Liftable[TypeSymbol] {
   def toExpr(t: TypeSymbol) = '{ ${Expr(t.asInstanceOf[String])}.asInstanceOf[TypeSymbol] }

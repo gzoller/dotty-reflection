@@ -22,6 +22,7 @@ trait NonCaseClassReflection:
     typeMembers:           Array[TypeMemberInfo],
     fields:                Array[FieldInfo],
     annotations:           Map[String, Map[String,String]],
+    paths:                 Map[String, Map[String,List[Int]]],
     mixins:                Array[String],
     isValueClass:          Boolean
   ): ScalaClassInfo = 
@@ -172,6 +173,7 @@ trait NonCaseClassReflection:
       fields,
       nonConstructorFields,
       annotations,
+      paths,
       mixins,
       isAppliedType,
       isValueClass

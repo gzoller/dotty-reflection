@@ -19,6 +19,7 @@ trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
   val _typeMembers:           Array[TypeMemberInfo]
   val _fields:                Array[FieldInfo]
   val _annotations:           Map[String, Map[String,String]]
+  val paths:                  Map[String, Map[String,List[Int]]]
   val _mixins:                Array[String]
   val isValueClass:           Boolean
 
@@ -43,47 +44,11 @@ trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
 
   lazy val constructor = infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
 
-  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    val interestingFields = referenceTrait match {
-      case Some(t:TraitInfo) => 
-        val refTraitFieldNames = t.fields.map(_.name)
-        fields.filter(f => refTraitFieldNames.contains(f.name))
-      case _ => fields
-    }
-    interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
-      val (found, notFound) = acc
-      if notFound.nonEmpty then
-        val fn = (p: Path, doLock: Boolean) => 
-          if referenceTrait.isDefined then
-            val index = referenceTrait.get.fields.indexWhere(_.name == f.name)
-            if doLock then
-              p.add(Path.TRAIT_PATH, index.toByte).lock
-            else
-              p.fork.add(Path.TRAIT_PATH, index.toByte)
-          else
-            if doLock then
-              p.add(Path.CLASS_PATH, f.index.toByte).lock
-            else
-              p.fork.add(Path.CLASS_PATH, f.index.toByte)
-        f.fieldType match {
-          case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
-            // This field's type is one of the sought-after TypeSymbols...
-            val sym = ts.name.asInstanceOf[TypeSymbol]
-            (found + (sym -> fn(notFound(sym),true)), notFound - sym)
-          case _ =>
-            // Or it's not...
-            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> fn(v,false) ))
-            (found ++ themThatsFound, themThatsStillLost.map( (k,v) => k -> findSyms(k) ))
-        }
-      else
-        (found, notFound)
-      }
-
   def select(i: Int): RType = 
     if i >= 0 && i <= _fields.size-1 then
       _fields(i).fieldType
     else
-      throw new SelectException(s"AppliedType select index $i out of range for ${name}") 
+      throw new ReflectException(s"AppliedType select index $i out of range for ${name}") 
       
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
@@ -112,6 +77,7 @@ object ScalaCaseClassInfo:
       ArrayRTypeByteEngine.read(bbuf).map(_.asInstanceOf[TypeMemberInfo]),
       ArrayFieldInfoByteEngine.read(bbuf),
       MapStringByteEngine.read(bbuf),
+      MapStringListByteEngine.read(bbuf),
       ArrayStringByteEngine.read(bbuf),
       BooleanByteEngine.read(bbuf),
       BooleanByteEngine.read(bbuf)
@@ -124,6 +90,7 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
     _typeMembers:           Array[TypeMemberInfo],
     _fields:                Array[FieldInfo],
     _annotations:           Map[String, Map[String,String]],
+    paths:                  Map[String, Map[String,List[Int]]],
     _mixins:                Array[String],
     override val isAppliedType: Boolean,
     isValueClass:           Boolean
@@ -146,6 +113,7 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
     ArrayRTypeByteEngine.write(bbuf, _typeMembers.asInstanceOf[Array[RType]])
     ArrayFieldInfoByteEngine.write(bbuf, _fields)
     MapStringByteEngine.write(bbuf, _annotations)
+    MapStringListByteEngine.write(bbuf, paths)
     ArrayStringByteEngine.write(bbuf, _mixins)
     BooleanByteEngine.write(bbuf, isAppliedType)
     BooleanByteEngine.write(bbuf, isValueClass)
@@ -162,6 +130,7 @@ object ScalaClassInfo:
       ArrayFieldInfoByteEngine.read(bbuf),
       ArrayFieldInfoByteEngine.read(bbuf).map(_.asInstanceOf[ScalaFieldInfo]),
       MapStringByteEngine.read(bbuf),
+      MapStringListByteEngine.read(bbuf),
       ArrayStringByteEngine.read(bbuf),
       BooleanByteEngine.read(bbuf),
       BooleanByteEngine.read(bbuf)
@@ -175,6 +144,7 @@ case class ScalaClassInfo protected[dotty_reflection] (
     _fields:                Array[FieldInfo],  // constructor fields
     nonConstructorFields:   Array[ScalaFieldInfo],
     _annotations:           Map[String, Map[String,String]],
+    paths:                  Map[String, Map[String,List[Int]]],
     _mixins:                Array[String],
     override val isAppliedType: Boolean,
     isValueClass:           Boolean
@@ -214,6 +184,7 @@ case class ScalaClassInfo protected[dotty_reflection] (
     ArrayFieldInfoByteEngine.write(bbuf, _fields)
     ArrayFieldInfoByteEngine.write(bbuf, nonConstructorFields.asInstanceOf[Array[FieldInfo]])
     MapStringByteEngine.write(bbuf, _annotations)
+    MapStringListByteEngine.write(bbuf, paths)
     ArrayStringByteEngine.write(bbuf, _mixins)
     BooleanByteEngine.write(bbuf, isAppliedType)
     BooleanByteEngine.write(bbuf, isValueClass)

@@ -3,6 +3,8 @@ package info
 
 import scala.tasty.Reflection
 import java.nio.ByteBuffer
+import impl._
+
 
 object IntersectionInfo:
   def fromBytes( bbuf: ByteBuffer ): IntersectionInfo = 

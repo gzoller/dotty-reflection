@@ -11,20 +11,11 @@ import java.nio.ByteBuffer
 trait OptionInfo extends RType with AppliedRType:
   lazy val optionParamType: RType
 
-  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    optionParamType match {
-      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
-        val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.OPTION_PATH).lock ), findSyms - sym)
-      case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.OPTION_PATH) ))
-    }
-
   def select(i: Int): RType = 
     if i == 0 then
       optionParamType
     else
-      throw new SelectException(s"AppliedType select index $i out of range for ${name}")
+      throw new ReflectException(s"AppliedType select index $i out of range for ${name}")
       
 
 

@@ -26,20 +26,11 @@ case class TryInfo protected[dotty_reflection](
     case e => e
   }
 
-  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    tryType match {
-      case ts: TypeSymbolInfo if findSyms.contains(ts.name.asInstanceOf[TypeSymbol]) =>
-        val sym = ts.name.asInstanceOf[TypeSymbol]
-        (Map( ts.name.asInstanceOf[TypeSymbol] -> findSyms(sym).add(Path.TRY_PATH).lock ), findSyms - sym)
-      case other => 
-        other.findPaths(findSyms.map( (k,v) => k -> v.fork.add(Path.TRY_PATH) ))
-    }
-
   def select(i: Int): RType = 
     if i == 0 then
       _tryType
     else
-      throw new SelectException(s"AppliedType select index $i out of range for ${name}")
+      throw new ReflectException(s"AppliedType select index $i out of range for ${name}")
       
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}

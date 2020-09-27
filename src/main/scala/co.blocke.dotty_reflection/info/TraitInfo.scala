@@ -43,40 +43,11 @@ case class TraitInfo protected[dotty_reflection](
       paramSymbols
       )
 
-  override def findPaths(findSyms: Map[TypeSymbol,Path], referenceTrait: Option[TraitInfo] = None): (Map[TypeSymbol, Path], Map[TypeSymbol, Path]) = 
-    val interestingFields = referenceTrait match {
-      case Some(t:TraitInfo) => 
-        val refTraitFieldNames = t.fields.map(_.name)
-        fields.filter(f => refTraitFieldNames.contains(f.name))
-      case _ => fields
-    }
-    interestingFields.foldLeft((Map.empty[TypeSymbol,Path], findSyms)) { (acc, f) =>
-      val (found, notFound) = acc
-      if notFound.nonEmpty then
-        val index = 
-          if referenceTrait.isDefined then
-            referenceTrait.get.fields.indexWhere(_.name == f.name)
-          else
-            f.index
-        f.fieldType match {
-          case ts: TypeSymbolInfo if notFound.contains(ts.name.asInstanceOf[TypeSymbol]) =>
-            // This field's type is one of the sought-after TypeSymbols...
-            val sym = ts.name.asInstanceOf[TypeSymbol]
-            (found + (sym -> notFound(sym).add(Path.TRAIT_PATH, index.toByte).lock), notFound - sym)
-          case _ =>
-            // Or it's not...
-            val (themThatsFound, themThatsStillLost) = f.fieldType.findPaths(notFound.map( (k,v) => k -> v.fork.add(Path.TRAIT_PATH, index.toByte) ))
-            (found ++ themThatsFound, themThatsStillLost.map( (k,v) => k -> findSyms(k) ))
-        }
-      else
-        (found, notFound)
-      }
-
   def select(i: Int): RType = 
     if i >= 0 && i <= actualParameterTypes.size-1 then
       actualParameterTypes(i)
     else
-      throw new SelectException(s"AppliedType select index $i out of range for ${name}")   
+      throw new ReflectException(s"AppliedType select index $i out of range for ${name}")   
 
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
