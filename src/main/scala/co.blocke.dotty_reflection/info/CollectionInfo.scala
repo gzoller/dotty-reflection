@@ -26,7 +26,7 @@ case class SeqLikeInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         SeqLikeInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        SeqLikeInfo(name, _elementType.resolveTypeParams(paramMap))
+        SeqLikeInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -71,14 +71,14 @@ case class MapLikeInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         MapLikeInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]), _elementType2)
       case art: AppliedRType if art.isAppliedType => 
-        MapLikeInfo(name, _elementType.resolveTypeParams(paramMap), _elementType2)
+        MapLikeInfo(name, art.resolveTypeParams(paramMap), _elementType2)
       case _ => this
     }
     _elementType2 match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         MapLikeInfo(name, stage1._elementType, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        MapLikeInfo(name, stage1._elementType, _elementType2.resolveTypeParams(paramMap))
+        MapLikeInfo(name, stage1._elementType, art.resolveTypeParams(paramMap))
       case _ => stage1
     }
 
@@ -126,7 +126,7 @@ case class ArrayInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         ArrayInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        ArrayInfo(name, _elementType.resolveTypeParams(paramMap))
+        ArrayInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -166,7 +166,7 @@ case class JavaSetInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         JavaSetInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        JavaSetInfo(name, _elementType.resolveTypeParams(paramMap))
+        JavaSetInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -202,7 +202,7 @@ case class JavaListInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         JavaListInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        JavaListInfo(name, _elementType.resolveTypeParams(paramMap))
+        JavaListInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -238,7 +238,7 @@ case class JavaArrayInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         JavaArrayInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        JavaArrayInfo(name, _elementType.resolveTypeParams(paramMap))
+        JavaArrayInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -278,7 +278,7 @@ case class JavaQueueInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         JavaQueueInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        JavaQueueInfo(name, _elementType.resolveTypeParams(paramMap))
+        JavaQueueInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -314,7 +314,7 @@ case class JavaStackInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         JavaStackInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        JavaStackInfo(name, _elementType.resolveTypeParams(paramMap))
+        JavaStackInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -368,14 +368,14 @@ case class JavaMapInfo protected[dotty_reflection](
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         JavaMapInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]), _elementType2)
       case art: AppliedRType if art.isAppliedType => 
-        JavaMapInfo(name, _elementType.resolveTypeParams(paramMap), _elementType2)
+        JavaMapInfo(name, art.resolveTypeParams(paramMap), _elementType2)
       case _ => this
     }
     _elementType2 match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => 
         JavaMapInfo(name, stage1._elementType, paramMap(ts.name.asInstanceOf[TypeSymbol]))
       case art: AppliedRType if art.isAppliedType => 
-        JavaMapInfo(name, stage1._elementType, _elementType2.resolveTypeParams(paramMap))
+        JavaMapInfo(name, stage1._elementType, art.resolveTypeParams(paramMap))
       case _ => stage1
     }
   

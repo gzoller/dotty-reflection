@@ -182,7 +182,7 @@ object TastyReflection extends NonCaseClassReflection:
                       case vd: ValDef if vd.tpt.tpe.typeSymbol.flags.is(Flags.Param) =>
                         paramMap.getOrElse(
                           vd.tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol],
-                          RType.unwindType(reflect)(vd.tpt.tpe).resolveTypeParams(paramMap)
+                          RType.unwindType(reflect)(vd.tpt.tpe).asInstanceOf[AppliedRType].resolveTypeParams(paramMap)
                         )
                       case _ => 
                         RType.unwindType(reflect)(typeRef.memberType(f), false)
@@ -190,7 +190,7 @@ object TastyReflection extends NonCaseClassReflection:
                 }.toOption.getOrElse{
                   paramMap.getOrElse(
                     f.tree.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name.asInstanceOf[TypeSymbol],
-                    RType.unwindType(reflect)(f.tree.asInstanceOf[ValDef].tpt.tpe).resolveTypeParams(paramMap)
+                    RType.unwindType(reflect)(f.tree.asInstanceOf[ValDef].tpt.tpe).asInstanceOf[AppliedRType].resolveTypeParams(paramMap)
                   )
                 }
               val typeSym = 

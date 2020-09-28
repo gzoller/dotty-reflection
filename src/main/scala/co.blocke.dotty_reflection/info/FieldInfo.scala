@@ -60,7 +60,7 @@ case class ScalaFieldInfo(
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo = 
     fieldType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => this.copy(fieldType = fieldType.resolveTypeParams(paramMap))
+      case art: AppliedRType if art.isAppliedType => this.copy(fieldType = art.resolveTypeParams(paramMap))
       case _ => this
     }
 
@@ -124,8 +124,8 @@ case class JavaFieldInfo(
   def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): FieldInfo = 
     fieldType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => this.copy(fieldType = paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case pt: impl.PrimitiveType => this
-      case other => this.copy(fieldType = other.resolveTypeParams(paramMap))
+      case art: AppliedRType => this.copy(fieldType = art.resolveTypeParams(paramMap))
+      case _ => this
     }
 
   def toBytes( bbuf: ByteBuffer ): Unit = 

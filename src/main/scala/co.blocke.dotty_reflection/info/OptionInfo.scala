@@ -26,6 +26,8 @@ object ScalaOptionInfo:
       RTypeByteEngine.read(bbuf)
       )
 
+//-------------------
+
 case class ScalaOptionInfo protected[dotty_reflection](
   name: String,
   _optionParamType: RType
@@ -38,16 +40,16 @@ case class ScalaOptionInfo protected[dotty_reflection](
     case e => e
   }
 
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
+    _optionParamType match {
+      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => ScalaOptionInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
+      case art: AppliedRType if art.isAppliedType => ScalaOptionInfo(name, art.resolveTypeParams(paramMap))
+      case _ => this
+    }
+    
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
     {if(!supressIndent) tabs(tab) else ""} + "Option of " + optionParamType.show(newTab,name :: seenBefore,true)
-
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
-    _optionParamType match {
-      case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => ScalaOptionInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => ScalaOptionInfo(name, _optionParamType.resolveTypeParams(paramMap))
-      case _ => this
-    }
 
   def toBytes( bbuf: ByteBuffer ): Unit = 
     bbuf.put( OPTION_INFO )
@@ -62,6 +64,8 @@ object JavaOptionalInfo:
       RTypeByteEngine.read(bbuf)
       )
 
+//-------------------
+      
 case class JavaOptionalInfo protected[dotty_reflection](
   name: String,
   _optionParamType: RType
@@ -81,7 +85,7 @@ case class JavaOptionalInfo protected[dotty_reflection](
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _optionParamType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => JavaOptionalInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => JavaOptionalInfo(name, _optionParamType.resolveTypeParams(paramMap))
+      case art: AppliedRType if art.isAppliedType => JavaOptionalInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 

@@ -19,7 +19,6 @@ val ENUM_CLASSNAME = "scala.Enumeration.Value"
 val typesymregx = """.*\.\_\$(.+)$""".r
 
 val S3ANNO = "co.blocke.dotty_reflection.S3Reflection"
-
     
 def mangleArrayClassName(tpe: RType): String =
   val mangled = tpe match {

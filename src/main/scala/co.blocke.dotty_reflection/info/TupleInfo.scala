@@ -42,7 +42,7 @@ case class TupleInfo protected[dotty_reflection](
           paramMap(ts.name.asInstanceOf[TypeSymbol])
         case art: AppliedRType if art.isAppliedType => 
           needsCopy = true
-          one.resolveTypeParams(paramMap)
+          art.resolveTypeParams(paramMap)
         case t => t
       }
     )

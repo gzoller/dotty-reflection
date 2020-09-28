@@ -4,16 +4,22 @@ package info
 import impl._
 import java.nio.ByteBuffer
 
-trait ClassInfo extends RType: 
+trait ClassInfo extends RType with AppliedRType: 
   lazy val fields:                Array[FieldInfo]
   lazy val typeMembers:           Array[TypeMemberInfo]
   lazy val annotations:           Map[String, Map[String,String]]
   lazy val mixins:                Array[String]
 
+  def select(i: Int): RType = 
+    if i >= 0 && i <= fields.size-1 then
+      fields(i).fieldType
+    else
+      throw new ReflectException(s"AppliedType select index $i out of range for ${name}") 
+
   def hasMixin(mixin: String): Boolean = mixins.contains(mixin)
 
 
-trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
+trait ScalaClassInfoBase extends ClassInfo:
   val name:                   String
   val paramSymbols:           Array[TypeSymbol]
   val _typeMembers:           Array[TypeMemberInfo]
@@ -44,11 +50,6 @@ trait ScalaClassInfoBase extends ClassInfo with AppliedRType:
 
   lazy val constructor = infoClass.getConstructor(fields.map(_.asInstanceOf[ScalaFieldInfo].constructorClass):_*)
 
-  def select(i: Int): RType = 
-    if i >= 0 && i <= _fields.size-1 then
-      _fields(i).fieldType
-    else
-      throw new ReflectException(s"AppliedType select index $i out of range for ${name}") 
       
   // Used for ScalaJack writing of type members ("external type hints").  If some type members are not class/trait, it messes up any
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
@@ -100,7 +101,7 @@ case class ScalaCaseClassInfo protected[dotty_reflection] (
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
     this.copy( 
       _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) )
       )
@@ -154,7 +155,7 @@ case class ScalaClassInfo protected[dotty_reflection] (
   // type hint modifiers, so for the purposes of serialization we want to filter out "uninteresting" type members (e.g. primitives)
   def filterTraitTypeParams: ScalaClassInfoBase = this.copy( _typeMembers = typeMembers.filter(tm => tm.memberType.isInstanceOf[TraitInfo] || tm.memberType.isInstanceOf[ScalaCaseClassInfo]) )
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
     this.copy( 
       _fields = _fields.map( _.asInstanceOf[ScalaFieldInfo].resolveTypeParams(paramMap) )
       )
@@ -216,12 +217,13 @@ case class JavaClassInfo protected[dotty_reflection] (
   lazy val typeMembers:           Array[TypeMemberInfo]           = proxy.typeMembers
   lazy val annotations:           Map[String, Map[String,String]] = proxy.annotations
   lazy val mixins:                Array[String]                   = proxy.mixins
+  override def isAppliedType: Boolean = !paramTypes.isEmpty
 
   def field(name: String): Option[JavaFieldInfo] = fieldsByName.get(name)
 
   private lazy val fieldsByName = fields.map(f => (f.name, f.asInstanceOf[JavaFieldInfo])).toMap
 
-  override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType =
     val newProxy = this.proxy.copy(_fields = fields.map( f => f.resolveTypeParams(paramMap) ))
     val classParamSyms = infoClass.getTypeParameters.toList.map(_.getName.asInstanceOf[TypeSymbol])
     val newFullName =

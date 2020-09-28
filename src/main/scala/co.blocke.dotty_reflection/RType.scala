@@ -15,9 +15,6 @@ trait RType extends Serializable:
   override def equals(obj: Any) = this.hashCode == obj.hashCode
   lazy val infoClass: Class[_]  /** the JVM class of this type */
 
-  // Take a parameterized type's normal type 'T' and map it to the declared type 'X'
-  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = this
-
   def toBytes( bbuf: ByteBuffer ): Unit
 
   def show(
@@ -43,6 +40,8 @@ trait AppliedRType:
   self: RType =>
   def isAppliedType: Boolean = true  // can be overridden to false, e.g. Scala class that isn't parameterized
   def select(i: Int): RType
+  // Take a parameterized type's normal type 'T' and map it to the declared type 'X'
+  def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType
 
 
 // Poked this here for now.  Used for show()

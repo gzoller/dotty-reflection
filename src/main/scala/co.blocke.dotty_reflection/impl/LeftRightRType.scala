@@ -25,12 +25,12 @@ trait LeftRightRType extends AppliedRType:
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     val stage1 = leftType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => _copy(paramMap(ts.name.asInstanceOf[TypeSymbol]), rightType)
-      case art: AppliedRType if art.isAppliedType => _copy(leftType.resolveTypeParams(paramMap), rightType)
+      case art: AppliedRType if art.isAppliedType => _copy(art.resolveTypeParams(paramMap), rightType)
       case _ => this
     }
     rightType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => _copy(stage1.asInstanceOf[LeftRightRType].leftType, paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => _copy(stage1.asInstanceOf[LeftRightRType].leftType, rightType.resolveTypeParams(paramMap))
+      case art: AppliedRType if art.isAppliedType => _copy(stage1.asInstanceOf[LeftRightRType].leftType, art.resolveTypeParams(paramMap))
       case _ => stage1
     }
 

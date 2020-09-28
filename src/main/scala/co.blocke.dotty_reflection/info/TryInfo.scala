@@ -39,7 +39,7 @@ case class TryInfo protected[dotty_reflection](
   override def resolveTypeParams( paramMap: Map[TypeSymbol, RType] ): RType = 
     _tryType match {
       case ts: TypeSymbolInfo if paramMap.contains(ts.name.asInstanceOf[TypeSymbol]) => TryInfo(name, paramMap(ts.name.asInstanceOf[TypeSymbol]))
-      case art: AppliedRType if art.isAppliedType => TryInfo(name, _tryType.resolveTypeParams(paramMap))
+      case art: AppliedRType if art.isAppliedType => TryInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
 
