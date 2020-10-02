@@ -44,9 +44,8 @@ trait NonCaseClassReflection:
               annoSymbol.map{ a => 
                 val reflect.Apply(_, params) = a
                 val annoName = a.symbol.signature.resultSig
-                (annoName,(params collect {
-                  case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
-                }).toMap)
+                (annoName, annoSymToString(reflect)(params))
+
               }.toMap
             varAnnos.put(s.name, fieldAnnos) // yes, this is a side-effect but it saves mutliple field scans!
             s.name -> s.tpt.tpe.asInstanceOf[reflect.TypeRef]
@@ -116,9 +115,7 @@ trait NonCaseClassReflection:
       val annoMap = both.map{ a => 
         val reflect.Apply(_, params) = a
         val annoName = a.symbol.signature.resultSig
-        (annoName,(params collect {
-          case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
-        }).toMap)
+        (annoName, annoSymToString(reflect)(params))
       }.toMap
       val allMap = 
         annoMap ++ varAnnos.getOrElse(fGet.name, Map.empty[String,Map[String,String]]) match {

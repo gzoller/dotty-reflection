@@ -9,7 +9,7 @@ import dotty.tools.dotc.core.Annotations._
 import dotty.tools.dotc.core.Names._
 import dotty.tools.dotc.plugins.{PluginPhase, StandardPlugin}
 import dotty.tools.dotc.transform.{Pickler,Flatten}
-
+import dotty.tools.dotc.quoted._
 import info._
 
 
@@ -35,12 +35,12 @@ class ReflectionWorkerPhase extends PluginPhase {
   override def transformTypeDef(tree: TypeDef)(implicit ctx: Context): Tree = 
     if tree.isClassDef && !tree.rhs.symbol.isStatic then  // only look at classes & traits, not objects
       // Reflect on the type (generate an RType), then serialize to string and add the S3Reflection annotation to the class.
-      val reflect = new dotty.tools.dotc.quoted.reflect.ReflectionCompilerInterface(ctx) with scala.tasty.Reflection
+      val reflect = QuoteContextImpl.apply().asInstanceOf[QuoteContextImpl].tasty
 
       val unpackedType = tree.tpe.classSymbol.appliedRef.asInstanceOf[reflect.Type]
       val reflected = RType.unwindType(reflect)(unpackedType,false)
       val s3ReflectionClassSymbol = getClassIfDefined("co.blocke.dotty_reflection.S3Reflection")
-      val annoArg = NamedArg("rtype".toTermName, Literal(Constant( reflected.serialize )))
+      val annoArg = NamedArg("rtype".toTermName, Literal(reflect.Constant.String( reflected.serialize )))
       tree.symbol.addAnnotation(Annotation.apply(s3ReflectionClassSymbol.asInstanceOf[ClassSymbol], annoArg) )
     tree
 }

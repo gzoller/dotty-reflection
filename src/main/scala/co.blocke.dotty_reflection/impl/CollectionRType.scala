@@ -10,6 +10,14 @@ trait CollectionRType extends AppliedRType:
 
   lazy val elementType: RType
 
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    implicit val stuff = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context] 
+    dotty.tools.dotc.core.Types.AppliedType(
+      Type.typeConstructorOf(self.infoClass).asInstanceOf[dotty.tools.dotc.core.Types.Type], 
+      List(elementType.toType(reflect).asInstanceOf[dotty.tools.dotc.core.Types.Type])
+      ).asInstanceOf[reflect.AppliedType]
+
   def select(i: Int): RType = 
     if i == 0 then
       elementType

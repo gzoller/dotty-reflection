@@ -9,6 +9,21 @@ import scala.tasty.Reflection
 import scala.util.Try
 
 
+inline def annoSymToString(reflect: scala.tasty.Reflection)( terms: List[reflect.Term] ): Map[String,String] =
+  import reflect._
+  terms.collect {
+    case NamedArg(argName, Literal(Constant.Boolean(argValue))) => (argName.toString -> argValue.toString)
+    case NamedArg(argName, Literal(Constant.Byte(argValue)))    => (argName.toString -> argValue.toString)
+    case NamedArg(argName, Literal(Constant.Short(argValue)))   => (argName.toString -> argValue.toString)
+    case NamedArg(argName, Literal(Constant.Char(argValue)))    => (argName.toString -> argValue.toString)
+    case NamedArg(argName, Literal(Constant.Int(argValue)))     => (argName.toString -> argValue.toString)
+    case NamedArg(argName, Literal(Constant.Long(argValue)))    => (argName.toString -> argValue.toString)
+    case NamedArg(argName, Literal(Constant.Float(argValue)))   => (argName.toString -> argValue.toString)
+    case NamedArg(argName, Literal(Constant.Double(argValue)))  => (argName.toString -> argValue.toString)
+    case NamedArg(argName, Literal(Constant.String(argValue)))  => (argName.toString -> argValue)
+  }.toMap
+
+
 object TastyReflection extends NonCaseClassReflection:
 
   def reflectOnType(reflect: Reflection)(aType: reflect.Type, fullName: String, resolveTypeSyms: Boolean): RType = 
@@ -131,7 +146,7 @@ object TastyReflection extends NonCaseClassReflection:
     val symbol = typeRef.classSymbol.get
     val typeSymbols = symbol.primaryConstructor.paramSymss.head.map(_.name.asInstanceOf[TypeSymbol])
 
-    if symbol.flags.is(reflect.Flags.Scala2X) then
+    if symbol.flags.is(reflect.Flags.Scala2x) then
       symbol.fullName match {
         case PrimitiveType(t) => t
         case s => Scala2Info(s)
@@ -160,7 +175,7 @@ object TastyReflection extends NonCaseClassReflection:
               scala.util.Try{ 
                 if resolveTypeSyms then
                   RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])
-                else if oneTob.asInstanceOf[reflect.TypeRef].typeSymbol.flags.is(Flags.Param)
+                else if oneTob.asInstanceOf[reflect.TypeRef].typeSymbol.flags.is(Flags.Param) then
                   TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
                 else
                   RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef], false)
@@ -239,9 +254,7 @@ object TastyReflection extends NonCaseClassReflection:
       val classAnnos = annoSymbol.map{ a => 
         val reflect.Apply(_, params) = a
         val annoName = a.symbol.signature.resultSig
-        (annoName,(params collect {
-          case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
-        }).toMap)
+        (annoName, annoSymToString(reflect)(params))
       }.toMap
 
       val isValueClass = typeRef.baseClasses.contains(Symbol.classSymbol("scala.AnyVal"))
@@ -280,11 +293,14 @@ object TastyReflection extends NonCaseClassReflection:
           )
       }
 
-      val actualParamTypes = tob.map{ oneTob => 
+      val actualParamTypes = tob.zipWithIndex.map{ (oneTob,idx) => 
         scala.util.Try{ 
           if resolveTypeSyms then
-            RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef])
-          else if oneTob.asInstanceOf[reflect.TypeRef].typeSymbol.flags.is(Flags.Param)
+            RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef]) match {
+              case NONE  => TypeSymbolInfo(typeSymbols(idx).toString)
+              case other => other
+            }
+          else if oneTob.asInstanceOf[reflect.TypeRef].typeSymbol.flags.is(Flags.Param) then
             TypeSymbolInfo(oneTob.asInstanceOf[reflect.TypeRef].name)
           else
             RType.unwindType(reflect)(oneTob.asInstanceOf[reflect.TypeRef], false)
@@ -300,8 +316,11 @@ object TastyReflection extends NonCaseClassReflection:
         val caseFields = classDef.constructor.paramss.head.zipWithIndex.map{ (valDef, idx) => 
           val fieldType = scala.util.Try{ 
             if resolveTypeSyms then
-              RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx))) 
-            else if valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.flags.is(Flags.Param)
+              RType.unwindType(reflect)(typeRef.memberType(symbol.caseFields(idx))) match {
+                case NONE  => TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
+                case other => other
+              }
+            else if valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.flags.is(Flags.Param) then
               TypeSymbolInfo(valDef.asInstanceOf[ValDef].tpt.tpe.typeSymbol.name)
             else
               RType.unwindType(reflect)(valDef.tpt.tpe, false)
@@ -373,9 +392,7 @@ object TastyReflection extends NonCaseClassReflection:
       baseAnnos ++ valDef.symbol.annots.map{ a => 
         val reflect.Apply(_, params) = a
         val annoName = a.symbol.signature.resultSig
-        (annoName,(params collect {
-          case NamedArg(argName, Literal(Constant(argValue))) => (argName.toString, argValue.toString)
-        }).toMap)
+        (annoName, annoSymToString(reflect)(params))
       }.toMap
     }
 

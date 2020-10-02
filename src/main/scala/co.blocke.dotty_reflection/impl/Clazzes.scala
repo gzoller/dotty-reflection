@@ -51,6 +51,7 @@ object Clazzes {
   val JNumberClazz    = Class.forName("java.lang.Number")
 
   // Class Ops
-  def (c: Class[_]).=:=(other: Class[_]): Boolean = c == other
-  def (c: Class[_]).<:<(other: Class[_]): Boolean = other.isAssignableFrom(c)
+  extension (c: Class[_])
+    def =:=(other: Class[_]): Boolean = c == other
+    def <:<(other: Class[_]): Boolean = other.isAssignableFrom(c)
 }

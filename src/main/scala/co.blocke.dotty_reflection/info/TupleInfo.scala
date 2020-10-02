@@ -51,6 +51,14 @@ case class TupleInfo protected[dotty_reflection](
     else
       this
 
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    implicit val stuff = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context] 
+    dotty.tools.dotc.core.Types.AppliedType(
+      Type.typeConstructorOf(infoClass).asInstanceOf[dotty.tools.dotc.core.Types.Type], 
+      tupleTypes.map(_.asInstanceOf[dotty.tools.dotc.core.Types.Type]).toList
+      ).asInstanceOf[reflect.AppliedType]
+    
   def select(i: Int): RType = 
     if i >= 0 && i <= _tupleTypes.size-1 then
       _tupleTypes(i)

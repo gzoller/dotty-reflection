@@ -21,6 +21,7 @@ case class AliasInfo protected[dotty_reflection] (
     val fullName = name
 
     lazy val infoClass = unwrappedType.infoClass
+    override def toType(reflect: Reflection): reflect.Type = unwrappedType.toType(reflect)
 
     def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
       val newTab = {if supressIndent then tab else tab+1}

@@ -16,6 +16,7 @@ trait RType extends Serializable:
   lazy val infoClass: Class[_]  /** the JVM class of this type */
 
   def toBytes( bbuf: ByteBuffer ): Unit
+  def toType(reflect: Reflection): reflect.Type = reflect.Type.typeConstructorOf(infoClass)
 
   def show(
     tab: Int = 0,
@@ -92,17 +93,6 @@ object RType:
       case _ =>
         throw new ReflectException(s"Cached class ${clazz.getName} is not a Scala 3 class")
     }
-    // val (rt, paths) = cache.get(clazz.getName).map(c => (c.asInstanceOf[ScalaClassInfoBase], c.asInstanceOf[ScalaClassInfoBase].paths)).getOrElse(
-    //   unpackAnno(clazz).map{ clazzRtype =>
-    //     cache.put(clazz.getName, clazzRtype)
-    //     (clazzRtype.asInstanceOf[ScalaClassInfoBase], clazzRtype.asInstanceOf[ScalaClassInfoBase].paths)
-    //   }.getOrElse{
-    //     val (clazzRType, reflection, clazzType) = ofWithReflection(clazz)
-    //     val symPaths = TypeLoom.descendParents(reflection)( clazzType.asInstanceOf[reflection.Type] ) 
-    //     (clazzRType.asInstanceOf[ScalaClassInfoBase], symPaths)           
-    //   }
-    // )
-    // rt.resolveTypeParams( TypeLoom.Recipe.navigate( paths(ito.name), ito ) )
 
   inline def unpackAnno(c: Class[_]): Option[RType] =
     c.getAnnotations.toList.collectFirst{
@@ -119,6 +109,7 @@ object RType:
     val className = aType.asInstanceOf[TypeRef] match {
       case AndType(_,_) => INTERSECTION_CLASS
       case OrType(_,_)  => UNION_CLASS
+      case _: dotty.tools.dotc.core.Types.WildcardType => "scala.Any"
       case normal       => normal.classSymbol.get.fullName
     }
 
@@ -145,6 +136,7 @@ object RType:
         typeName(reflect)(t) + tob.map( oneTob => typeName(reflect)(oneTob.asInstanceOf[TypeRef])).mkString("[",",","]")
       case AndType(left, right) => INTERSECTION_CLASS + "[" + typeName(reflect)(left.asInstanceOf[TypeRef]) + "," + typeName(reflect)(right.asInstanceOf[TypeRef]) + "]"
       case OrType(left, right) => UNION_CLASS + "[" + typeName(reflect)(left.asInstanceOf[TypeRef]) + "," + typeName(reflect)(right.asInstanceOf[TypeRef]) + "]"
+      case _: dotty.tools.dotc.core.Types.WildcardType => "unmapped"
       case _ => aType.classSymbol.get.fullName
     }
     name match {

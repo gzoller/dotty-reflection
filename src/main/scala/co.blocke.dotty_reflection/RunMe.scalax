@@ -18,6 +18,13 @@ case class Command[X,Y,Z](
   thing: Z) extends CommandMessage[Option[Y], Z]  // extends Message[Z, List[Option[Y]]] --> Path for Y should be: (1,0,0)
 
 
+
+// case class CClass[X](x:List[X])
+// class PClass[Y](val y:List[Y])
+// case class CClassLevel2[Z](z: Z)
+// trait ClassistBase[T,U]{ val t: CClass[CClassLevel2[T]]; val u: PClass[U] }
+// case class ClassistC[A,B](t: CClass[CClassLevel2[A]], u: PClass[B]) extends ClassistBase[A,B]
+
 // trait T5[X, Y] { val thing1: X; val thing2: Y }
 // trait T10[X, Y] { val x: X; val y: Y }
 // trait T11[W, Z] { val w: W; val z: Z }
@@ -28,11 +35,31 @@ case class Command[X,Y,Z](
 
 object RunMe extends App:
 
-  println(RType.inTermsOf[CommandMessage[Option[String],Boolean]](classOf[Command[_,_,_]]))
-  println(RType.inTermsOf[Message[Boolean, List[Option[String]]]](classOf[Command[_,_,_]]))
+  val clazz = "co.blocke.dotty_reflection.Command"
+  // println(RType.of[Message[Boolean, List[Option[String]]]])
+  // println(RType.inTermsOf[CommandMessage[Option[String],Boolean]]( Class.forName(clazz) ))
+
+  val tt = Experimental.typeOf[Message[Boolean, List[Option[String]]]]
+  println("FOO: "+tt)
+
+  // println(Experimental.of[String])
+
+  // println(Experimental.of[Message[Boolean, List[Option[String]]]])
+  // println(Experimental.of[CommandMessage[Option[String],Boolean]])
+
+  // println(Experimental.inTermsOf[Message[Boolean, List[Option[String]]]]( Class.forName(clazz) ))
+
+  // val fn = co.blocke.dotty_reflection.Experimental.maker[Message[Boolean, List[Option[String]]]]
+
+  // println(RType.inTermsOf[Message[Boolean, List[Option[String]]]](classOf[Command[_,_,_]]))
+
+  // println(RType.inTermsOf[CommandMessage[Boolean,String]]( Class.forName(clazz) ))
 
   // val inst: T10[T11[Int, T5[Double, Char]], String] = TFoo6(TBlah1(5, TBar7(1.2, 'Z')), "wow")
   // val result = RType.inTermsOf[T10[T11[Int, T5[Double, Char]], String]]( inst.getClass )
   // println(result)
+
+  // val rt = RType.inTermsOf[ClassistBase[Int,Short]](Class.forName("co.blocke.dotty_reflection.ClassistC"))
+  // println(rt.asInstanceOf[info.ScalaCaseClassInfo].fields(1).fieldType.getClass)
 
   println("Done.")

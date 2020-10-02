@@ -59,6 +59,14 @@ case class MapLikeInfo protected[dotty_reflection](
   val fullName = name + "[" + _elementType.fullName + "," + _elementType2.fullName + "]"
   lazy val infoClass: Class[_] = Class.forName(name)
 
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    implicit val stuff = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context] 
+    dotty.tools.dotc.core.Types.AppliedType(
+      Type.typeConstructorOf(infoClass).asInstanceOf[dotty.tools.dotc.core.Types.Type], 
+      List(elementType.toType(reflect).asInstanceOf[dotty.tools.dotc.core.Types.Type], elementType2.toType(reflect).asInstanceOf[dotty.tools.dotc.core.Types.Type])
+      ).asInstanceOf[reflect.AppliedType]
+
   override def select(i: Int): RType = 
     i match {
       case 0 => elementType
@@ -355,6 +363,14 @@ case class JavaMapInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    implicit val stuff = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context] 
+    dotty.tools.dotc.core.Types.AppliedType(
+      Type.typeConstructorOf(infoClass).asInstanceOf[dotty.tools.dotc.core.Types.Type], 
+      List(elementType.toType(reflect).asInstanceOf[dotty.tools.dotc.core.Types.Type], elementType2.toType(reflect).asInstanceOf[dotty.tools.dotc.core.Types.Type])
+      ).asInstanceOf[reflect.AppliedType]
 
   override def select(i: Int): RType = 
     i match {

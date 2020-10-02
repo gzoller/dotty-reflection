@@ -46,6 +46,14 @@ case class ScalaOptionInfo protected[dotty_reflection](
       case art: AppliedRType if art.isAppliedType => ScalaOptionInfo(name, art.resolveTypeParams(paramMap))
       case _ => this
     }
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    implicit val stuff = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context] 
+    dotty.tools.dotc.core.Types.AppliedType(
+      Type.typeConstructorOf(infoClass).asInstanceOf[dotty.tools.dotc.core.Types.Type], 
+      List(optionParamType.toType(reflect).asInstanceOf[dotty.tools.dotc.core.Types.Type])
+      ).asInstanceOf[reflect.AppliedType]
     
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
@@ -77,6 +85,14 @@ case class JavaOptionalInfo protected[dotty_reflection](
     case e: SelfRefRType => e.resolve
     case e => e
   }
+
+  override def toType(reflect: Reflection): reflect.Type = 
+    import reflect.{_, given _}
+    implicit val stuff = reflect.rootContext.asInstanceOf[dotty.tools.dotc.core.Contexts.Context] 
+    dotty.tools.dotc.core.Types.AppliedType(
+      Type.typeConstructorOf(infoClass).asInstanceOf[dotty.tools.dotc.core.Types.Type], 
+      List(optionParamType.toType(reflect).asInstanceOf[dotty.tools.dotc.core.Types.Type])
+      ).asInstanceOf[reflect.AppliedType]
    
   def show(tab: Int = 0, seenBefore: List[String] = Nil, supressIndent: Boolean = false, modified: Boolean = false): String = 
     val newTab = {if supressIndent then tab else tab+1}
